@@ -61,6 +61,46 @@
   padding: 1rem 1.2rem;
   overflow-wrap: break-word;
 }
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.75rem;
+}
+.palette-swatch {
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--color-surface);
+  text-align: left;
+  padding: 0;
+  font: inherit;
+}
+.palette-swatch:hover { border-color: var(--color-accent); }
+.palette-swatch__bar { display: flex; height: 32px; }
+.palette-swatch__bar span { flex: 1; }
+.palette-swatch__name {
+  display: block;
+  font-size: 0.72rem;
+  padding: 0.4rem 0.5rem;
+  color: var(--color-text);
+}
+.site-preview {
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+.site-preview__kicker { font-size: 0.85rem; margin-bottom: 0.5rem; }
+.site-preview__title { font-family: var(--font-display); font-size: 2.2rem; margin-bottom: 0.5rem; }
+.site-preview__body { font-size: 0.95rem; max-width: 34ch; margin: 0 auto 1rem; }
+.site-preview__btn {
+  display: inline-block;
+  padding: 0.6rem 1.3rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
     #connect-status, .field-status, .photo-status { font-size: 0.82rem; margin-top: 0.5rem; }
     .status-ok { color: #2f6b3f; }
     .status-err { color: #b23a2a; }
@@ -130,8 +170,16 @@
 
     <div class="admin-card">
       <h2>Design</h2>
-      <p class="hint" style="margin-bottom: 1rem;">Changes apply site-wide. The preview swatches update instantly; nothing saves until you click a Save button.</p>
-      <div class="admin-row">
+      <p class="hint" style="margin-bottom: 1rem;">
+        These colors apply site-wide — across Home, About, and Book, everywhere except any individual text
+        section you've given its own color below. The preview updates instantly as you pick; nothing saves
+        until you click "Save colors."
+      </p>
+
+      <label style="font-weight:600; color: var(--color-text); margin-bottom: 0.5rem; display: block;">Starting palettes</label>
+      <div class="palette-grid" id="palette-grid"></div>
+
+      <div class="admin-row" style="margin-top: 1.25rem; padding-top: 1.1rem; border-top: 1px solid var(--color-line);">
         <div>
           <label for="design-bg-color">Background color</label>
           <input type="color" id="design-bg-color" />
@@ -145,11 +193,23 @@
           <input type="color" id="design-accent-color" />
         </div>
         <div id="contrast-warning" class="hint status-err" style="display: none;"></div>
-        <div>
-          <button class="btn btn-small" id="save-colors-btn">Save colors</button>
-          <div id="colors-status" class="field-status"></div>
+      </div>
+
+      <div style="margin-top: 1rem;">
+        <label>Preview — this is how Home, About, and Book will look</label>
+        <div id="site-preview" class="site-preview">
+          <div class="site-preview__kicker">Hi, I'm Shaine — welcome!</div>
+          <div class="site-preview__title">Echo Craft</div>
+          <div class="site-preview__body">Portrait, fashion, and event photography, traveling across Pennsylvania.</div>
+          <div class="site-preview__btn">Book a session</div>
         </div>
       </div>
+
+      <div style="margin-top: 1rem;">
+        <button class="btn btn-small" id="save-colors-btn">Save colors</button>
+        <div id="colors-status" class="field-status"></div>
+      </div>
+
       <div class="admin-row" style="margin-top: 1.25rem; padding-top: 1.1rem; border-top: 1px solid var(--color-line);">
         <div>
           <label for="design-font-select">Font pairing</label>
@@ -163,7 +223,11 @@
     </div>
 
     <div class="admin-card">
-      <h2>Page text</h2>
+      <h2>Section text colors</h2>
+      <p class="hint" style="margin-bottom: 1rem;">
+        Home, About, and Book each have a few text sections you can color individually below, overriding
+        the site-wide text color above just for that one section.
+      </p>
       <div id="text-fields"></div>
     </div>
 
@@ -208,6 +272,15 @@
       { path: "images/event/event-04.jpg", label: "Event 4", file: "index.html" },
       { path: "images/event/event-05.jpg", label: "Event 5", file: "index.html" },
       { path: "images/event/event-06.jpg", label: "Event 6", file: "index.html" },
+    ];
+
+    const COLOR_PALETTES = [
+      { name: "Cream & ink (current)", bg: "#f5efe8", text: "#201f1d", accent: "#201f1d" },
+      { name: "Warm honey", bg: "#f5efe8", text: "#2b2620", accent: "#bd7a37" },
+      { name: "Soft sage", bg: "#f0f1ea", text: "#26301f", accent: "#5b6f4f" },
+      { name: "Blush editorial", bg: "#faf1ee", text: "#2c1f1c", accent: "#b5615a" },
+      { name: "Cool stone", bg: "#eef0f2", text: "#1f2328", accent: "#3a5a78" },
+      { name: "Deep charcoal (dark)", bg: "#1c1b18", text: "#f2efe9", accent: "#c9a15f" },
     ];
 
     const FONT_PAIRINGS = [
@@ -403,6 +476,26 @@
       textInput.value = currentText;
       accentInput.value = currentAccent;
 
+      function updateSitePreview() {
+        const preview = document.getElementById("site-preview");
+        const bg = bgInput.value;
+        const txt = textInput.value;
+        const accent = accentInput.value;
+        const onAccentPreview = relLuminance(hexToRgb(accent)) > 0.5 ? "#201f1d" : "#f5efe8";
+        preview.style.background = bg;
+        preview.style.color = txt;
+        const kicker = preview.querySelector(".site-preview__kicker");
+        const title = preview.querySelector(".site-preview__title");
+        const body = preview.querySelector(".site-preview__body");
+        const btn = preview.querySelector(".site-preview__btn");
+        kicker.style.color = accent;
+        title.style.color = txt;
+        body.style.color = txt;
+        body.style.opacity = "0.75";
+        btn.style.background = accent;
+        btn.style.color = onAccentPreview;
+      }
+
       function checkContrast() {
         const ratio = contrastRatio(textInput.value, bgInput.value);
         if (ratio < 4.5) {
@@ -411,10 +504,34 @@
         } else {
           warning.style.display = "none";
         }
+        updateSitePreview();
       }
       textInput.addEventListener("input", checkContrast);
       bgInput.addEventListener("input", checkContrast);
+      accentInput.addEventListener("input", updateSitePreview);
       checkContrast();
+
+      const paletteGrid = document.getElementById("palette-grid");
+      paletteGrid.innerHTML = COLOR_PALETTES.map(
+        (p, i) => `
+          <button type="button" class="palette-swatch" data-idx="${i}">
+            <div class="palette-swatch__bar">
+              <span style="background:${p.bg};"></span>
+              <span style="background:${p.text};"></span>
+              <span style="background:${p.accent};"></span>
+            </div>
+            <span class="palette-swatch__name">${p.name}</span>
+          </button>`
+      ).join("");
+      paletteGrid.querySelectorAll(".palette-swatch").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const p = COLOR_PALETTES[Number(btn.dataset.idx)];
+          bgInput.value = p.bg;
+          textInput.value = p.text;
+          accentInput.value = p.accent;
+          checkContrast();
+        });
+      });
 
       const select = document.getElementById("design-font-select");
       select.innerHTML = FONT_PAIRINGS.map(
