@@ -7,11 +7,11 @@
   --color-bg-alt: #ece2d3;
   --color-surface: #ffffff;
   --color-text: #201f1d;
-  --color-text-muted: #8c877d;
+  --color-text-muted: #95918d;
   --color-accent: #201f1d;
   --color-on-accent: #f5efe8;
-  --color-taupe: #8c877d;
-  --color-accent-soft: rgba(140, 135, 125, 0.16);
+  --color-taupe: #95918d;
+  --color-accent-soft: rgba(32, 31, 29, 0.16);
   --color-line: rgba(32, 31, 29, 0.14);
 
   --font-display: "Instrument Serif", serif;
