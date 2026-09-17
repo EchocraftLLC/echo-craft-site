@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Echo Craft — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" type="image/png" href="images/logo-icon.png" />
+  <style>
+    body { padding: clamp(1.5rem, 4vw, 3rem); max-width: 900px; margin: 0 auto; }
+    .admin-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-line);
+      border-radius: 10px;
+      padding: clamp(1.25rem, 3vw, 2rem);
+      margin-bottom: 1.5rem;
+    }
+    .admin-card h2 {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 1.5rem;
+      margin: 0 0 1rem;
+    }
+    .admin-row { display: grid; gap: 0.9rem; }
+    .admin-row label { font-size: 0.82rem; color: var(--color-text-muted); display: block; margin-bottom: 0.3rem; }
+    .admin-row input[type="text"],
+    .admin-row input[type="password"],
+    .admin-row textarea {
+      width: 100%;
+      background: var(--color-bg);
+      border: 1px solid var(--color-line);
+      padding: 0.65rem 0.8rem;
+      color: var(--color-text);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+    }
+    .admin-row textarea { min-height: 70px; resize: vertical; }
+    .admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1.25rem; }
+    .photo-slot { text-align: center; }
+    .photo-slot img {
+      width: 100%;
+      aspect-ratio: 4/5;
+      object-fit: cover;
+      background: var(--color-bg-alt);
+      border: 1px solid var(--color-line);
+      margin-bottom: 0.5rem;
+    }
+    .photo-slot .slot-label { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.4rem; }
+    .photo-slot input[type="file"] { font-size: 0.78rem; width: 100%; margin-bottom: 0.4rem; }
+    .field-block { border-top: 1px solid var(--color-line); padding-top: 1.1rem; margin-top: 1.1rem; }
+    .field-block:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+    .field-block .save-btn { margin-top: 0.7rem; }
+    #connect-status, .field-status, .photo-status { font-size: 0.82rem; margin-top: 0.5rem; }
+    .status-ok { color: #2f6b3f; }
+    .status-err { color: #b23a2a; }
+    .hint { font-size: 0.8rem; color: var(--color-text-muted); }
+    #app-sections { display: none; }
+    .btn-small { padding: 0.55rem 1.1rem; font-size: 0.85rem; }
+    input[type="color"] {
+      width: 100%;
+      height: 42px;
+      border: 1px solid var(--color-line);
+      background: var(--color-bg);
+      padding: 4px;
+      cursor: pointer;
+    }
+    .crop-controls { margin-top: 0.5rem; text-align: left; }
+    .crop-controls label { font-size: 0.72rem; display: flex; justify-content: space-between; }
+    .crop-controls input[type="range"] { width: 100%; margin-bottom: 0.35rem; }
+    .crop-save-btn { margin-top: 0.3rem; width: 100%; }
+  </style>
+</head>
+<body>
+
+  <div id="site">
+
+  <p style="margin-bottom: 1.5rem;"><a href="index.html" style="color: var(--color-text-muted); font-size: 0.85rem;">&larr; Back to site</a></p>
+
+  <h1 style="font-family: var(--font-display); font-style: italic; font-size: 2.2rem; margin-bottom: 0.5rem;">Echo Craft admin</h1>
+  <p class="hint" style="margin-bottom: 1.5rem;">
+    Edits here save by committing directly to your GitHub repo. Nothing is stored anywhere except your own browser.
+    This page is protected by Cloudflare Access, so only your logged-in Cloudflare account can reach it — and even
+    then, a valid GitHub token is still required to actually save anything.
+  </p>
+
+  <div class="admin-card">
+    <h2>Connect</h2>
+    <div class="admin-row">
+      <div>
+        <label for="gh-owner">GitHub owner (org or username)</label>
+        <input type="text" id="gh-owner" value="EchocraftLLC" />
+      </div>
+      <div>
+        <label for="gh-repo">Repository name</label>
+        <input type="text" id="gh-repo" value="echo-craft-site" />
+      </div>
+      <div>
+        <label for="gh-branch">Branch</label>
+        <input type="text" id="gh-branch" value="main" />
+      </div>
+      <div>
+        <label for="gh-token">Personal access token</label>
+        <input type="password" id="gh-token" placeholder="ghp_..." />
+        <p class="hint">
+          Generate one at github.com &rarr; Settings &rarr; Developer settings &rarr; Personal access tokens.
+          Scope it to just this one repo with read/write access to "Contents." Stored only in this browser's
+          local storage &mdash; use "Forget token" below when you're done on a shared computer.
+        </p>
+      </div>
+      <div>
+        <button class="btn btn-small" id="connect-btn">Connect</button>
+        <button class="btn btn-small" id="forget-btn" style="background: var(--color-bg-alt); color: var(--color-text); margin-left: 0.5rem;">Forget token</button>
+        <div id="connect-status"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-sections">
+
+    <div class="admin-card">
+      <h2>Design</h2>
+      <p class="hint" style="margin-bottom: 1rem;">Changes apply site-wide. The preview swatches update instantly; nothing saves until you click a Save button.</p>
+      <div class="admin-row">
+        <div>
+          <label for="design-text-color">Text color</label>
+          <input type="color" id="design-text-color" />
+        </div>
+        <div>
+          <label for="design-accent-color">Accent color (buttons, highlights)</label>
+          <input type="color" id="design-accent-color" />
+        </div>
+        <div id="contrast-warning" class="hint status-err" style="display: none;"></div>
+        <div>
+          <button class="btn btn-small" id="save-colors-btn">Save colors</button>
+          <div id="colors-status" class="field-status"></div>
+        </div>
+      </div>
+      <div class="admin-row" style="margin-top: 1.25rem; padding-top: 1.1rem; border-top: 1px solid var(--color-line);">
+        <div>
+          <label for="design-font-select">Font pairing</label>
+          <select id="design-font-select" style="width:100%; padding:0.65rem 0.8rem; background: var(--color-bg); border:1px solid var(--color-line); color: var(--color-text);"></select>
+        </div>
+        <div>
+          <button class="btn btn-small" id="save-font-btn">Save font</button>
+          <div id="font-status" class="field-status"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <h2>Page text</h2>
+      <div id="text-fields"></div>
+    </div>
+
+    <div class="admin-card">
+      <h2>Photos</h2>
+      <p class="hint" style="margin-bottom: 1rem;">Pick a photo to replace any slot — it uploads and commits immediately. Use the sliders to adjust how each photo is cropped/framed, then click "Save crop."</p>
+      <div class="admin-grid" id="photo-grid"></div>
+    </div>
+
+  </div>
+
+  <script>
+    const API = "https://api.github.com";
+
+    const FIELDS = [
+      { file: "index.html", marker: "HERO_KICKER", label: "Hero greeting line" },
+      { file: "index.html", marker: "HERO_TAGLINE", label: "Hero tagline" },
+      { file: "index.html", marker: "HERO_LOCATION", label: "Hero location line" },
+      { file: "index.html", marker: "HOME_INTRO", label: "Home intro statement" },
+      { file: "about.html", marker: "ABOUT_BIO", label: "About page bio" },
+      { file: "book.html", marker: "BOOK_INTRO", label: "Book page intro" },
+    ];
+
+    const PHOTO_SLOTS = [
+      { path: "images/hero.jpg", label: "Hero (home banner)", file: "index.html" },
+      { path: "images/about/portrait.jpg", label: "About page portrait", file: "about.html" },
+      { path: "images/portrait/portrait-01.jpg", label: "Portrait 1", file: "index.html" },
+      { path: "images/portrait/portrait-02.jpg", label: "Portrait 2", file: "index.html" },
+      { path: "images/portrait/portrait-03.jpg", label: "Portrait 3", file: "index.html" },
+      { path: "images/portrait/portrait-04.jpg", label: "Portrait 4", file: "index.html" },
+      { path: "images/portrait/portrait-05.jpg", label: "Portrait 5", file: "index.html" },
+      { path: "images/portrait/portrait-06.jpg", label: "Portrait 6", file: "index.html" },
+      { path: "images/fashion/fashion-01.jpg", label: "Fashion 1", file: "index.html" },
+      { path: "images/fashion/fashion-02.jpg", label: "Fashion 2", file: "index.html" },
+      { path: "images/fashion/fashion-03.jpg", label: "Fashion 3", file: "index.html" },
+      { path: "images/fashion/fashion-04.jpg", label: "Fashion 4", file: "index.html" },
+      { path: "images/fashion/fashion-05.jpg", label: "Fashion 5", file: "index.html" },
+      { path: "images/fashion/fashion-06.jpg", label: "Fashion 6", file: "index.html" },
+      { path: "images/event/event-01.jpg", label: "Event 1", file: "index.html" },
+      { path: "images/event/event-02.jpg", label: "Event 2", file: "index.html" },
+      { path: "images/event/event-03.jpg", label: "Event 3", file: "index.html" },
+      { path: "images/event/event-04.jpg", label: "Event 4", file: "index.html" },
+      { path: "images/event/event-05.jpg", label: "Event 5", file: "index.html" },
+      { path: "images/event/event-06.jpg", label: "Event 6", file: "index.html" },
+    ];
+
+    const FONT_PAIRINGS = [
+      {
+        name: "Instrument Serif + Instrument Sans (current — editorial cool)",
+        display: '"Instrument Serif", serif',
+        body: '"Instrument Sans", sans-serif',
+        href: "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap",
+      },
+      {
+        name: "Fraunces + Archivo (warm & soft)",
+        display: '"Fraunces", serif',
+        body: '"Archivo", sans-serif',
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,600;1,300&family=Archivo:wght@400;500;600&display=swap",
+      },
+      {
+        name: "Playfair Display + Inter (classic & elegant)",
+        display: '"Playfair Display", serif',
+        body: '"Inter", sans-serif',
+        href: "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap",
+      },
+      {
+        name: "DM Serif Display + DM Sans (clean & modern)",
+        display: '"DM Serif Display", serif',
+        body: '"DM Sans", sans-serif',
+        href: "https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap",
+      },
+      {
+        name: "Cormorant + Work Sans (soft & romantic)",
+        display: '"Cormorant", serif',
+        body: '"Work Sans", sans-serif',
+        href: "https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;1,400&family=Work+Sans:wght@400;500;600&display=swap",
+      },
+    ];
+
+    let owner = "", repo = "", branch = "main", token = "";
+    const fileCache = {}; // path -> { sha, text }
+
+    function utf8ToBase64(str) {
+      const bytes = new TextEncoder().encode(str);
+      let binary = "";
+      bytes.forEach((b) => (binary += String.fromCharCode(b)));
+      return btoa(binary);
+    }
+    function base64ToUtf8(b64) {
+      const binary = atob(b64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return new TextDecoder().decode(bytes);
+    }
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function hexToRgb(hex) {
+      hex = hex.replace("#", "");
+      if (hex.length === 3) hex = hex.split("").map((c) => c + c).join("");
+      const num = parseInt(hex, 16);
+      return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+    }
+    function relLuminance({ r, g, b }) {
+      const [R, G, B] = [r, g, b].map((v) => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+    }
+    function contrastRatio(hexA, hexB) {
+      const lumA = relLuminance(hexToRgb(hexA)) + 0.05;
+      const lumB = relLuminance(hexToRgb(hexB)) + 0.05;
+      return lumA > lumB ? lumA / lumB : lumB / lumA;
+    }
+    function mixColors(rgbA, rgbB, ratio) {
+      return {
+        r: Math.round(rgbA.r * (1 - ratio) + rgbB.r * ratio),
+        g: Math.round(rgbA.g * (1 - ratio) + rgbB.g * ratio),
+        b: Math.round(rgbA.b * (1 - ratio) + rgbB.b * ratio),
+      };
+    }
+    function rgbaStr({ r, g, b }, a) {
+      return `rgba(${r}, ${g}, ${b}, ${a})`;
+    }
+
+    function replaceCssVar(blockText, varName, newValue) {
+      const re = new RegExp(`(--${varName}\\s*:)([^;]*)(;)`);
+      if (!re.test(blockText)) throw new Error(`CSS variable --${varName} not found`);
+      return blockText.replace(re, `$1 ${newValue}$3`);
+    }
+    function readCssVar(blockText, varName) {
+      const re = new RegExp(`--${varName}\\s*:\\s*([^;]+);`);
+      const m = blockText.match(re);
+      return m ? m[1].trim() : null;
+    }
+
+    function replaceGoogleFontsLink(fileText, newHref) {
+      const re = /<link href="https:\/\/fonts\.googleapis\.com\/css2\?[^"]*" rel="stylesheet" \/>/;
+      if (!re.test(fileText)) throw new Error("Google Fonts link not found in this file");
+      return fileText.replace(re, `<link href="${newHref}" rel="stylesheet" />`);
+    }
+
+    async function saveThemeBlock(mutateFn) {
+      const { text: freshText, sha } = await loadFileText("css/style.css");
+      const { inner, startIdx, endIdx } = extractMarkerBlock(freshText, "THEME", "css");
+      const newInner = mutateFn(inner);
+      const start = `/* ADMIN:THEME:START */`;
+      const end = `/* ADMIN:THEME:END */`;
+      const rebuilt = `${start}${newInner}${end}`;
+      const newText = freshText.slice(0, startIdx) + rebuilt + freshText.slice(endIdx);
+      const result = await ghPutFile("css/style.css", utf8ToBase64(newText), "Update theme via admin", sha);
+      fileCache["css/style.css"] = { sha: result.content.sha, text: newText };
+    }
+
+    function ghHeaders() {
+      return { Authorization: `token ${token}`, Accept: "application/vnd.github+json" };
+    }
+
+    async function ghGetFile(path) {
+      const res = await fetch(`${API}/repos/${owner}/${repo}/contents/${path}?ref=${branch}`, { headers: ghHeaders() });
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`GitHub API error (${res.status}) fetching ${path}`);
+      const data = await res.json();
+      return { sha: data.sha, base64: data.content.replace(/\n/g, "") };
+    }
+
+    async function ghPutFile(path, base64Content, message, sha) {
+      const body = { message, content: base64Content, branch };
+      if (sha) body.sha = sha;
+      const res = await fetch(`${API}/repos/${owner}/${repo}/contents/${path}`, {
+        method: "PUT",
+        headers: { ...ghHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `GitHub API error (${res.status}) saving ${path}`);
+      }
+      return res.json();
+    }
+
+    async function loadFileText(path) {
+      if (fileCache[path]) return fileCache[path];
+      const file = await ghGetFile(path);
+      if (!file) throw new Error(`${path} not found in repo`);
+      const text = base64ToUtf8(file.base64);
+      fileCache[path] = { sha: file.sha, text };
+      return fileCache[path];
+    }
+
+    function extractMarkerBlock(text, marker, style) {
+      const start = style === "css" ? `/* ADMIN:${marker}:START */` : `<!-- ADMIN:${marker}:START -->`;
+      const end = style === "css" ? `/* ADMIN:${marker}:END */` : `<!-- ADMIN:${marker}:END -->`;
+      const startIdx = text.indexOf(start);
+      const endIdx = text.indexOf(end);
+      if (startIdx === -1 || endIdx === -1) throw new Error(`Marker ${marker} not found`);
+      const inner = text.slice(startIdx + start.length, endIdx);
+      return { startIdx, endIdx: endIdx + end.length, inner };
+    }
+
+    function parseTags(inner) {
+      const re = /<(h1|p)[^>]*>([\s\S]*?)<\/\1>/g;
+      const tags = [];
+      let m;
+      while ((m = re.exec(inner)) !== null) {
+        tags.push({ tag: m[1], text: m[2] });
+      }
+      return tags;
+    }
+
+    function rebuildInner(tags) {
+      let pCount = 0;
+      return tags
+        .map((t) => `<${t.tag}>${escapeHtml(t.text)}</${t.tag}>`)
+        .join("\n        ");
+    }
+
+    async function buildDesignSection() {
+      const { text } = await loadFileText("css/style.css");
+      const { inner } = extractMarkerBlock(text, "THEME", "css");
+
+      const currentText = readCssVar(inner, "color-text");
+      const currentAccent = readCssVar(inner, "color-accent");
+      const currentBg = readCssVar(inner, "color-bg");
+      const currentDisplay = readCssVar(inner, "font-display");
+
+      const textInput = document.getElementById("design-text-color");
+      const accentInput = document.getElementById("design-accent-color");
+      const warning = document.getElementById("contrast-warning");
+      textInput.value = currentText;
+      accentInput.value = currentAccent;
+
+      function checkContrast() {
+        const ratio = contrastRatio(textInput.value, currentBg);
+        if (ratio < 4.5) {
+          warning.style.display = "block";
+          warning.textContent = `Heads up: that text color has fairly low contrast against your background (ratio ${ratio.toFixed(1)}:1 — aim for 4.5:1 or higher for readability).`;
+        } else {
+          warning.style.display = "none";
+        }
+      }
+      textInput.addEventListener("input", checkContrast);
+      checkContrast();
+
+      const select = document.getElementById("design-font-select");
+      select.innerHTML = FONT_PAIRINGS.map(
+        (f, i) => `<option value="${i}">${f.name}</option>`
+      ).join("");
+      const currentPairingIdx = FONT_PAIRINGS.findIndex((f) => f.display === currentDisplay);
+      if (currentPairingIdx > -1) select.value = currentPairingIdx;
+
+      document.getElementById("save-colors-btn").addEventListener("click", async () => {
+        const status = document.getElementById("colors-status");
+        status.textContent = "Saving...";
+        status.className = "field-status";
+        try {
+          const textHex = textInput.value;
+          const accentHex = accentInput.value;
+          const textRgb = hexToRgb(textHex);
+          const accentRgb = hexToRgb(accentHex);
+          const bgRgb = hexToRgb(currentBg);
+
+          const onAccent = relLuminance(accentRgb) > 0.5 ? "#201f1d" : "#f5efe8";
+          const accentSoft = rgbaStr(accentRgb, 0.16);
+          const line = rgbaStr(textRgb, 0.14);
+          const muted = mixColors(textRgb, bgRgb, 0.55);
+          const mutedHex = "#" + [muted.r, muted.g, muted.b].map((v) => v.toString(16).padStart(2, "0")).join("");
+
+          await saveThemeBlock((inner) => {
+            let updated = inner;
+            updated = replaceCssVar(updated, "color-text", textHex);
+            updated = replaceCssVar(updated, "color-accent", accentHex);
+            updated = replaceCssVar(updated, "color-on-accent", onAccent);
+            updated = replaceCssVar(updated, "color-accent-soft", accentSoft);
+            updated = replaceCssVar(updated, "color-line", line);
+            updated = replaceCssVar(updated, "color-text-muted", mutedHex);
+            updated = replaceCssVar(updated, "color-taupe", mutedHex);
+            return updated;
+          });
+
+          status.textContent = "Saved. Live in a minute or two.";
+          status.classList.add("status-ok");
+        } catch (e) {
+          status.textContent = "Error: " + e.message;
+          status.classList.add("status-err");
+        }
+      });
+
+      document.getElementById("save-font-btn").addEventListener("click", async () => {
+        const status = document.getElementById("font-status");
+        status.textContent = "Saving...";
+        status.className = "field-status";
+        try {
+          const pairing = FONT_PAIRINGS[Number(select.value)];
+
+          await saveThemeBlock((inner) => {
+            let updated = inner;
+            updated = replaceCssVar(updated, "font-display", pairing.display);
+            updated = replaceCssVar(updated, "font-body", pairing.body);
+            return updated;
+          });
+
+          for (const file of ["index.html", "about.html", "book.html"]) {
+            const { text: freshText, sha } = await loadFileText(file);
+            const newText = replaceGoogleFontsLink(freshText, pairing.href);
+            const result = await ghPutFile(file, utf8ToBase64(newText), `Update font to ${pairing.name} via admin`, sha);
+            fileCache[file] = { sha: result.content.sha, text: newText };
+          }
+
+          status.textContent = "Saved. Live in a minute or two.";
+          status.classList.add("status-ok");
+        } catch (e) {
+          status.textContent = "Error: " + e.message;
+          status.classList.add("status-err");
+        }
+      });
+    }
+
+    async function buildTextFields() {
+      const container = document.getElementById("text-fields");
+      container.innerHTML = "";
+
+      for (const field of FIELDS) {
+        const block = document.createElement("div");
+        block.className = "field-block";
+
+        try {
+          const { text } = await loadFileText(field.file);
+          const { inner } = extractMarkerBlock(text, field.marker);
+          const tags = parseTags(inner);
+
+          let fieldsHtml = `<label style="font-weight:600;color:var(--color-text);margin-bottom:0.5rem;">${field.label}</label>`;
+          tags.forEach((t, i) => {
+            const sublabel = t.tag === "h1" ? "Heading" : `Paragraph ${tags.slice(0, i + 1).filter((x) => x.tag === "p").length}`;
+            const inputTag = t.tag === "h1" ? "input" : "textarea";
+            const typeAttr = t.tag === "h1" ? 'type="text"' : "";
+            fieldsHtml += `
+              <div style="margin-top:0.5rem;">
+                <label>${sublabel}</label>
+                ${inputTag === "input"
+                  ? `<input ${typeAttr} data-idx="${i}" value="${t.text.replace(/"/g, "&quot;")}" />`
+                  : `<textarea data-idx="${i}">${t.text}</textarea>`}
+              </div>`;
+          });
+          fieldsHtml += `<button class="btn btn-small save-btn">Save</button><div class="field-status"></div>`;
+          block.innerHTML = fieldsHtml;
+
+          block.querySelector(".save-btn").addEventListener("click", async () => {
+            const status = block.querySelector(".field-status");
+            status.textContent = "Saving...";
+            status.className = "field-status";
+            try {
+              const inputs = block.querySelectorAll("[data-idx]");
+              const updatedTags = tags.map((t, i) => ({ ...t }));
+              inputs.forEach((el) => {
+                updatedTags[Number(el.dataset.idx)].text = el.value;
+              });
+
+              const { text: freshText, sha } = await loadFileText(field.file);
+              // re-locate the marker in case other fields in the same file already changed it
+              const { startIdx, endIdx } = extractMarkerBlock(freshText, field.marker);
+              const start = `<!-- ADMIN:${field.marker}:START -->`;
+              const end = `<!-- ADMIN:${field.marker}:END -->`;
+              const rebuilt = `${start}\n        ${rebuildInner(updatedTags)}\n        ${end}`;
+              const newText = freshText.slice(0, startIdx) + rebuilt + freshText.slice(endIdx);
+
+              const result = await ghPutFile(field.file, utf8ToBase64(newText), `Update ${field.label} via admin`, sha);
+              fileCache[field.file] = { sha: result.content.sha, text: newText };
+
+              status.textContent = "Saved. Live in a minute or two.";
+              status.classList.add("status-ok");
+            } catch (e) {
+              status.textContent = "Error: " + e.message;
+              status.classList.add("status-err");
+            }
+          });
+        } catch (e) {
+          block.innerHTML = `<p class="status-err">Couldn't load "${field.label}": ${e.message}</p>`;
+        }
+
+        container.appendChild(block);
+      }
+    }
+
+    function findImgTag(fileText, path) {
+      const re = new RegExp(`<img[^>]*src="${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"[^>]*/?>`);
+      const m = fileText.match(re);
+      if (!m) throw new Error(`<img> tag for ${path} not found`);
+      return { tag: m[0], index: m.index };
+    }
+    function readObjectPosition(imgTag) {
+      const m = imgTag.match(/object-position:\s*([\d.]+)%\s+([\d.]+)%/);
+      return m ? { x: Number(m[1]), y: Number(m[2]) } : { x: 50, y: 50 };
+    }
+    function setObjectPosition(imgTag, x, y) {
+      const styleValue = `object-position: ${x}% ${y}%;`;
+      if (/style="[^"]*"/.test(imgTag)) {
+        return imgTag.replace(/style="[^"]*"/, `style="${styleValue}"`);
+      }
+      return imgTag.replace("<img ", `<img style="${styleValue}" `);
+    }
+
+    async function buildPhotoGrid() {
+      const grid = document.getElementById("photo-grid");
+      grid.innerHTML = "";
+
+      for (const slot of PHOTO_SLOTS) {
+        const cell = document.createElement("div");
+        cell.className = "photo-slot";
+        const previewUrl = (bust) => `https://echocraftllc.com/${slot.path}?t=${bust}`;
+
+        let initialPos = { x: 50, y: 50 };
+        try {
+          const { text } = await loadFileText(slot.file);
+          const { tag } = findImgTag(text, slot.path);
+          initialPos = readObjectPosition(tag);
+        } catch (e) {
+          // slot not found in HTML yet, or file failed to load - default crop is fine
+        }
+
+        cell.innerHTML = `
+          <div class="slot-label">${slot.label}</div>
+          <img src="${previewUrl(Date.now())}" alt="${slot.label}" style="object-position: ${initialPos.x}% ${initialPos.y}%;" onerror="this.style.opacity=0.3" />
+          <input type="file" accept="image/*" />
+          <button class="btn btn-small upload-btn">Upload</button>
+          <div class="crop-controls">
+            <label>Horizontal <span class="crop-x-val">${initialPos.x}%</span></label>
+            <input type="range" min="0" max="100" value="${initialPos.x}" class="crop-x" />
+            <label>Vertical <span class="crop-y-val">${initialPos.y}%</span></label>
+            <input type="range" min="0" max="100" value="${initialPos.y}" class="crop-y" />
+            <button class="btn btn-small crop-save-btn" style="background: var(--color-bg-alt); color: var(--color-text);">Save crop</button>
+          </div>
+          <div class="photo-status"></div>
+        `;
+        const fileInput = cell.querySelector('input[type="file"]');
+        const status = cell.querySelector(".photo-status");
+        const img = cell.querySelector("img");
+        const cropX = cell.querySelector(".crop-x");
+        const cropY = cell.querySelector(".crop-y");
+        const cropXVal = cell.querySelector(".crop-x-val");
+        const cropYVal = cell.querySelector(".crop-y-val");
+
+        function updatePreviewPosition() {
+          img.style.objectPosition = `${cropX.value}% ${cropY.value}%`;
+          cropXVal.textContent = `${cropX.value}%`;
+          cropYVal.textContent = `${cropY.value}%`;
+        }
+        cropX.addEventListener("input", updatePreviewPosition);
+        cropY.addEventListener("input", updatePreviewPosition);
+
+        cell.querySelector(".crop-save-btn").addEventListener("click", async () => {
+          status.textContent = "Saving crop...";
+          status.className = "photo-status";
+          try {
+            const { text: freshText, sha } = await loadFileText(slot.file);
+            const { tag, index } = findImgTag(freshText, slot.path);
+            const newTag = setObjectPosition(tag, cropX.value, cropY.value);
+            const newText = freshText.slice(0, index) + newTag + freshText.slice(index + tag.length);
+            const result = await ghPutFile(slot.file, utf8ToBase64(newText), `Adjust crop for ${slot.label} via admin`, sha);
+            fileCache[slot.file] = { sha: result.content.sha, text: newText };
+            status.textContent = "Crop saved. Live in a minute or two.";
+            status.classList.add("status-ok");
+          } catch (e) {
+            status.textContent = "Error: " + e.message;
+            status.classList.add("status-err");
+          }
+        });
+
+        cell.querySelector(".upload-btn").addEventListener("click", async () => {
+          const file = fileInput.files[0];
+          if (!file) {
+            status.textContent = "Pick a file first.";
+            status.className = "photo-status status-err";
+            return;
+          }
+          if (file.size > 8 * 1024 * 1024) {
+            status.textContent = "That file's quite large — consider resizing it first for a faster site.";
+            status.className = "photo-status status-err";
+          }
+          status.textContent = "Uploading...";
+          status.className = "photo-status";
+          try {
+            const base64 = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result.split(",")[1]);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+            const existing = await ghGetFile(slot.path);
+            const result = await ghPutFile(
+              slot.path,
+              base64,
+              `Update ${slot.label} via admin`,
+              existing ? existing.sha : undefined
+            );
+            status.textContent = "Saved. Live in a minute or two.";
+            status.classList.add("status-ok");
+            img.src = previewUrl(Date.now());
+          } catch (e) {
+            status.textContent = "Error: " + e.message;
+            status.classList.add("status-err");
+          }
+        });
+
+        grid.appendChild(cell);
+      }
+    }
+
+    document.getElementById("connect-btn").addEventListener("click", async () => {
+      owner = document.getElementById("gh-owner").value.trim();
+      repo = document.getElementById("gh-repo").value.trim();
+      branch = document.getElementById("gh-branch").value.trim() || "main";
+      token = document.getElementById("gh-token").value.trim();
+      const status = document.getElementById("connect-status");
+
+      if (!owner || !repo || !token) {
+        status.textContent = "Fill in owner, repo, and token.";
+        status.className = "status-err";
+        return;
+      }
+
+      status.textContent = "Connecting...";
+      status.className = "";
+      try {
+        const res = await fetch(`${API}/repos/${owner}/${repo}`, { headers: ghHeaders() });
+        if (!res.ok) throw new Error(`Couldn't access ${owner}/${repo} (${res.status}). Check the token's scope and repo name.`);
+
+        localStorage.setItem("echoCraftAdmin", JSON.stringify({ owner, repo, branch, token }));
+        status.textContent = "Connected.";
+        status.classList.add("status-ok");
+
+        document.getElementById("app-sections").style.display = "block";
+        await buildDesignSection();
+        await buildTextFields();
+        await buildPhotoGrid();
+      } catch (e) {
+        status.textContent = e.message;
+        status.classList.add("status-err");
+      }
+    });
+
+    document.getElementById("forget-btn").addEventListener("click", () => {
+      localStorage.removeItem("echoCraftAdmin");
+      document.getElementById("gh-token").value = "";
+      document.getElementById("app-sections").style.display = "none";
+      document.getElementById("connect-status").textContent = "Token forgotten.";
+      document.getElementById("connect-status").className = "";
+    });
+
+    // Restore a saved session, if any (token stays local to this browser only)
+    (function restore() {
+      const saved = localStorage.getItem("echoCraftAdmin");
+      if (!saved) return;
+      try {
+        const data = JSON.parse(saved);
+        document.getElementById("gh-owner").value = data.owner;
+        document.getElementById("gh-repo").value = data.repo;
+        document.getElementById("gh-branch").value = data.branch;
+        document.getElementById("gh-token").value = data.token;
+      } catch (e) {}
+    })();
+  </script>
+
+  </div>
+
+</body>
+</html>
