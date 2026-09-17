@@ -2,6 +2,7 @@
    Echo Craft — design tokens
    ============================================================ */
 :root {
+  /* ADMIN:THEME:START */
   --color-bg: #f5efe8;
   --color-bg-alt: #ece2d3;
   --color-surface: #ffffff;
@@ -15,6 +16,7 @@
 
   --font-display: "Instrument Serif", serif;
   --font-body: "Instrument Sans", sans-serif;
+  /* ADMIN:THEME:END */
 
   --measure: 62ch;
   --gap-section: clamp(3.5rem, 8vw, 7rem);
