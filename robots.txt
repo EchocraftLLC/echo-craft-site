@@ -1,0 +1,2 @@
+User-agent: *
+Disallow: /admin-ee92c785.html
