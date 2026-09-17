@@ -126,6 +126,10 @@
       <p class="hint" style="margin-bottom: 1rem;">Changes apply site-wide. The preview swatches update instantly; nothing saves until you click a Save button.</p>
       <div class="admin-row">
         <div>
+          <label for="design-bg-color">Background color</label>
+          <input type="color" id="design-bg-color" />
+        </div>
+        <div>
           <label for="design-text-color">Text color</label>
           <input type="color" id="design-text-color" />
         </div>
@@ -356,19 +360,22 @@
     }
 
     function parseTags(inner) {
-      const re = /<(h1|p)[^>]*>([\s\S]*?)<\/\1>/g;
+      const re = /<(h1|p)([^>]*)>([\s\S]*?)<\/\1>/g;
       const tags = [];
       let m;
       while ((m = re.exec(inner)) !== null) {
-        tags.push({ tag: m[1], text: m[2] });
+        const colorMatch = m[2].match(/color:\s*(#[0-9a-fA-F]{3,6})/);
+        tags.push({ tag: m[1], text: m[3], color: colorMatch ? colorMatch[1] : null });
       }
       return tags;
     }
 
-    function rebuildInner(tags) {
-      let pCount = 0;
+    function rebuildInner(tags, blockColor) {
       return tags
-        .map((t) => `<${t.tag}>${escapeHtml(t.text)}</${t.tag}>`)
+        .map((t) => {
+          const style = blockColor ? ` style="color: ${blockColor};"` : "";
+          return `<${t.tag}${style}>${escapeHtml(t.text)}</${t.tag}>`;
+        })
         .join("\n        ");
     }
 
@@ -381,14 +388,16 @@
       const currentBg = readCssVar(inner, "color-bg");
       const currentDisplay = readCssVar(inner, "font-display");
 
+      const bgInput = document.getElementById("design-bg-color");
       const textInput = document.getElementById("design-text-color");
       const accentInput = document.getElementById("design-accent-color");
       const warning = document.getElementById("contrast-warning");
+      bgInput.value = currentBg;
       textInput.value = currentText;
       accentInput.value = currentAccent;
 
       function checkContrast() {
-        const ratio = contrastRatio(textInput.value, currentBg);
+        const ratio = contrastRatio(textInput.value, bgInput.value);
         if (ratio < 4.5) {
           warning.style.display = "block";
           warning.textContent = `Heads up: that text color has fairly low contrast against your background (ratio ${ratio.toFixed(1)}:1 — aim for 4.5:1 or higher for readability).`;
@@ -397,6 +406,7 @@
         }
       }
       textInput.addEventListener("input", checkContrast);
+      bgInput.addEventListener("input", checkContrast);
       checkContrast();
 
       const select = document.getElementById("design-font-select");
@@ -406,25 +416,41 @@
       const currentPairingIdx = FONT_PAIRINGS.findIndex((f) => f.display === currentDisplay);
       if (currentPairingIdx > -1) select.value = currentPairingIdx;
 
+      function hexOf(rgb) {
+        return "#" + [rgb.r, rgb.g, rgb.b].map((v) => v.toString(16).padStart(2, "0")).join("");
+      }
+
       document.getElementById("save-colors-btn").addEventListener("click", async () => {
         const status = document.getElementById("colors-status");
         status.textContent = "Saving...";
         status.className = "field-status";
         try {
+          const bgHex = bgInput.value;
           const textHex = textInput.value;
           const accentHex = accentInput.value;
           const textRgb = hexToRgb(textHex);
           const accentRgb = hexToRgb(accentHex);
-          const bgRgb = hexToRgb(currentBg);
+          const bgRgb = hexToRgb(bgHex);
+          const bgIsLight = relLuminance(bgRgb) > 0.5;
 
           const onAccent = relLuminance(accentRgb) > 0.5 ? "#201f1d" : "#f5efe8";
           const accentSoft = rgbaStr(accentRgb, 0.16);
           const line = rgbaStr(textRgb, 0.14);
           const muted = mixColors(textRgb, bgRgb, 0.55);
-          const mutedHex = "#" + [muted.r, muted.g, muted.b].map((v) => v.toString(16).padStart(2, "0")).join("");
+          const mutedHex = hexOf(muted);
+
+          // bg-alt: a subtly deeper/lighter shade of the background, for section
+          // separation and placeholder blocks. bg-surface: a card/panel tone that
+          // lifts above the background (white on light themes, a lightened
+          // background tone on dark ones).
+          const bgAlt = hexOf(mixColors(bgRgb, bgIsLight ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 }, 0.06));
+          const surface = bgIsLight ? "#ffffff" : hexOf(mixColors(bgRgb, { r: 255, g: 255, b: 255 }, 0.12));
 
           await saveThemeBlock((inner) => {
             let updated = inner;
+            updated = replaceCssVar(updated, "color-bg", bgHex);
+            updated = replaceCssVar(updated, "color-bg-alt", bgAlt);
+            updated = replaceCssVar(updated, "color-surface", surface);
             updated = replaceCssVar(updated, "color-text", textHex);
             updated = replaceCssVar(updated, "color-accent", accentHex);
             updated = replaceCssVar(updated, "color-on-accent", onAccent);
@@ -477,6 +503,15 @@
       const container = document.getElementById("text-fields");
       container.innerHTML = "";
 
+      let globalTextColor = "#201f1d";
+      try {
+        const { text: cssText } = await loadFileText("css/style.css");
+        const { inner: themeInner } = extractMarkerBlock(cssText, "THEME", "css");
+        globalTextColor = readCssVar(themeInner, "color-text") || globalTextColor;
+      } catch (e) {
+        // fall back to default above if theme can't be read for some reason
+      }
+
       for (const field of FIELDS) {
         const block = document.createElement("div");
         block.className = "field-block";
@@ -485,6 +520,7 @@
           const { text } = await loadFileText(field.file);
           const { inner } = extractMarkerBlock(text, field.marker);
           const tags = parseTags(inner);
+          const currentColor = tags.find((t) => t.color)?.color || globalTextColor;
 
           let fieldsHtml = `<label style="font-weight:600;color:var(--color-text);margin-bottom:0.5rem;">${field.label}</label>`;
           tags.forEach((t, i) => {
@@ -499,7 +535,12 @@
                   : `<textarea data-idx="${i}">${t.text}</textarea>`}
               </div>`;
           });
-          fieldsHtml += `<button class="btn btn-small save-btn">Save</button><div class="field-status"></div>`;
+          fieldsHtml += `
+            <div style="margin-top:0.7rem;">
+              <label>Text color for this section</label>
+              <input type="color" class="field-color" value="${currentColor}" style="max-width: 200px;" />
+            </div>`;
+          fieldsHtml += `<button class="btn btn-small save-btn" style="margin-top:0.6rem;">Save</button><div class="field-status"></div>`;
           block.innerHTML = fieldsHtml;
 
           block.querySelector(".save-btn").addEventListener("click", async () => {
@@ -512,13 +553,14 @@
               inputs.forEach((el) => {
                 updatedTags[Number(el.dataset.idx)].text = el.value;
               });
+              const chosenColor = block.querySelector(".field-color").value;
 
               const { text: freshText, sha } = await loadFileText(field.file);
               // re-locate the marker in case other fields in the same file already changed it
               const { startIdx, endIdx } = extractMarkerBlock(freshText, field.marker);
               const start = `<!-- ADMIN:${field.marker}:START -->`;
               const end = `<!-- ADMIN:${field.marker}:END -->`;
-              const rebuilt = `${start}\n        ${rebuildInner(updatedTags)}\n        ${end}`;
+              const rebuilt = `${start}\n        ${rebuildInner(updatedTags, chosenColor)}\n        ${end}`;
               const newText = freshText.slice(0, startIdx) + rebuilt + freshText.slice(endIdx);
 
               const result = await ghPutFile(field.file, utf8ToBase64(newText), `Update ${field.label} via admin`, sha);
