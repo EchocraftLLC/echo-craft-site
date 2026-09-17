@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Echo Craft — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" type="image/png" href="images/logo-icon.png" />
+  <style>
+    body { padding: clamp(1.5rem, 4vw, 3rem); max-width: 900px; margin: 0 auto; }
+    .admin-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-line);
+      border-radius: 10px;
+      padding: clamp(1.25rem, 3vw, 2rem);
+      margin-bottom: 1.5rem;
+    }
+    .admin-card h2 {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 1.5rem;
+      margin: 0 0 1rem;
+    }
+    .admin-row { display: grid; gap: 0.9rem; }
+    .admin-row label { font-size: 0.82rem; color: var(--color-text-muted); display: block; margin-bottom: 0.3rem; }
+    .admin-row input[type="text"],
+    .admin-row input[type="password"],
+    .admin-row textarea {
+      width: 100%;
+      background: var(--color-bg);
+      border: 1px solid var(--color-line);
+      padding: 0.65rem 0.8rem;
+      color: var(--color-text);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+    }
+    .admin-row textarea { min-height: 70px; resize: vertical; }
+    .admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1.25rem; }
+    .photo-slot { text-align: center; }
+    .photo-slot img {
+      width: 100%;
+      aspect-ratio: 4/5;
+      object-fit: cover;
+      background: var(--color-bg-alt);
+      border: 1px solid var(--color-line);
+      margin-bottom: 0.5rem;
+    }
+    .photo-slot .slot-label { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.4rem; }
+    .photo-slot input[type="file"] { font-size: 0.78rem; width: 100%; margin-bottom: 0.4rem; }
+    .field-block { border-top: 1px solid var(--color-line); padding-top: 1.1rem; margin-top: 1.1rem; }
+    .field-block:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+    .field-block .save-btn { margin-top: 0.7rem; }
+    #connect-status, .field-status, .photo-status { font-size: 0.82rem; margin-top: 0.5rem; }
+    .status-ok { color: #2f6b3f; }
+    .status-err { color: #b23a2a; }
+    .hint { font-size: 0.8rem; color: var(--color-text-muted); }
+    #app-sections { display: none; }
+    .btn-small { padding: 0.55rem 1.1rem; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+  <p style="margin-bottom: 1.5rem;"><a href="index.html" style="color: var(--color-text-muted); font-size: 0.85rem;">&larr; Back to site</a></p>
+
+  <h1 style="font-family: var(--font-display); font-style: italic; font-size: 2.2rem; margin-bottom: 0.5rem;">Echo Craft admin</h1>
+  <p class="hint" style="margin-bottom: 1.5rem;">
+    Edits here save by committing directly to your GitHub repo. Nothing is stored anywhere except your own browser.
+    This page isn't linked from your site's navigation — only people with this exact URL can find it (though only a
+    valid token can actually save anything).
+  </p>
+
+  <div class="admin-card">
+    <h2>Connect</h2>
+    <div class="admin-row">
+      <div>
+        <label for="gh-owner">GitHub owner (org or username)</label>
+        <input type="text" id="gh-owner" value="EchocraftLLC" />
+      </div>
+      <div>
+        <label for="gh-repo">Repository name</label>
+        <input type="text" id="gh-repo" value="echo-craft-site" />
+      </div>
+      <div>
+        <label for="gh-branch">Branch</label>
+        <input type="text" id="gh-branch" value="main" />
+      </div>
+      <div>
+        <label for="gh-token">Personal access token</label>
+        <input type="password" id="gh-token" placeholder="ghp_..." />
+        <p class="hint">
+          Generate one at github.com &rarr; Settings &rarr; Developer settings &rarr; Personal access tokens.
+          Scope it to just this one repo with read/write access to "Contents." Stored only in this browser's
+          local storage &mdash; use "Forget token" below when you're done on a shared computer.
+        </p>
+      </div>
+      <div>
+        <button class="btn btn-small" id="connect-btn">Connect</button>
+        <button class="btn btn-small" id="forget-btn" style="background: var(--color-bg-alt); color: var(--color-text); margin-left: 0.5rem;">Forget token</button>
+        <div id="connect-status"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-sections">
+
+    <div class="admin-card">
+      <h2>Page text</h2>
+      <div id="text-fields"></div>
+    </div>
+
+    <div class="admin-card">
+      <h2>Photos</h2>
+      <p class="hint" style="margin-bottom: 1rem;">Pick a photo to replace any slot. It uploads and commits immediately.</p>
+      <div class="admin-grid" id="photo-grid"></div>
+    </div>
+
+  </div>
+
+  <script>
+    const API = "https://api.github.com";
+
+    const FIELDS = [
+      { file: "index.html", marker: "HERO_KICKER", label: "Hero greeting line" },
+      { file: "index.html", marker: "HERO_TAGLINE", label: "Hero tagline" },
+      { file: "index.html", marker: "HERO_LOCATION", label: "Hero location line" },
+      { file: "index.html", marker: "HOME_INTRO", label: "Home intro statement" },
+      { file: "about.html", marker: "ABOUT_BIO", label: "About page bio" },
+      { file: "book.html", marker: "BOOK_INTRO", label: "Book page intro" },
+    ];
+
+    const PHOTO_SLOTS = [
+      { path: "images/hero.jpg", label: "Hero (home banner)" },
+      { path: "images/about/portrait.jpg", label: "About page portrait" },
+      { path: "images/portrait/portrait-01.jpg", label: "Portrait 1" },
+      { path: "images/portrait/portrait-02.jpg", label: "Portrait 2" },
+      { path: "images/portrait/portrait-03.jpg", label: "Portrait 3" },
+      { path: "images/portrait/portrait-04.jpg", label: "Portrait 4" },
+      { path: "images/portrait/portrait-05.jpg", label: "Portrait 5" },
+      { path: "images/portrait/portrait-06.jpg", label: "Portrait 6" },
+      { path: "images/fashion/fashion-01.jpg", label: "Fashion 1" },
+      { path: "images/fashion/fashion-02.jpg", label: "Fashion 2" },
+      { path: "images/fashion/fashion-03.jpg", label: "Fashion 3" },
+      { path: "images/fashion/fashion-04.jpg", label: "Fashion 4" },
+      { path: "images/fashion/fashion-05.jpg", label: "Fashion 5" },
+      { path: "images/fashion/fashion-06.jpg", label: "Fashion 6" },
+      { path: "images/event/event-01.jpg", label: "Event 1" },
+      { path: "images/event/event-02.jpg", label: "Event 2" },
+      { path: "images/event/event-03.jpg", label: "Event 3" },
+      { path: "images/event/event-04.jpg", label: "Event 4" },
+      { path: "images/event/event-05.jpg", label: "Event 5" },
+      { path: "images/event/event-06.jpg", label: "Event 6" },
+    ];
+
+    let owner = "", repo = "", branch = "main", token = "";
+    const fileCache = {}; // path -> { sha, text }
+
+    function utf8ToBase64(str) {
+      const bytes = new TextEncoder().encode(str);
+      let binary = "";
+      bytes.forEach((b) => (binary += String.fromCharCode(b)));
+      return btoa(binary);
+    }
+    function base64ToUtf8(b64) {
+      const binary = atob(b64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return new TextDecoder().decode(bytes);
+    }
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function ghHeaders() {
+      return { Authorization: `token ${token}`, Accept: "application/vnd.github+json" };
+    }
+
+    async function ghGetFile(path) {
+      const res = await fetch(`${API}/repos/${owner}/${repo}/contents/${path}?ref=${branch}`, { headers: ghHeaders() });
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`GitHub API error (${res.status}) fetching ${path}`);
+      const data = await res.json();
+      return { sha: data.sha, base64: data.content.replace(/\n/g, "") };
+    }
+
+    async function ghPutFile(path, base64Content, message, sha) {
+      const body = { message, content: base64Content, branch };
+      if (sha) body.sha = sha;
+      const res = await fetch(`${API}/repos/${owner}/${repo}/contents/${path}`, {
+        method: "PUT",
+        headers: { ...ghHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `GitHub API error (${res.status}) saving ${path}`);
+      }
+      return res.json();
+    }
+
+    async function loadFileText(path) {
+      if (fileCache[path]) return fileCache[path];
+      const file = await ghGetFile(path);
+      if (!file) throw new Error(`${path} not found in repo`);
+      const text = base64ToUtf8(file.base64);
+      fileCache[path] = { sha: file.sha, text };
+      return fileCache[path];
+    }
+
+    function extractMarkerBlock(text, marker) {
+      const start = `<!-- ADMIN:${marker}:START -->`;
+      const end = `<!-- ADMIN:${marker}:END -->`;
+      const startIdx = text.indexOf(start);
+      const endIdx = text.indexOf(end);
+      if (startIdx === -1 || endIdx === -1) throw new Error(`Marker ${marker} not found`);
+      const inner = text.slice(startIdx + start.length, endIdx);
+      return { startIdx, endIdx: endIdx + end.length, inner };
+    }
+
+    function parseTags(inner) {
+      const re = /<(h1|p)[^>]*>([\s\S]*?)<\/\1>/g;
+      const tags = [];
+      let m;
+      while ((m = re.exec(inner)) !== null) {
+        tags.push({ tag: m[1], text: m[2] });
+      }
+      return tags;
+    }
+
+    function rebuildInner(tags) {
+      let pCount = 0;
+      return tags
+        .map((t) => `<${t.tag}>${escapeHtml(t.text)}</${t.tag}>`)
+        .join("\n        ");
+    }
+
+    async function buildTextFields() {
+      const container = document.getElementById("text-fields");
+      container.innerHTML = "";
+
+      for (const field of FIELDS) {
+        const block = document.createElement("div");
+        block.className = "field-block";
+
+        try {
+          const { text } = await loadFileText(field.file);
+          const { inner } = extractMarkerBlock(text, field.marker);
+          const tags = parseTags(inner);
+
+          let fieldsHtml = `<label style="font-weight:600;color:var(--color-text);margin-bottom:0.5rem;">${field.label}</label>`;
+          tags.forEach((t, i) => {
+            const sublabel = t.tag === "h1" ? "Heading" : `Paragraph ${tags.slice(0, i + 1).filter((x) => x.tag === "p").length}`;
+            const inputTag = t.tag === "h1" ? "input" : "textarea";
+            const typeAttr = t.tag === "h1" ? 'type="text"' : "";
+            fieldsHtml += `
+              <div style="margin-top:0.5rem;">
+                <label>${sublabel}</label>
+                ${inputTag === "input"
+                  ? `<input ${typeAttr} data-idx="${i}" value="${t.text.replace(/"/g, "&quot;")}" />`
+                  : `<textarea data-idx="${i}">${t.text}</textarea>`}
+              </div>`;
+          });
+          fieldsHtml += `<button class="btn btn-small save-btn">Save</button><div class="field-status"></div>`;
+          block.innerHTML = fieldsHtml;
+
+          block.querySelector(".save-btn").addEventListener("click", async () => {
+            const status = block.querySelector(".field-status");
+            status.textContent = "Saving...";
+            status.className = "field-status";
+            try {
+              const inputs = block.querySelectorAll("[data-idx]");
+              const updatedTags = tags.map((t, i) => ({ ...t }));
+              inputs.forEach((el) => {
+                updatedTags[Number(el.dataset.idx)].text = el.value;
+              });
+
+              const { text: freshText, sha } = await loadFileText(field.file);
+              // re-locate the marker in case other fields in the same file already changed it
+              const { startIdx, endIdx } = extractMarkerBlock(freshText, field.marker);
+              const start = `<!-- ADMIN:${field.marker}:START -->`;
+              const end = `<!-- ADMIN:${field.marker}:END -->`;
+              const rebuilt = `${start}\n        ${rebuildInner(updatedTags)}\n        ${end}`;
+              const newText = freshText.slice(0, startIdx) + rebuilt + freshText.slice(endIdx);
+
+              const result = await ghPutFile(field.file, utf8ToBase64(newText), `Update ${field.label} via admin`, sha);
+              fileCache[field.file] = { sha: result.content.sha, text: newText };
+
+              status.textContent = "Saved. Live in a minute or two.";
+              status.classList.add("status-ok");
+            } catch (e) {
+              status.textContent = "Error: " + e.message;
+              status.classList.add("status-err");
+            }
+          });
+        } catch (e) {
+          block.innerHTML = `<p class="status-err">Couldn't load "${field.label}": ${e.message}</p>`;
+        }
+
+        container.appendChild(block);
+      }
+    }
+
+    function buildPhotoGrid() {
+      const grid = document.getElementById("photo-grid");
+      grid.innerHTML = "";
+
+      PHOTO_SLOTS.forEach((slot) => {
+        const cell = document.createElement("div");
+        cell.className = "photo-slot";
+        const previewUrl = (bust) => `https://echocraftllc.com/${slot.path}?t=${bust}`;
+        cell.innerHTML = `
+          <div class="slot-label">${slot.label}</div>
+          <img src="${previewUrl(Date.now())}" alt="${slot.label}" onerror="this.style.opacity=0.3" />
+          <input type="file" accept="image/*" />
+          <button class="btn btn-small upload-btn">Upload</button>
+          <div class="photo-status"></div>
+        `;
+        const fileInput = cell.querySelector('input[type="file"]');
+        const status = cell.querySelector(".photo-status");
+        const img = cell.querySelector("img");
+
+        cell.querySelector(".upload-btn").addEventListener("click", async () => {
+          const file = fileInput.files[0];
+          if (!file) {
+            status.textContent = "Pick a file first.";
+            status.className = "photo-status status-err";
+            return;
+          }
+          if (file.size > 8 * 1024 * 1024) {
+            status.textContent = "That file's quite large — consider resizing it first for a faster site.";
+            status.className = "photo-status status-err";
+          }
+          status.textContent = "Uploading...";
+          status.className = "photo-status";
+          try {
+            const base64 = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result.split(",")[1]);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+            const existing = await ghGetFile(slot.path);
+            const result = await ghPutFile(
+              slot.path,
+              base64,
+              `Update ${slot.label} via admin`,
+              existing ? existing.sha : undefined
+            );
+            status.textContent = "Saved. Live in a minute or two.";
+            status.classList.add("status-ok");
+            img.src = previewUrl(Date.now());
+          } catch (e) {
+            status.textContent = "Error: " + e.message;
+            status.classList.add("status-err");
+          }
+        });
+
+        grid.appendChild(cell);
+      });
+    }
+
+    document.getElementById("connect-btn").addEventListener("click", async () => {
+      owner = document.getElementById("gh-owner").value.trim();
+      repo = document.getElementById("gh-repo").value.trim();
+      branch = document.getElementById("gh-branch").value.trim() || "main";
+      token = document.getElementById("gh-token").value.trim();
+      const status = document.getElementById("connect-status");
+
+      if (!owner || !repo || !token) {
+        status.textContent = "Fill in owner, repo, and token.";
+        status.className = "status-err";
+        return;
+      }
+
+      status.textContent = "Connecting...";
+      status.className = "";
+      try {
+        const res = await fetch(`${API}/repos/${owner}/${repo}`, { headers: ghHeaders() });
+        if (!res.ok) throw new Error(`Couldn't access ${owner}/${repo} (${res.status}). Check the token's scope and repo name.`);
+
+        localStorage.setItem("echoCraftAdmin", JSON.stringify({ owner, repo, branch, token }));
+        status.textContent = "Connected.";
+        status.classList.add("status-ok");
+
+        document.getElementById("app-sections").style.display = "block";
+        await buildTextFields();
+        buildPhotoGrid();
+      } catch (e) {
+        status.textContent = e.message;
+        status.classList.add("status-err");
+      }
+    });
+
+    document.getElementById("forget-btn").addEventListener("click", () => {
+      localStorage.removeItem("echoCraftAdmin");
+      document.getElementById("gh-token").value = "";
+      document.getElementById("app-sections").style.display = "none";
+      document.getElementById("connect-status").textContent = "Token forgotten.";
+      document.getElementById("connect-status").className = "";
+    });
+
+    // Restore a saved session, if any (token stays local to this browser only)
+    (function restore() {
+      const saved = localStorage.getItem("echoCraftAdmin");
+      if (!saved) return;
+      try {
+        const data = JSON.parse(saved);
+        document.getElementById("gh-owner").value = data.owner;
+        document.getElementById("gh-repo").value = data.repo;
+        document.getElementById("gh-branch").value = data.branch;
+        document.getElementById("gh-token").value = data.token;
+      } catch (e) {}
+    })();
+  </script>
+
+</body>
+</html>
