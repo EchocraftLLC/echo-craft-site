@@ -3,16 +3,16 @@
    ============================================================ */
 :root {
   /* ADMIN:THEME:START */
-  --color-bg: #f5efe8;
-  --color-bg-alt: #ece2d3;
+  --color-bg: #f0f1ea;
+  --color-bg-alt: #e2e3dc;
   --color-surface: #ffffff;
-  --color-text: #201f1d;
-  --color-text-muted: #8c877d;
-  --color-accent: #201f1d;
+  --color-text: #26301f;
+  --color-text-muted: #959a8f;
+  --color-accent: #5b6f4f;
   --color-on-accent: #f5efe8;
-  --color-taupe: #8c877d;
-  --color-accent-soft: rgba(140, 135, 125, 0.16);
-  --color-line: rgba(32, 31, 29, 0.14);
+  --color-taupe: #959a8f;
+  --color-accent-soft: rgba(91, 111, 79, 0.16);
+  --color-line: rgba(38, 48, 31, 0.14);
 
   --font-display: "Playfair Display", serif;
   --font-body: "Inter", sans-serif;
