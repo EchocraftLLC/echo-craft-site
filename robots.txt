@@ -1,2 +1,4 @@
 User-agent: *
 Disallow: /admin-ee92c785.html
+
+Sitemap: https://echocraftllc.com/sitemap.xml
