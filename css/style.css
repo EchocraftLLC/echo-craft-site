@@ -4,15 +4,15 @@
 :root {
   /* ADMIN:THEME:START */
   --color-bg: #f5efe8;
-  --color-bg-alt: #e6e1da;
+  --color-bg-alt: #ece2d3;
   --color-surface: #ffffff;
-  --color-text: #2b2620;
-  --color-text-muted: #9a958e;
-  --color-accent: #bd7a37;
+  --color-text: #201f1d;
+  --color-text-muted: #8c877d;
+  --color-accent: #201f1d;
   --color-on-accent: #f5efe8;
-  --color-taupe: #9a958e;
-  --color-accent-soft: rgba(189, 122, 55, 0.16);
-  --color-line: rgba(43, 38, 32, 0.14);
+  --color-taupe: #8c877d;
+  --color-accent-soft: rgba(140, 135, 125, 0.16);
+  --color-line: rgba(32, 31, 29, 0.14);
 
   --font-display: "Instrument Serif", serif;
   --font-body: "Instrument Sans", sans-serif;
@@ -494,6 +494,25 @@ input, textarea, select { font: inherit; color: inherit; }
   color: var(--color-text-muted);
   font-size: 0.85rem;
 }
+
+.faq-list {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 700px;
+}
+.faq-item {
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--color-line);
+}
+.faq-item:last-child { border-bottom: none; padding-bottom: 0; }
+.faq-question {
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+.faq-answer {
+  color: var(--color-text-muted);
+}
+
 .testimonials {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
