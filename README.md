@@ -1,4 +1,4 @@
-# Echo Craft site
+# Echocraft site
 
 Static site for echocraftllc.com — plain HTML/CSS/JS, no build step.
 
