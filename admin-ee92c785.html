@@ -449,17 +449,30 @@
       const tags = [];
       let m;
       while ((m = re.exec(inner)) !== null) {
-        const colorMatch = m[2].match(/color:\s*(#[0-9a-fA-F]{3,6})/);
-        tags.push({ tag: m[1], text: m[3], color: colorMatch ? colorMatch[1] : null });
+        const attrs = m[2];
+        const colorMatch = attrs.match(/color:\s*(#[0-9a-fA-F]{3,6})/);
+        const sizeMatch = attrs.match(/font-size:\s*([\d.]+em)/);
+        const classMatch = attrs.match(/class="([^"]*)"/);
+        tags.push({
+          tag: m[1],
+          text: m[3],
+          color: colorMatch ? colorMatch[1] : null,
+          fontSize: sizeMatch ? sizeMatch[1] : null,
+          className: classMatch ? classMatch[1] : null,
+        });
       }
       return tags;
     }
 
-    function rebuildInner(tags, blockColor) {
+    function rebuildInner(tags, blockColor, blockSize) {
       return tags
         .map((t) => {
-          const style = blockColor ? ` style="color: ${blockColor};"` : "";
-          return `<${t.tag}${style}>${escapeHtml(t.text)}</${t.tag}>`;
+          const classAttr = t.className ? ` class="${t.className}"` : "";
+          const styleParts = [];
+          if (blockColor) styleParts.push(`color: ${blockColor};`);
+          if (blockSize) styleParts.push(`font-size: ${blockSize};`);
+          const style = styleParts.length ? ` style="${styleParts.join(" ")}"` : "";
+          return `<${t.tag}${classAttr}${style}>${escapeHtml(t.text)}</${t.tag}>`;
         })
         .join("\n        ");
     }
@@ -650,6 +663,7 @@
           const { inner } = extractMarkerBlock(text, field.marker);
           const tags = parseTags(inner);
           const currentColor = tags.find((t) => t.color)?.color || globalTextColor;
+          const currentSize = tags.find((t) => t.fontSize)?.fontSize || "";
 
           let fieldsHtml = `<label style="font-weight:600;color:var(--color-text);margin-bottom:0.5rem;">${field.label}</label>`;
           tags.forEach((t, i) => {
@@ -665,9 +679,22 @@
               </div>`;
           });
           fieldsHtml += `
-            <div style="margin-top:0.7rem;">
-              <label>Text color for this section</label>
-              <input type="color" class="field-color" value="${currentColor}" style="max-width: 200px;" />
+            <div style="margin-top:0.7rem; display:flex; gap:1rem; flex-wrap:wrap;">
+              <div>
+                <label>Text color for this section</label>
+                <input type="color" class="field-color" value="${currentColor}" style="max-width: 200px;" />
+              </div>
+              <div>
+                <label>Text size for this section</label>
+                <select class="field-size" style="padding:0.65rem 0.8rem; background: var(--color-bg); border:1px solid var(--color-line); color: var(--color-text);">
+                  <option value="">Default (site style)</option>
+                  <option value="0.75em">Smaller</option>
+                  <option value="0.9em">Slightly smaller</option>
+                  <option value="1.15em">Slightly larger</option>
+                  <option value="1.4em">Larger</option>
+                  <option value="1.75em">Much larger</option>
+                </select>
+              </div>
             </div>
             <div style="margin-top:0.7rem;">
               <label>Preview</label>
@@ -678,19 +705,23 @@
 
           const previewEl = block.querySelector(".field-preview");
           const colorInput = block.querySelector(".field-color");
+          const sizeInput = block.querySelector(".field-size");
+          sizeInput.value = currentSize;
 
           function renderPreview() {
             const inputs = block.querySelectorAll("[data-idx]");
             const color = colorInput.value;
+            const sizeMultiplier = sizeInput.value ? parseFloat(sizeInput.value) : 1;
             const html = tags
               .map((t, i) => {
                 const input = block.querySelector(`[data-idx="${i}"]`);
                 const value = input ? input.value : t.text;
                 const escaped = value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                const baseSize = t.tag === "h1" ? 1.6 : 1;
                 const style =
                   t.tag === "h1"
-                    ? `font-family: var(--font-display); font-size: 1.6rem; font-weight: 400; color: ${color};`
-                    : `font-family: var(--font-body); font-size: 1rem; color: ${color}; margin-top: 0.4rem;`;
+                    ? `font-family: var(--font-display); font-size: ${baseSize * sizeMultiplier}rem; font-weight: 400; color: ${color};`
+                    : `font-family: var(--font-body); font-size: ${baseSize * sizeMultiplier}rem; color: ${color}; margin-top: 0.4rem;`;
                 return `<div style="${style}">${escaped}</div>`;
               })
               .join("");
@@ -698,6 +729,7 @@
           }
           renderPreview();
           colorInput.addEventListener("input", renderPreview);
+          sizeInput.addEventListener("change", renderPreview);
           block.querySelectorAll("[data-idx]").forEach((el) => {
             el.addEventListener("input", renderPreview);
           });
@@ -713,13 +745,14 @@
                 updatedTags[Number(el.dataset.idx)].text = el.value;
               });
               const chosenColor = block.querySelector(".field-color").value;
+              const chosenSize = block.querySelector(".field-size").value;
 
               const { text: freshText, sha } = await loadFileText(field.file);
               // re-locate the marker in case other fields in the same file already changed it
               const { startIdx, endIdx } = extractMarkerBlock(freshText, field.marker);
               const start = `<!-- ADMIN:${field.marker}:START -->`;
               const end = `<!-- ADMIN:${field.marker}:END -->`;
-              const rebuilt = `${start}\n        ${rebuildInner(updatedTags, chosenColor)}\n        ${end}`;
+              const rebuilt = `${start}\n        ${rebuildInner(updatedTags, chosenColor, chosenSize)}\n        ${end}`;
               const newText = freshText.slice(0, startIdx) + rebuilt + freshText.slice(endIdx);
 
               const result = await ghPutFile(field.file, utf8ToBase64(newText), `Update ${field.label} via admin`, sha);
