@@ -11,6 +11,7 @@ on:
       - "images/fashion/**"
       - "images/event/**"
       - "images/maternity/**"
+      - "scripts/**"
   workflow_dispatch:
 
 permissions:
