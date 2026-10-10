@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mini sessions &amp; waitlist — Echocraft Photography</title>
+  <meta name="description" content="Short, seasonal mini photo sessions in Pennsylvania. Join the waitlist to hear when new dates open." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Mini sessions &amp; waitlist — Echocraft Photography" />
+  <meta property="og:description" content="Short, seasonal mini photo sessions in Pennsylvania. Join the waitlist to hear when new dates open." />
+  <meta property="og:url" content="https://echocraftllc.com/mini-sessions.html" />
+  <meta property="og:image" content="https://echocraftllc.com/images/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Mini sessions &amp; waitlist — Echocraft Photography" />
+  <meta name="twitter:description" content="Short, seasonal mini photo sessions in Pennsylvania. Join the waitlist to hear when new dates open." />
+  <meta name="twitter:image" content="https://echocraftllc.com/images/og-image.jpg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="canonical" href="https://echocraftllc.com/mini-sessions.html" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" type="image/png" href="images/logo-icon.png" />
+  <link rel="apple-touch-icon" href="images/logo.png" />
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="index.html" class="site-header__mark">
+      <img src="images/logo-icon.png" alt="Echocraft" class="site-header__logo" />
+      <span class="site-header__wordmark">Echocraft</span>
+    </a>
+    <nav class="site-nav" id="site-nav">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="book.html">Book a session</a>
+    </nav>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span></button>
+  </header>
+
+  <section class="section">
+    <div class="book-layout">
+      <div class="book-intro">
+        <h1>Mini sessions</h1>
+        <p>Short, seasonal sessions with a set time slot, a simple theme, and a smaller set of images. They are a great way to get fresh photos without a full session.</p>
+        <p class="book-pricing">No mini-session dates are open right now. Join the list and I will email you as soon as new dates are announced.</p>
+        <p class="book-direct">Need photos sooner? See <a href="pricing.html">full session pricing</a> or <a href="book.html">send an inquiry</a>.</p>
+      </div>
+      <div>
+        <div data-fs-success class="form-banner form-banner--success"></div>
+        <div data-fs-error class="form-banner form-banner--error"></div>
+        <form class="contact-form" id="waitlist-form" action="https://formspree.io/f/xjykbwgo" method="POST">
+          <input type="hidden" name="form" value="Mini-session waitlist" />
+          <div class="field">
+            <label for="wl-name">Name</label>
+            <input type="text" id="wl-name" name="name" data-fs-field required />
+            <span data-fs-error="name" class="field-error"></span>
+          </div>
+          <div class="field">
+            <label for="wl-email">Email</label>
+            <input type="email" id="wl-email" name="email" data-fs-field required />
+            <span data-fs-error="email" class="field-error"></span>
+          </div>
+          <div class="field">
+            <label for="wl-interest">Interested in</label>
+            <select id="wl-interest" name="interested in" data-fs-field>
+              <option>Any mini session</option>
+              <option>Holiday</option>
+              <option>Spring</option>
+              <option>Summer</option>
+              <option>Fall</option>
+            </select>
+          </div>
+          <div class="hp-field" aria-hidden="true"><label for="wl-website">Leave this field empty</label><input type="text" id="wl-website" name="_gotcha" tabindex="-1" autocomplete="off" /></div>
+          <button type="submit" class="btn" data-fs-submit-btn>Join the list</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <a href="index.html"><img src="images/logo.png" alt="Echocraft — Photography" class="site-footer__logo" /></a>
+    <span>&copy; <span id="year"></span> Echocraft. Traveling across Pennsylvania.</span>
+    <span class="footer-contact"><a href="mailto:Shaine.echocraft@gmail.com">Shaine.echocraft@gmail.com</a> &middot; <a href="tel:+13028036742">(302) 803-6742</a></span>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="book.html">Book a session</a>
+      <a href="https://www.instagram.com/echocraftphotography/" target="_blank" rel="noopener">Instagram</a>
+      <a href="https://maps.app.goo.gl/FPP3pvTbY5tR8j519" target="_blank" rel="noopener">Google</a>
+      <a href="areas.html">Service areas</a>
+      <a href="prep-guide.html">Prep guide</a>
+      <a href="mini-sessions.html">Mini sessions</a>
+      <a href="press.html">Press kit</a>
+      <a href="privacy.html">Privacy &amp; terms</a>
+    </div>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+  <script src="js/main.js"></script>
+  <script>
+    window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
+    formspree('initForm', { formElement: '#waitlist-form', formId: 'xjykbwgo' });
+  </script>
+  <script src="https://unpkg.com/@formspree/ajax@1" defer></script>
+</body>
+</html>

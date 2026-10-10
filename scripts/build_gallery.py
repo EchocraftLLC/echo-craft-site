@@ -104,6 +104,10 @@ PAGE = """<!doctype html>
       <a href="book.html">Book a session</a>
       <a href="https://www.instagram.com/echocraftphotography/" target="_blank" rel="noopener">Instagram</a>
       <a href="https://maps.app.goo.gl/FPP3pvTbY5tR8j519" target="_blank" rel="noopener">Google</a>
+      <a href="areas.html">Service areas</a>
+      <a href="prep-guide.html">Prep guide</a>
+      <a href="mini-sessions.html">Mini sessions</a>
+      <a href="press.html">Press kit</a>
       <a href="privacy.html">Privacy &amp; terms</a>
     </div>
   </footer>
@@ -127,14 +131,30 @@ def build_page(cat, files, alts):
         stem = os.path.splitext(f)[0]
         alt = alts.get(stem) or f"{label} photography by Echocraft, photo {i}"
         figures.append(
-            '      <figure class="gallery-item"><img src="images/{c}/{f}" alt="{a}" loading="lazy" decoding="async" /></figure>'.format(
-                c=cat, f=f, a=escape(alt, quote=True))
+            '      <figure class="gallery-item"><img src="images/{c}/{f}" srcset="images/thumbs/{c}/{t}.jpg 800w, images/{c}/{f} 1600w" sizes="(max-width: 720px) 50vw, 33vw" alt="{a}" loading="lazy" decoding="async" /></figure>'.format(
+                c=cat, f=f, t=stem, a=escape(alt, quote=True))
         )
     html = PAGE.format(label=label, cat=cat, blurb=escape(blurb, quote=True),
                        lower=label.lower(), chips=chips, figures="\n".join(figures))
     with open(os.path.join(SITE, f"{cat}.html"), "w") as fh:
         fh.write(html)
 
+
+
+THUMB_W = 800
+
+
+def make_thumb(cat, filename):
+    """Write images/thumbs/<cat>/<name>.jpg (800px wide) used for fast grids."""
+    src = os.path.join(ROOT, cat, filename)
+    out_dir = os.path.join(ROOT, "thumbs", cat)
+    os.makedirs(out_dir, exist_ok=True)
+    out = os.path.join(out_dir, os.path.splitext(filename)[0] + ".jpg")
+    im = Image.open(src)
+    im = ImageOps.exif_transpose(im).convert("RGB")
+    if im.width > THUMB_W:
+        im = im.resize((THUMB_W, round(im.height * THUMB_W / im.width)), Image.LANCZOS)
+    im.save(out, "JPEG", quality=76, optimize=True, progressive=True)
 
 
 def optimize(path):
@@ -166,6 +186,7 @@ def main():
         extras = []
         for f in files:
             optimize(os.path.join(folder, f))
+            make_thumb(cat, f)
             if re.fullmatch(rf"{cat}-0[1-6]\.\w+", f, re.I):
                 continue  # featured slot, already on the page
             extras.append(f)

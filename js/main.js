@@ -43,7 +43,10 @@ if (heroContent) {
           const fig = document.createElement("figure");
           fig.className = "gallery-item";
           const img = document.createElement("img");
+          const stem = file.replace(/\.[^.]+$/, "");
           img.src = `images/${cat}/${encodeURIComponent(file)}`;
+          img.srcset = `images/thumbs/${cat}/${encodeURIComponent(stem)}.jpg 800w, ${img.src} 1600w`;
+          img.sizes = "(max-width: 720px) 50vw, 33vw";
           img.alt = `${label} photography`;
           img.loading = "lazy";
           img.decoding = "async";
@@ -177,7 +180,7 @@ if (heroContent) {
   function show(index) {
     currentIndex = ((index % items.length) + items.length) % items.length;
     const img = items[currentIndex].querySelector("img");
-    const src = img.currentSrc || img.src;
+    const src = img.src;
     imgEl.src = src;
     imgEl.alt = img.alt || "";
     requestToken += 1;
@@ -250,4 +253,25 @@ if (heroContent) {
     if (e.key === "ArrowLeft") show(nextAvailableIndex(currentIndex - 1, -1));
     if (e.key === "ArrowRight") show(nextAvailableIndex(currentIndex + 1, 1));
   });
+})();
+
+// Booking page: show scheduler / payment buttons only when js/site-config.js has links.
+(function () {
+  const box = document.getElementById("reserve");
+  const cfg = window.ECHOCRAFT;
+  if (!box || !cfg) return;
+  const holder = box.querySelector(".reserve__buttons");
+  const add = (url, label) => {
+    if (!/^https:\/\//.test(url || "")) return;
+    const a = document.createElement("a");
+    a.className = "btn";
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.textContent = label;
+    holder.appendChild(a);
+  };
+  add(cfg.schedulerUrl, cfg.schedulerLabel || "Pick a date");
+  add(cfg.paymentUrl, cfg.paymentLabel || "Pay your retainer");
+  if (holder.children.length) box.hidden = false;
 })();

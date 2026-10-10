@@ -35,6 +35,22 @@ Notes:
 - The action only runs on the `main` branch.
 - To run it by hand: **Actions > Update gallery > Run workflow**.
 
+## Online booking and payments
+`js/site-config.js` has two empty links, `schedulerUrl` and `paymentUrl`. Once you
+have a scheduling page (Cal.com, Google Calendar appointment page) and a payment
+link (Stripe, Square, PayPal, Pixieset), paste them between the quotes. The
+"Ready to lock in your date?" box on book.html appears automatically when at
+least one is filled in, and stays hidden otherwise.
+
+## Mini-session waitlist
+mini-sessions.html collects names and emails through the same Formspree form as
+the booking page (entries are labeled "Mini-session waitlist"). When you announce
+dates, email the people on that list from your inbox.
+
+## Photo previews
+The gallery script also makes small 800px previews in `images/thumbs/` so grids
+load fast on phones. They are rebuilt automatically; don't edit them by hand.
+
 ## Admin page (admin-ee92c785.html)
 A DIY editor at yoursite.com/admin-ee92c785.html lets you update page text,
 colors, fonts, and photos (including crop/fit) without touching GitHub's

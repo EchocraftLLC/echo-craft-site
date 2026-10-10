@@ -782,3 +782,25 @@ input, textarea, select { font: inherit; color: inherit; }
 @media (max-width: 720px) { .packages { grid-template-columns: 1fr; } }
 .package .btn, .gallery-page-cta .btn { text-decoration: none; }
 .category-chips a[aria-current="page"] { background: var(--color-accent); color: var(--color-on-accent); }
+
+/* Footer links can wrap on small screens */
+.footer-links { flex-wrap: wrap; row-gap: 0.5rem; }
+
+/* Credibility strip */
+.credibility { text-align: center; padding-top: clamp(1rem, 3vw, 2rem); padding-bottom: clamp(1.5rem, 4vw, 3rem); }
+.credibility__label { font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 0.9rem; }
+.credibility__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem 2rem; font-family: var(--font-display); font-style: italic; font-size: clamp(1.15rem, 2.2vw, 1.5rem); }
+.credibility__more { margin-top: 1rem; font-size: 0.88rem; }
+.credibility__more a { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Follow strip */
+.follow-section { text-align: center; }
+.follow-section h2 { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: clamp(1.6rem, 3vw, 2.2rem); margin-bottom: 0.5rem; }
+.follow-section p { color: var(--color-text-muted); margin-bottom: 1rem; }
+.follow-section .btn { margin: 0 auto; }
+
+/* Booking page: scheduler / payment buttons */
+.reserve { margin: 1.5rem 0; padding: 1.25rem 1.5rem; background: var(--color-surface); border: 1px solid var(--color-line); }
+.reserve[hidden] { display: none; }
+.reserve__title { font-weight: 600; margin-bottom: 0.75rem; }
+.reserve__buttons { display: flex; flex-wrap: wrap; gap: 0.75rem; }
