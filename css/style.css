@@ -717,3 +717,42 @@ input, textarea, select { font: inherit; color: inherit; }
   color: var(--color-text);
 }
 .footer-quicklinks a:hover { background: var(--color-accent); color: var(--color-on-accent); }
+
+/* ============================================================
+   View more gallery
+   ============================================================ */
+.gallery--extra[hidden], .view-more-wrap[hidden] { display: none; }
+.gallery--has-more { margin-bottom: 3px; }
+.view-more-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0 var(--gap-section);
+}
+.btn--ghost {
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-text);
+}
+
+/* Honeypot field for the booking form: hidden from people, visible to bots */
+.hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+/* Legal / long-form text pages */
+.legal { max-width: 720px; }
+.legal h1 { margin-bottom: 0.5rem; }
+.legal h2 { font-size: 1.5rem; margin: 2.25rem 0 0.6rem; }
+.legal p, .legal li { color: var(--color-text); margin-bottom: 0.9rem; }
+.legal ul { padding-left: 1.2rem; margin: 0 0 1rem; }
+.legal .updated { color: var(--color-text-muted); font-size: 0.9rem; }
+
+/* Print: just the content, no chrome */
+@media print {
+  .site-header, .site-footer, .lightbox, .nav-toggle, .view-more-wrap { display: none !important; }
+  body { background: #fff; color: #000; }
+  a { color: inherit; text-decoration: underline; }
+}
+
+.footer-contact { font-size: 0.9rem; color: var(--color-text-muted); }
+.footer-contact a { text-decoration: underline; text-underline-offset: 2px; }
+.book-direct { margin: 1.25rem 0; }
+.book-direct a { text-decoration: underline; text-underline-offset: 2px; }

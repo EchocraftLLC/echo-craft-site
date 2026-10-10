@@ -19,6 +19,22 @@ Static site for echocraftllc.com — plain HTML/CSS/JS, no build step.
 4. Double check your Formspree dashboard's notification email is set to
    wherever you want inquiries to land.
 
+## Adding photos (the easy way)
+1. On GitHub, open the folder for the category (`images/portrait`, `fashion`,
+   `event` or `maternity`), click **Add file > Upload files**, drag your photos
+   in, and click **Commit changes**.
+2. Wait about a minute. A GitHub Action (`.github/workflows/gallery.yml`)
+   resizes the photos and refreshes `images/gallery.json`, and they appear
+   under that category's **View more** button.
+
+Notes:
+- The six featured photos per category (`portrait-01` to `portrait-06`, etc.)
+  stay in the main grid and are swapped from the admin page.
+- Any other file name works. Photos show in alphabetical order.
+- To remove a photo, delete it from the folder; the list updates itself.
+- The action only runs on the `main` branch.
+- To run it by hand: **Actions > Update gallery > Run workflow**.
+
 ## Admin page (admin-ee92c785.html)
 A DIY editor at yoursite.com/admin-ee92c785.html lets you update page text,
 colors, fonts, and photos (including crop/fit) without touching GitHub's

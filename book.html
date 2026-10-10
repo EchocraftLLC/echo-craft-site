@@ -3,20 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Book a session — Echo Craft</title>
-  <meta name="description" content="Book a portrait, fashion, or event photography session with Echo Craft, traveling across Pennsylvania." />
+  <title>Book a session — Echocraft</title>
+  <meta name="description" content="Book a portrait, fashion, event, or maternity photography session with Echocraft, traveling across Pennsylvania." />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Book a session — Echo Craft" />
-  <meta property="og:description" content="Book a portrait, fashion, or event photography session with Echo Craft." />
+  <meta property="og:title" content="Book a session — Echocraft" />
+  <meta property="og:description" content="Book a portrait, fashion, event, or maternity photography session with Echocraft." />
   <meta property="og:url" content="https://echocraftllc.com/book.html" />
-  <meta property="og:image" content="https://echocraftllc.com/images/hero.jpg" />
+  <meta property="og:image" content="https://echocraftllc.com/images/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Book a session — Echo Craft" />
-  <meta name="twitter:description" content="Book a portrait, fashion, or event photography session with Echo Craft." />
-  <meta name="twitter:image" content="https://echocraftllc.com/images/hero.jpg" />
+  <meta name="twitter:title" content="Book a session — Echocraft" />
+  <meta name="twitter:description" content="Book a portrait, fashion, event, or maternity photography session with Echocraft." />
+  <meta name="twitter:image" content="https://echocraftllc.com/images/og-image.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="canonical" href="https://echocraftllc.com/book.html" />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="icon" type="image/png" href="images/logo-icon.png" />
   <link rel="apple-touch-icon" href="images/logo.png" />
@@ -25,7 +28,7 @@
 
   <header class="site-header">
     <a href="index.html" class="site-header__mark">
-      <img src="images/logo-icon.png" alt="Echo Craft" class="site-header__logo" />
+      <img src="images/logo-icon.png" alt="Echocraft" class="site-header__logo" />
       <span class="site-header__wordmark">Echocraft</span>
     </a>
     <nav class="site-nav" id="site-nav">
@@ -51,6 +54,8 @@
         <p class="book-pricing" style="color: #000000;">Family & lifestyle sessions: starting at $300. Price may vary based on location, services, number of images, and time.</p>
         <p class="book-pricing" style="color: #000000;">Events: starting at $150/hour. Price may vary based on location, services, number of images, and time.</p>
         <!-- ADMIN:BOOK_PRICING:END -->
+
+        <p class="book-direct">Prefer to reach out directly? Email <a href="mailto:Shaine.echocraft@gmail.com">Shaine.echocraft@gmail.com</a> or call/text <a href="tel:+13028036742">(302) 803-6742</a>.</p>
 
         <ul class="session-types">
           <li>Portrait</li>
@@ -94,6 +99,7 @@
             <textarea id="message" name="message" data-fs-field required></textarea>
             <span data-fs-error="message" class="field-error"></span>
           </div>
+          <div class="hp-field" aria-hidden="true"><label for="website">Leave this field empty</label><input type="text" id="website" name="_gotcha" tabindex="-1" autocomplete="off" /></div>
           <button type="submit" class="btn" data-fs-submit-btn>Send inquiry</button>
         </form>
       </div>
@@ -115,13 +121,13 @@
       <div class="faq-item">
         <!-- ADMIN:FAQ_2:START -->
         <p class="faq-question">How long until I get my photos?</p>
-        <p class="faq-answer">[Add your typical turnaround time here.]</p>
+        <p class="faq-answer">Portrait and family sessions are delivered within 2–3 weeks. Event coverage is delivered within 1–2 weeks, and a small preview set is usually ready within a few days. Fashion and editorial timelines depend on the project, and we&rsquo;ll agree on a delivery date when you book. Every gallery arrives as an online gallery with high-resolution, edited images you can download.</p>
         <!-- ADMIN:FAQ_2:END -->
       </div>
       <div class="faq-item">
         <!-- ADMIN:FAQ_3:START -->
         <p class="faq-question">Do you require a deposit to book?</p>
-        <p class="faq-answer">[Add your deposit/payment policy here.]</p>
+        <p class="faq-answer">Yes. A 50% non-refundable retainer is due when you book, and it secures your date. The remaining balance is due on the day of the session (or before the event begins). Until the retainer is paid, your date is not held. I accept payment by card or digital payment, and I&rsquo;ll send an invoice and a simple agreement after you inquire.</p>
         <!-- ADMIN:FAQ_3:END -->
       </div>
       <div class="faq-item">
@@ -133,7 +139,7 @@
       <div class="faq-item">
         <!-- ADMIN:FAQ_5:START -->
         <p class="faq-question">What if I need to reschedule?</p>
-        <p class="faq-answer">[Add your rescheduling/cancellation policy here.]</p>
+        <p class="faq-answer">Life happens. You can reschedule once at no charge with at least 48 hours&rsquo; notice, and your retainer carries over to the new date. Cancellations are non-refundable, and the retainer covers the time I&rsquo;ve held for you. If I need to move a session for weather or an emergency, we&rsquo;ll reschedule at no cost. Sessions that run late because of a late arrival may end on time so I can honor the next booking.</p>
         <!-- ADMIN:FAQ_5:END -->
       </div>
     </div>
@@ -147,13 +153,14 @@
       <a href="index.html#event">Event</a>
       <a href="index.html#maternity">Maternity</a>
     </div>
-    <a href="index.html"><img src="images/logo.png" alt="Echo Craft — Photography" class="site-footer__logo" /></a>
-    <span>&copy; <span id="year"></span> Echo Craft. Traveling across Pennsylvania.</span>
+    <a href="index.html"><img src="images/logo.png" alt="Echocraft — Photography" class="site-footer__logo" /></a>
+    <span>&copy; <span id="year"></span> Echocraft. Traveling across Pennsylvania.</span>
+    <span class="footer-contact"><a href="mailto:Shaine.echocraft@gmail.com">Shaine.echocraft@gmail.com</a> &middot; <a href="tel:+13028036742">(302) 803-6742</a></span>
     <div class="footer-links">
       <a href="index.html">Echocraftllc.com</a>
       <a href="index.html">Home</a>
       <a href="https://www.instagram.com/echocraftphotography/" target="_blank" rel="noopener">Instagram</a>
-      <a href="admin-ee92c785.html" style="opacity: 0.5;">Admin</a>
+      <a href="privacy.html">Privacy &amp; terms</a>
     </div>
   </footer>
 
