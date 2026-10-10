@@ -24,10 +24,54 @@ if (heroContent) {
   }
 }
 
+// "View more" galleries: extra photos are listed in images/gallery.json,
+// which .github/workflows/gallery.yml keeps up to date.
+(function () {
+  const wraps = document.querySelectorAll(".view-more-wrap");
+  if (!wraps.length) return;
+  fetch("images/gallery.json")
+    .then((r) => (r.ok ? r.json() : {}))
+    .catch(() => ({}))
+    .then((manifest) => {
+      wraps.forEach((wrap) => {
+        const cat = wrap.dataset.for;
+        const files = manifest[cat] || [];
+        const grid = document.getElementById("more-" + cat);
+        if (!files.length || !grid) return;
+        const label = cat.charAt(0).toUpperCase() + cat.slice(1);
+        files.forEach((file) => {
+          const fig = document.createElement("figure");
+          fig.className = "gallery-item";
+          const img = document.createElement("img");
+          img.src = `images/${cat}/${encodeURIComponent(file)}`;
+          img.alt = `${label} photography`;
+          img.loading = "lazy";
+          img.decoding = "async";
+          img.addEventListener("error", () => fig.remove());
+          fig.appendChild(img);
+          grid.appendChild(fig);
+        });
+        grid.previousElementSibling.classList.add("gallery--has-more");
+        wrap.hidden = false;
+        const btn = wrap.querySelector(".view-more");
+        btn.addEventListener("click", () => {
+          const open = grid.hidden;
+          grid.hidden = !open;
+          btn.setAttribute("aria-expanded", open ? "true" : "false");
+          btn.textContent = open ? `Show fewer ${cat}` : `View more ${cat}`;
+          if (!open) grid.previousElementSibling.scrollIntoView({ block: "center" });
+        });
+      });
+    });
+})();
+
 // Portfolio lightbox
 (function () {
-  const items = Array.from(document.querySelectorAll(".gallery-item"));
-  if (!items.length) return;
+  if (!document.querySelector(".gallery")) return;
+  // Only photos currently on screen (skips collapsed "View more" grids).
+  const getItems = () =>
+    Array.from(document.querySelectorAll(".gallery-item")).filter((el) => !el.closest("[hidden]"));
+  let items = getItems();
 
   const overlay = document.createElement("div");
   overlay.className = "lightbox";
@@ -133,22 +177,33 @@ if (heroContent) {
     document.body.style.overflow = "";
   }
 
-  items.forEach((item, index) => {
+  function activate(item) {
+    if (item.classList.contains("is-missing")) return;
+    items = getItems();
+    open(items.indexOf(item));
+  }
+
+  // Delegated so photos added later by "View more" work too.
+  document.addEventListener("click", (e) => {
+    const item = e.target.closest && e.target.closest(".gallery-item");
+    if (item) activate(item);
+  });
+  document.addEventListener("keydown", (e) => {
+    const item = e.target.closest && e.target.closest(".gallery-item");
+    if (item && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      activate(item);
+    }
+  });
+  const decorate = (item) => {
     item.setAttribute("tabindex", "0");
     item.setAttribute("role", "button");
     item.setAttribute("aria-label", "View larger photo");
-    item.addEventListener("click", () => {
-      if (item.classList.contains("is-missing")) return;
-      open(index);
-    });
-    item.addEventListener("keydown", (e) => {
-      if (item.classList.contains("is-missing")) return;
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        open(index);
-      }
-    });
-  });
+  };
+  document.querySelectorAll(".gallery-item").forEach(decorate);
+  new MutationObserver((muts) =>
+    muts.forEach((mu) => mu.addedNodes.forEach((n) => n.classList && n.classList.contains("gallery-item") && decorate(n)))
+  ).observe(document.body, { childList: true, subtree: true });
 
   closeBtn.addEventListener("click", close);
   prevBtn.addEventListener("click", () => show(nextAvailableIndex(currentIndex - 1, -1)));
