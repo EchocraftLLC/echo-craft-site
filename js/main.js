@@ -127,9 +127,29 @@ if (heroContent) {
     return parts.join("<br>");
   }
 
+  // exifr is only needed for the lightbox, so it loads on first use.
+  let exifrLoader = null;
+  function loadExifr() {
+    if (typeof exifr !== "undefined") return Promise.resolve();
+    if (!exifrLoader) {
+      exifrLoader = new Promise((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = "https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js";
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+    return exifrLoader;
+  }
+
   function loadDetails(src, token) {
     detailsEl.innerHTML = "";
     detailsEl.classList.remove("is-visible");
+    loadExifr().then(() => parseDetails(src, token)).catch(() => {});
+  }
+
+  function parseDetails(src, token) {
     if (typeof exifr === "undefined") return;
     exifr
       .parse(src, ["Make", "Model", "LensModel", "FocalLength", "FNumber", "ExposureTime", "ISO", "DateTimeOriginal", "CreateDate"])
@@ -164,17 +184,21 @@ if (heroContent) {
     loadDetails(src, requestToken);
   }
 
+  let lastFocus = null;
   function open(index) {
+    lastFocus = document.activeElement;
     show(index);
     overlay.classList.add("is-open");
     overlay.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
+    closeBtn.focus();
   }
 
   function close() {
     overlay.classList.remove("is-open");
     overlay.setAttribute("aria-hidden", "true");
     document.body.style.overflow = "";
+    if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
   }
 
   function activate(item) {
@@ -215,6 +239,13 @@ if (heroContent) {
 
   document.addEventListener("keydown", (e) => {
     if (!overlay.classList.contains("is-open")) return;
+    if (e.key === "Tab") {
+      // keep keyboard focus inside the lightbox while it is open
+      const focusable = [closeBtn, prevBtn, nextBtn];
+      const idx = focusable.indexOf(document.activeElement);
+      e.preventDefault();
+      focusable[(idx + (e.shiftKey ? -1 : 1) + focusable.length) % focusable.length].focus();
+    }
     if (e.key === "Escape") close();
     if (e.key === "ArrowLeft") show(nextAvailableIndex(currentIndex - 1, -1));
     if (e.key === "ArrowRight") show(nextAvailableIndex(currentIndex + 1, 1));
