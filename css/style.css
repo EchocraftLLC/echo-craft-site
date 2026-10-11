@@ -7,10 +7,10 @@
   --color-bg-alt: #ece2d3;
   --color-surface: #ffffff;
   --color-text: #201f1d;
-  --color-text-muted: #8c877d;
+  --color-text-muted: #68645a;
   --color-accent: #201f1d;
   --color-on-accent: #f5efe8;
-  --color-taupe: #8c877d;
+  --color-taupe: #68645a;
   --color-accent-soft: rgba(140, 135, 125, 0.16);
   --color-line: rgba(32, 31, 29, 0.14);
 
@@ -804,3 +804,12 @@ input, textarea, select { font: inherit; color: inherit; }
 .reserve[hidden] { display: none; }
 .reserve__title { font-weight: 600; margin-bottom: 0.75rem; }
 .reserve__buttons { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+/* Mini-session promo on the home page */
+.promo-section { text-align: center; background: var(--color-bg-alt); }
+.promo__label { font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 0.6rem; }
+.promo-section h2 { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: clamp(1.8rem, 3.5vw, 2.6rem); margin-bottom: 0.75rem; }
+.promo-section p { max-width: 52ch; margin-left: auto; margin-right: auto; color: var(--color-text-muted); }
+.promo-section .btn { margin: 1rem auto 0; color: var(--color-on-accent); }
+
+.btn, .btn:hover { text-decoration: none; }
