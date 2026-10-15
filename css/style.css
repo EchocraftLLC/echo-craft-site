@@ -813,3 +813,8 @@ input, textarea, select { font: inherit; color: inherit; }
 .promo-section .btn { margin: 1rem auto 0; color: var(--color-on-accent); }
 
 .btn, .btn:hover { text-decoration: none; }
+
+/* Mini-session details */
+.mini-includes { margin: 0.5rem 0 1.25rem; padding-left: 1.1rem; }
+.mini-includes li { margin-bottom: 0.35rem; }
+.packages--single { grid-template-columns: 1fr; margin-top: 1.5rem; }
