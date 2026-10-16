@@ -818,3 +818,7 @@ input, textarea, select { font: inherit; color: inherit; }
 .mini-includes { margin: 0.5rem 0 1.25rem; padding-left: 1.1rem; }
 .mini-includes li { margin-bottom: 0.35rem; }
 .packages--single { grid-template-columns: 1fr; margin-top: 1.5rem; }
+
+/* Review link under the testimonials */
+.review-cta { text-align: center; margin-top: 2rem; color: var(--color-text-muted); }
+.review-cta a { color: var(--color-text); text-decoration: underline; text-underline-offset: 3px; }
