@@ -178,3 +178,23 @@ const KITS = [
   ["branding", "35mm + 85mm + 100mm macro", "Window light plus an off-camera flash or LED", "Products, props, a step stool for flat lays"],
   ["pets", "70-200mm + 35mm", "Natural light, fast shutter", "Treats, squeaky toys, a helper"]
 ];
+
+// Seasonal palettes for What to Wear. Each: palette, mood, fabrics, outfit ideas and a tip for the light and location.
+const SEASONS = [
+  { id: "spring", name: "Spring", palette: [["Blush", "#e9c2bb"], ["Sage", "#a9b89a"], ["Butter", "#f1dc9a"], ["Sky blue", "#a9c3db"], ["Ivory", "#f5efe3"]], mood: "Fresh, soft, blooming",
+    fabrics: "Light cotton, linen blends, chiffon, a light knit or denim jacket for cool mornings.",
+    ideas: ["Flowy dresses in blush or butter yellow against fresh green.", "Soft pastels with one white or ivory piece to brighten faces.", "Light denim with a sage or sky blue top.", "A trench or light cardigan for chilly evenings."],
+    tip: "Blossoms and fresh grass are the backdrop. Pastels pop against them, while neon fights them." },
+  { id: "summer", name: "Summer", palette: [["Coral", "#e98b74"], ["Turquoise", "#4fb3b0"], ["Sunflower", "#efc24a"], ["White", "#fbfaf7"], ["Navy", "#26324a"]], mood: "Bright, sunny, carefree",
+    fabrics: "Breathable linen, cotton, gauze and swim cover-ups. Nothing heavy or shiny.",
+    ideas: ["Crisp white with one bright pop like coral or turquoise.", "Navy and white for a classic beach look.", "Sunflower yellow for golden hour glow.", "Bare feet or sandals at the beach. Skip heavy shoes."],
+    tip: "Shoot at golden hour. Bright colors and whites glow in warm light but blow out in midday sun." },
+  { id: "fall", name: "Fall", palette: [["Rust", "#a85a3a"], ["Mustard", "#c9982e"], ["Olive", "#6f7650"], ["Burgundy", "#6e2a33"], ["Cream", "#efe6d6"]], mood: "Warm, cozy, rich",
+    fabrics: "Chunky knits, corduroy, suede, flannel, boots and scarves.",
+    ideas: ["Rust or mustard sweaters with dark denim.", "Burgundy and cream for a rich, classic look.", "Olive and camel layers with boots.", "Hats, scarves and a cozy blanket as props."],
+    tip: "Orange leaves love warm tones. Avoid bright orange clothes, which blend into the trees." },
+  { id: "winter", name: "Winter", palette: [["Emerald", "#2f6b52"], ["Deep red", "#9b2335"], ["Charcoal", "#3d4045"], ["Silver gray", "#b9bcc0"], ["Winter white", "#f4f2ee"]], mood: "Crisp, bold, elegant",
+    fabrics: "Wool coats, cable knits, velvet, faux fur, leather gloves.",
+    ideas: ["A bold coat in emerald or deep red against snow.", "Winter white and silver gray for a soft, snowy look.", "Charcoal with one jewel tone for holiday cards.", "Gloves, beanies and scarves in coordinating colors."],
+    tip: "Snow is a giant reflector. Jewel tones pop against it, but all-white outfits disappear. Keep sessions short and warm." }
+];

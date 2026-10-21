@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Pose Pocket by Echocraft: a free posing guide for photographers, with 465 poses, session flows, a golden hour finder and client tools.">
+<meta name="description" content="Pose Pocket by Echocraft: a free posing guide for photographers, with 440 poses, session flows, a golden hour finder and client tools.">
 <meta name="theme-color" content="#f6f4f0">
 <link rel="icon" type="image/png" href="../images/logo-icon.png">
 <link rel="apple-touch-icon" href="../images/logo.png">
@@ -447,7 +447,7 @@ if (brand.name === "Shaine Photography") brand.name = "Echocraft Photography";
 let shared = null;          // studio settings the photographer shared through the app's database
 let db = null, owner = false;
 let clientMode = false, previewing = false;
-const state = { type: "couple", tag: "All", q: "", limit: 30, fixArea: "All", wearType: "couple", ptype: "couple", flow: null, custom: null, step: 0, lock: null, sheet: null, inbox: null, inboxWhere: "browser", ghDate: "" };
+const state = { type: "couple", tag: "All", q: "", limit: 30, fixArea: "All", wearType: "couple", season: ["winter", "winter", "spring", "spring", "spring", "summer", "summer", "summer", "fall", "fall", "fall", "winter"][new Date().getMonth()], ptype: "couple", flow: null, custom: null, step: 0, lock: null, sheet: null, inbox: null, inboxWhere: "browser", ghDate: "" };
 
 function applyBrand() {
   // Very light or very dark brand colors would make buttons unreadable, so those keep the default accent.
@@ -750,11 +750,15 @@ const VIEWS = {
   }},
 
   wear: { title: "What to wear", render() {
-    const w = WEAR.find(x => x.type === state.wearType) || WEAR[0], t = typeOf(w.type);
-    return `<div class="hello">${monogram()}<div><div class="eyebrow">${esc(brand.name)}</div><h2>What to wear: ${esc(t.label)}</h2></div></div>
+    const w = WEAR.find(x => x.type === state.wearType) || WEAR[0], t = typeOf(w.type), se = SEASONS.find(x => x.id === state.season);
+    const board = pal => `<div class="mood" aria-label="Color moodboard">${pal.map(([n, hex]) => `<div class="sw" style="background:${hex};color:${lum(hex) > .55 ? "#16181b" : "#f8f9f6"}">${esc(n)}<code>${hex}</code></div>`).join("")}</div>`;
+    return `<div class="hello">${monogram()}<div><div class="eyebrow">${esc(brand.name)}</div><h2>What to wear: ${esc(t.label)}${se ? " in " + se.name.toLowerCase() : ""}</h2></div></div>
       ${chips("wear", w.type, WEAR.map(x => [x.type, typeOf(x.type).label]))}
-      <div class="mood" aria-label="Color moodboard">${w.palette.map(([n, hex]) => `<div class="sw" style="background:${hex};color:${lum(hex) > .55 ? "#16181b" : "#f8f9f6"}">${esc(n)}<code>${hex}</code></div>`).join("")}</div>
-      <p class="moodword">${esc(w.mood)}</p>
+      ${seg("season", state.season, [["all", "Year-round"], ...SEASONS.map(x => [x.id, x.name])])}
+      ${board(se ? se.palette : w.palette)}
+      <p class="moodword">${esc(se ? se.mood : w.mood)}</p>
+      ${se ? `<section class="card"><h3>${esc(se.name)} outfits</h3><p><b>Fabrics:</b> ${esc(se.fabrics)}</p><ul>${se.ideas.map(x => `<li>${esc(x)}</li>`).join("")}</ul><p class="note"><b>Location tip:</b> ${esc(se.tip)}</p></section>
+      <div class="sect"><div class="eyebrow">Year-round colors for ${esc(t.label)}</div><div class="seg" style="padding:6px;gap:6px">${w.palette.map(([n, hex]) => `<span title="${esc(n)}" style="flex:1;height:30px;border-radius:7px;background:${hex}"></span>`).join("")}</div></div>` : ""}
       <section class="card"><p><b>Fabrics that photograph well:</b> ${esc(w.fabrics)}</p>
         <h3>Outfit ideas</h3><ul>${w.pairs.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
         <p class="avoid"><b>Skip:</b> ${esc(w.avoid)}</p></section>
@@ -932,7 +936,7 @@ function copyText(kind) {
   if (kind === "client") return clientMessage();
   if (kind === "questions") return `${brand.name}: before your session\n\n` + questions().map((q, i) => `${i + 1}. ${q}\n`).join("\n");
   if (kind === "checklist") { const done = store.get("checked", {}); return Object.entries(store.get("checklist", CHECKLIST)).map(([g, it]) => `${g}\n` + it.map((x, i) => `[${done[g + "|" + i] ? "x" : " "}] ${x}`).join("\n")).join("\n\n"); }
-  if (kind === "wear") { const w = WEAR.find(x => x.type === state.wearType) || WEAR[0]; return `${brand.name}: What to wear for ${typeOf(w.type).label}\n\nMood: ${w.mood}\nColors: ${w.palette.map(([n, h]) => `${n} ${h}`).join(", ")}\nFabrics: ${w.fabrics}\n\nOutfit ideas:\n${w.pairs.map(x => "- " + x).join("\n")}\n\nSkip: ${w.avoid}`; }
+  if (kind === "wear") { const w = WEAR.find(x => x.type === state.wearType) || WEAR[0]; const se = SEASONS.find(x => x.id === state.season); return `${brand.name}: What to wear for ${typeOf(w.type).label}${se ? " in " + se.name.toLowerCase() : ""}\n\nMood: ${se ? se.mood : w.mood}\nColors: ${(se ? se.palette : w.palette).map(([n, h]) => `${n} ${h}`).join(", ")}\n${se ? `${se.name} fabrics: ${se.fabrics}\n${se.name} ideas:\n${se.ideas.map(x => "- " + x).join("\n")}\nTip: ${se.tip}\n\n` : ""}Fabrics: ${w.fabrics}\n\nOutfit ideas:\n${w.pairs.map(x => "- " + x).join("\n")}\n\nSkip: ${w.avoid}`; }
   return "";
 }
 
@@ -1012,6 +1016,7 @@ app.addEventListener("click", e => {
   if (d.area) { state.fixArea = d.area; return render(); }
   if (d.ptype) { state.ptype = d.ptype; return render(); }
   if (d.nextprompt !== undefined) { document.getElementById("promptText").textContent = randomPrompt(); return; }
+  if (d.season) { state.season = d.season; return render(); }
   if (d.wear) { state.wearType = d.wear; return render(); }
   if (d.card) { state.lock = Number(d.card); requestWake(); return render(); }
   if (d.lockby) { state.lock = (state.lock + Number(d.lockby) + DECK.length) % DECK.length; return render(); }
