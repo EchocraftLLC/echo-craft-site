@@ -20,9 +20,4 @@ P("senior", "", [
   ["walk", "Walk away, look back", "Walk away from me and glance back over your shoulder.", "Cinematic and full of personality.", "Turning all the way around."],
   ["stand", "College shirt", "Wear your college shirt and point at the logo with a big smile.", "Announces your next step.", "Covering the logo with your hand."],
   ["team", "Best friend shot", "Bring your best friend in and laugh about your best memory.", "Captures the friendships that made the year.", "Both staring at the camera."],
-  ["head", "Window light portrait", "Sit by a window, turn your face toward the light, and relax.", "Soft, flattering light and a calm look.", "Facing away from the window."],
-  ["stand", "Hands in pockets", "Hands in your front pockets, thumbs out, weight on your back foot.", "Simple and confident.", "Shoulders up near your ears."],
-  ["head", "Look away", "Look off to the side like someone just called your name.", "A candid, magazine look.", "Squinting into the sun."],
-  ["stand", "Number moment", "Hold up balloons or a sign with your class year.", "Fun and great for announcements.", "Holding it in front of your chest."],
-  ["walk", "Celebration walk", "Walk toward me in your cap and gown, arms up in celebration.", "A joyful last shot.", "Walking too fast."]
 ]);

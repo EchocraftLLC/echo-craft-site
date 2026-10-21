@@ -3,11 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Cue by Echocraft Photography: a free posing app for photographers, with 465 poses, session flows, a golden hour finder and client tools.">
+<meta name="description" content="Cue by Echocraft Photography: a free posing app for photographers, with 460 poses, session flows, a golden hour finder and client tools.">
 <meta name="theme-color" content="#f6f4f0">
 <link rel="icon" type="image/png" href="../images/logo-icon.png">
 <link rel="apple-touch-icon" href="../images/logo.png">
 <link rel="canonical" href="https://echocraftllc.com/cue/">
+<script src="../js/cue-switch.js"></script>
+<script>if (window.CUE_ON === false) location.replace("../index.html");</script>
 <script>window.POSE_POCKET_SITE = { url: "https://echocraftllc.com/cue/", home: "../index.html", homeLabel: "echocraftllc.com", email: "Shaine.echocraft@gmail.com", phone: "(302) 803-6742", deckPdf: "deck/cue-cards-print.pdf" };</script>
 <title>Cue · For Photographers · Echocraft Photography</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -461,8 +463,9 @@ const monogram = () => `<div class="mono">${brand.logo ? `<img src="${brand.logo
 // A note shown when the app opens, explaining the AI-made pose photos.
 const aiNote = () => store.get("aiNoteSeen", false) ? "" : `<aside class="ainote" aria-label="About the photos"><button class="x" data-ainote aria-label="Close">×</button>
   <span class="eyebrow">About these photos</span>
-  <h3>Made with AI, inspired by photographers</h3>
-  <p>The pose photos in Cue are made with generative AI. Not because we want to replace photographers, but because AI is a tool. It's one we can use for inspiration and help, never to take away our passion for photography or the real moments only a person behind the camera can capture.</p>
+  <h3>A quick, honest note about AI</h3>
+  <p>The pose photos in Cue were made with generative AI. We know AI isn't everyone's thing, and we respect that. We use it because it helps us picture what a pose, a light or a whole session might look like before we ever pick up a camera.</p>
+  <p>Seeing an idea first can make it easier to say yes to it, and sometimes that's how a dream shoot becomes real. These images are a starting point, never a replacement. The real moments still come from you and the person behind the camera.</p>
   <div class="row"><button class="btn sm" data-ainote>Got it</button></div></aside>`;
 const aiLink = `<button class="link" data-ainoteshow>About the AI photos</button>`;
 const heartPath = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';

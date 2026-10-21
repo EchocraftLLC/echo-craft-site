@@ -275,3 +275,8 @@ if (heroContent) {
   add(cfg.paymentUrl, cfg.paymentLabel || "Pay your retainer");
   if (holder.children.length) box.hidden = false;
 })();
+
+// Cue switch (js/cue-switch.js): hide the For Photographers button when Cue is off
+if (window.CUE_ON === false) {
+  document.querySelectorAll('a.nav-cta[href*="cue"]').forEach((a) => a.remove());
+}

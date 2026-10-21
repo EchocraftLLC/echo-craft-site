@@ -1,49 +1,35 @@
 // New session types, hands & expressions, and the golden hour city list.
 
 FLOWS.push(
-  { id: "senior", type: "senior", name: "Senior & grad session", length: "60 to 75 min", stages: [
-    ["Warm up", ["Easy lean", "Slow walk", "Hands in pockets", "Wall lean"]],
-    ["Portraits", ["Classic headshot", "Real laugh", "Window light portrait", "Look away", "Hand through hair"]],
-    ["Your story", ["Letterman jacket", "Sport moment", "Instrument", "Car lean", "College shirt", "Best friend shot"]],
-    ["Sit & relax", ["Steps sit", "Bench lean back", "Field sit"]],
-    ["Golden hour", ["Over the shoulder", "Walk away, look back"]],
-    ["Grad finale", ["Cap and gown", "Tassel turn", "Number moment", "Cap toss", "Celebration walk"]]
+  { id: "senior", type: "senior", name: "Senior & grad session", length: "45 min", stages: [
+    ["Warm up", ["Easy lean", "Slow walk"]],
+    ["The basics", ["Classic headshot", "Real laugh", "Over the shoulder", "Steps sit", "Walk away, look back"]],
+    ["Finish", ["Cap and gown", "Cap toss"]]
   ]},
-  { id: "men", type: "men", name: "Men's portrait session", length: "45 to 60 min", stages: [
-    ["Warm up", ["The relaxed stand", "Hand in pocket", "Walking toward me", "Wall lean"]],
-    ["Headshots", ["Chin forward", "The squinch", "Laugh and look down", "Look into the distance", "Hand to beard or chin"]],
-    ["Hands busy", ["Sleeve roll", "Watch check", "Adjust the collar", "Coffee in hand", "Jacket on shoulder", "Hobby moment"]],
-    ["Seated", ["Seated, elbows on knees", "Ankle on knee", "Steps sit"]],
-    ["Editorial", ["Over the shoulder", "Moody light", "Railing lean", "Walk past", "Hands clasped low"]],
-    ["Finale", ["Arms crossed, relaxed", "Power stance"]]
+  { id: "men", type: "men", name: "Men's portrait session", length: "30 to 45 min", stages: [
+    ["Warm up", ["The relaxed stand", "Walking toward me"]],
+    ["The basics", ["Chin forward", "The squinch", "Hand in pocket", "Wall lean", "Seated, elbows on knees"]],
+    ["Finish", ["Arms crossed, relaxed"]]
   ]},
-  { id: "newborn", type: "newborn", name: "Newborn at home", length: "2 to 3 hours", stages: [
-    ["While baby is awake", ["Parent cradle", "Both parents above", "Family on the bed", "Siblings meet baby", "Rocking chair"]],
-    ["Sleepy baby", ["Swaddled on the blanket", "Side-lying curl", "Basket nest", "Name or date sign"]],
-    ["Tiny details", ["Tiny feet in hands", "Hand on hand", "Parents' rings"]],
-    ["Parent moments", ["Skin to skin", "Forehead kiss", "Bath or feeding"]]
+  { id: "newborn", type: "newborn", name: "Newborn at home", length: "1 to 2 hours", stages: [
+    ["While baby is awake", ["Parent cradle", "Both parents above"]],
+    ["The basics", ["Swaddled on the blanket", "Side-lying curl", "Tiny feet in hands", "Forehead kiss"]],
+    ["Finish", ["Family on the bed"]]
   ]},
-  { id: "milestone", type: "newborn", name: "Milestone & cake smash", length: "45 min", stages: [
-    ["Settle in", ["Favorite toy", "Tummy time", "Sitting up"]],
-    ["Play", ["Bubbles", "Peekaboo with parent", "Lift up high", "First steps"]],
-    ["The big moments", ["Month by month", "Cake smash", "Bath time"]]
+  { id: "milestone", type: "newborn", name: "Milestone & cake smash", length: "30 to 45 min", stages: [
+    ["Settle in", ["Favorite toy", "Sitting up"]],
+    ["The basics", ["Peekaboo with parent", "Bubbles", "Lift up high"]],
+    ["Finish", ["Cake smash"]]
   ]},
-  { id: "branding", type: "branding", name: "Business branding session", length: "90 min to 2 hours", stages: [
-    ["Warm up", ["Walk into work", "Coffee break", "Doorway welcome"]],
-    ["Portraits", ["Brand headshot", "Confident crossed arms", "Hands on hips", "Copy space portrait", "Brand color moment"]],
-    ["At work", ["At the desk", "Hands at work", "Look up from the work", "Notebook planning", "Phone call", "Behind the scenes"]],
-    ["Product & details", ["With your product", "Product flat lay"]],
-    ["With people", ["Client conversation", "Presenting", "Team huddle", "Team portrait"]],
-    ["Lifestyle", ["Counter lean", "Thoughtful look away", "Steps or stool sit", "Laughing candid"]],
-    ["Finale", ["Outside the business"]]
+  { id: "branding", type: "branding", name: "Business branding session", length: "60 min", stages: [
+    ["Warm up", ["Walk into work", "Coffee break"]],
+    ["The basics", ["Brand headshot", "Confident crossed arms", "At the desk", "Hands at work", "With your product"]],
+    ["Finish", ["Outside the business"]]
   ]},
-  { id: "pets", type: "pets", name: "Pet session", length: "45 to 60 min", stages: [
-    ["Settle in", ["Down at their level", "Sit and look", "Window seat", "With their favorite toy"]],
-    ["Portraits", ["Head tilt", "Close-up eyes", "Look away profile", "Tongue out"]],
-    ["Tricks", ["Paw shake", "Treat on the nose", "Bandana or bow"]],
-    ["With you", ["Owner hug", "Kiss on the head", "Paw in hand", "Lap dog", "On the couch", "Family and pet", "Two pets together"]],
-    ["Action", ["Walk together", "Running to me", "Fetch in action", "Jump for the toy"]],
-    ["Wind down", ["Belly up", "Lying together", "Nap time"]]
+  { id: "pets", type: "pets", name: "Pet session", length: "30 to 45 min", stages: [
+    ["Settle in", ["Down at their level", "Sit and look"]],
+    ["The basics", ["Head tilt", "Owner hug", "Kiss on the head", "Walk together", "Running to me"]],
+    ["Finish", ["Lying together"]]
   ]}
 );
 
