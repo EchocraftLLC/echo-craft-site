@@ -823,3 +823,22 @@ input, textarea, select { font: inherit; color: inherit; }
 .review-cta { text-align: center; margin-top: 2rem; color: var(--color-text-muted); }
 .review-cta a { color: var(--color-text); text-decoration: underline; text-underline-offset: 3px; }
 .follow-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
+
+/* "For Photographers" button in the nav: opens Pose Pocket, the free posing app */
+.site-nav a.nav-cta {
+  padding: 0.35rem 0.95rem;
+  border: 1px solid var(--color-text);
+  border-radius: 999px;
+  color: var(--color-text);
+}
+.site-nav a.nav-cta:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
+}
+@media (min-width: 721px) {
+  .site-nav { align-items: center; }
+}
+@media (max-width: 720px) {
+  .site-nav a.nav-cta { align-self: flex-start; }
+}

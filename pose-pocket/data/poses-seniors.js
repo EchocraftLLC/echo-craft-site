@@ -1,0 +1,28 @@
+// Seniors & grads. Row: [sketch, name, cue, why it works, what to skip]
+P("senior", "", [
+  ["stand", "Easy lean", "Stand at an angle, weight on your back foot, and hook a thumb in your pocket.", "A relaxed start that looks like you, not a yearbook photo.", "Standing square with your arms at your sides."],
+  ["walk", "Slow walk", "Walk toward me slower than feels normal and look up at me halfway.", "Movement calms nerves and looks natural.", "Watching your feet the whole time."],
+  ["lean", "Wall lean", "Lean one shoulder on the wall, cross your front foot over, and look at me.", "Cool and effortless, a senior classic.", "Pressing your whole back to the wall."],
+  ["head", "Classic headshot", "Angle your shoulders, push your forehead toward me, and give me a soft smile.", "The one for the yearbook and grandma's wall.", "Pulling your chin back."],
+  ["head", "Real laugh", "Look down, laugh at something silly, then bring your eyes up to me.", "Your real smile, not your school-photo smile.", "Holding a frozen grin."],
+  ["sit", "Steps sit", "Sit on a step, elbows on your knees, hands loosely together.", "Relaxed and confident.", "Hunching your shoulders forward."],
+  ["sit", "Bench lean back", "Sit on a bench and lean back on your hands, one knee up.", "Casual and easygoing.", "Slouching down into the bench."],
+  ["stand", "Cap and gown", "Wear the cap and gown, hold your diploma or tassel, and smile at me.", "The must-have grad shot.", "Holding the diploma in front of your face."],
+  ["jump", "Cap toss", "Throw your cap in the air and look up at it.", "Pure celebration, every time.", "Throwing it toward the camera."],
+  ["stand", "Tassel turn", "Move your tassel from right to left and look at me mid-move.", "Tells the graduation story in one moment.", "Looking down at your hand."],
+  ["stand", "Letterman jacket", "Hold your jacket open by the front edges, or toss it over one shoulder.", "Shows your school pride and gives your hands a job.", "Zipping it all the way up."],
+  ["stand", "Sport moment", "Hold your ball, bat or racket like you're about to play.", "Shows what you love.", "Hiding your face behind the gear."],
+  ["sit", "Instrument", "Play a few notes on your instrument and look up when I call your name.", "Shows your talent and gives a real expression.", "Posing stiffly with it."],
+  ["lean", "Car lean", "Lean back on your car, arms crossed loosely, one foot crossed over.", "Confident and fun, a senior favorite.", "Standing in front of the license plate."],
+  ["look", "Over the shoulder", "Turn away from me and look back over your shoulder.", "Fresh and a little dramatic.", "Twisting your whole body."],
+  ["head", "Hand through hair", "Run one hand through your hair and look at me.", "Natural movement and confidence.", "Covering your face with your arm."],
+  ["sit", "Field sit", "Sit in the grass, one knee up, arm resting on it.", "Relaxed and dreamy in golden hour.", "Sitting cross-legged straight on."],
+  ["walk", "Walk away, look back", "Walk away from me and glance back over your shoulder.", "Cinematic and full of personality.", "Turning all the way around."],
+  ["stand", "College shirt", "Wear your college shirt and point at the logo with a big smile.", "Announces your next step.", "Covering the logo with your hand."],
+  ["team", "Best friend shot", "Bring your best friend in and laugh about your best memory.", "Captures the friendships that made the year.", "Both staring at the camera."],
+  ["head", "Window light portrait", "Sit by a window, turn your face toward the light, and relax.", "Soft, flattering light and a calm look.", "Facing away from the window."],
+  ["stand", "Hands in pockets", "Hands in your front pockets, thumbs out, weight on your back foot.", "Simple and confident.", "Shoulders up near your ears."],
+  ["head", "Look away", "Look off to the side like someone just called your name.", "A candid, magazine look.", "Squinting into the sun."],
+  ["stand", "Number moment", "Hold up balloons or a sign with your class year.", "Fun and great for announcements.", "Holding it in front of your chest."],
+  ["walk", "Celebration walk", "Walk toward me in your cap and gown, arms up in celebration.", "A joyful last shot.", "Walking too fast."]
+]);

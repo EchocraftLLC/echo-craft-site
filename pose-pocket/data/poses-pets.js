@@ -1,0 +1,28 @@
+// Pets. Row: [sketch, name, cue, why it works, what to skip]
+P("pets", "", [
+  ["sit", "Sit and look", "Ask your pet to sit. I'll squeak a toy just above the lens.", "Eyes on the camera and ears up.", "Repeating the squeak too often. It stops working."],
+  ["ground", "Down at their level", "I'll lie on the ground, eye level with your pet.", "Shows the world from their view.", "Shooting from standing height."],
+  ["head", "Head tilt", "Make a funny noise and catch the head tilt.", "The most adorable pet expression.", "Using the same noise twice in a row."],
+  ["hug", "Owner hug", "Kneel beside your pet and wrap your arms around them, cheek to cheek.", "Shows your bond.", "Squeezing so hard your pet pulls away."],
+  ["two", "Walk together", "Walk your pet toward me on a loose leash, looking down at them.", "Natural and full of movement.", "A tight leash pulling your pet's head."],
+  ["walk", "Running to me", "Your pet runs toward me when you call them.", "Energy, ears flying and happy faces.", "Calling them into a busy area."],
+  ["ground", "Belly up", "Let your pet roll over for belly rubs.", "Silly and full of personality.", "Forcing the position."],
+  ["sit", "Treat on the nose", "Balance a treat on your pet's nose (if they know the trick).", "Shows off their skills.", "Holding the pose too long."],
+  ["head", "Close-up eyes", "I'll get close and focus on their eyes.", "Their soul in one frame.", "Using flash right in their eyes."],
+  ["two", "Kiss on the head", "Kiss the top of your pet's head while they look at me.", "Sweet and full of love.", "Covering their face."],
+  ["sit", "On the couch", "Your pet curls up on the couch with you.", "Their real, everyday life.", "Making them sit somewhere they never go."],
+  ["sit", "With their favorite toy", "Give your pet their favorite toy and let them play.", "Real happiness, real expression.", "Taking the toy away to pose."],
+  ["group", "Family and pet", "The whole family gathers around the pet, everyone looking at them.", "The pet is the star.", "Kids holding the pet too tight."],
+  ["sit", "Paw shake", "Ask for a paw and shake it.", "A fun trick shot.", "Grabbing the paw."],
+  ["look", "Look away profile", "Make a sound to one side so your pet turns their head.", "A dignified, portrait-style profile.", "Turning them by the collar."],
+  ["sit", "Window seat", "Your pet sits by a window in soft light.", "A calm, beautiful portrait.", "Direct sun on their fur."],
+  ["jump", "Jump for the toy", "Toss a toy up and catch them mid-jump.", "Big action and energy.", "Jumping on hard surfaces. Use grass."],
+  ["ground", "Nap time", "Capture your pet asleep in their favorite spot.", "Peaceful and sweet.", "Waking them for it."],
+  ["sit", "Bandana or bow", "Add a bandana, bow or little sign.", "Fun for holidays and announcements.", "Anything that bothers them."],
+  ["two", "Paw in hand", "Your pet rests a paw in your hand. I'll come close.", "A tender detail shot.", "Holding the paw tight."],
+  ["head", "Tongue out", "Play for a minute, then catch the happy panting face.", "Looks like a big smile.", "Shooting when they're overheated. Take breaks."],
+  ["sit", "Two pets together", "Sit two pets side by side with treats held above the camera.", "Siblings in one frame.", "Rushing. Patience pays off."],
+  ["hug", "Lap dog", "Your small pet sits in your lap while you look down at them.", "Cozy and loving.", "Your arms covering them."],
+  ["walk", "Fetch in action", "Throw the ball and catch them on the way back.", "Pure joy and motion.", "Throwing toward the camera."],
+  ["ground", "Lying together", "Lie on the grass with your pet, heads close.", "A relaxed, sweet finale.", "Lying in the sun's glare."]
+]);
