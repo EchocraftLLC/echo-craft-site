@@ -28,6 +28,15 @@ FLOWS.push(
     ["Play", ["Bubbles", "Peekaboo with parent", "Lift up high", "First steps"]],
     ["The big moments", ["Month by month", "Cake smash", "Bath time"]]
   ]},
+  { id: "branding", type: "branding", name: "Business branding session", length: "90 min to 2 hours", stages: [
+    ["Warm up", ["Walk into work", "Coffee break", "Doorway welcome"]],
+    ["Portraits", ["Brand headshot", "Confident crossed arms", "Hands on hips", "Copy space portrait", "Brand color moment"]],
+    ["At work", ["At the desk", "Hands at work", "Look up from the work", "Notebook planning", "Phone call", "Behind the scenes"]],
+    ["Product & details", ["With your product", "Product flat lay"]],
+    ["With people", ["Client conversation", "Presenting", "Team huddle", "Team portrait"]],
+    ["Lifestyle", ["Counter lean", "Thoughtful look away", "Steps or stool sit", "Laughing candid"]],
+    ["Finale", ["Outside the business"]]
+  ]},
   { id: "pets", type: "pets", name: "Pet session", length: "45 to 60 min", stages: [
     ["Settle in", ["Down at their level", "Sit and look", "Window seat", "With their favorite toy"]],
     ["Portraits", ["Head tilt", "Close-up eyes", "Look away profile", "Tongue out"]],
@@ -42,6 +51,7 @@ WEAR.push(
   { type: "senior", palette: [["Denim", "#5d7898"], ["Cream", "#efe6d6"], ["School color", "#8c2f39"], ["Olive", "#6f7650"], ["Camel", "#b88b5a"]], fabrics: "Denim, knits, cotton, a dressy piece in satin or wool.", pairs: ["Casual: favorite jeans and a cream sweater.", "Dressy: one outfit you'd wear to a nice dinner.", "School pride: letterman jacket, team jersey or school colors.", "Grad: cap and gown over something you love."], avoid: "Huge logos, outfits you've never worn before, brand-new shoes that hurt.", mood: "Confident, fresh, you" },
   { type: "men", palette: [["Navy", "#26324a"], ["Charcoal", "#3d4045"], ["Olive", "#6a6f4c"], ["Tan", "#c4a27a"], ["White", "#f7f7f5"]], fabrics: "Wool, cotton oxford, denim, leather, chunky knits.", pairs: ["Navy blazer over a white shirt, no tie.", "Olive field jacket with a charcoal tee.", "Tan sweater with dark jeans and boots.", "Bring one outfit that shows your work or hobby."], avoid: "Wrinkled shirts, thin stripes, shirts that pull at the buttons.", mood: "Sharp, grounded, real" },
   { type: "newborn", palette: [["Cream", "#efe6d6"], ["Oat", "#d8c9b0"], ["Sage", "#a7b49b"], ["Dusty blue", "#9aaabb"], ["Blush", "#e7c6bd"]], fabrics: "Soft knits, muslin, cotton. Parents in comfy solids.", pairs: ["Baby: a simple knit swaddle or wrap in cream or oat.", "Parents: soft neutrals, like cream and sage.", "Siblings: one soft color from the palette.", "Bare feet for everyone at home."], avoid: "Scratchy fabrics, tags near baby's face, busy prints.", mood: "Soft, calm, tender" },
+  { type: "branding", palette: [["Brand color", "#2f5d62"], ["Navy", "#26324a"], ["Cream", "#efe6d6"], ["Camel", "#b88b5a"], ["White", "#f7f7f5"]], fabrics: "Clean cotton, knits, blazers, aprons or uniforms you really work in.", pairs: ["One polished look: a blazer or smart top in a solid color.", "One working look: what you wear on a real day, apron or uniform included.", "One relaxed look for lifestyle shots.", "Add your brand color in a top, accessory or prop."], avoid: "Logos from other brands, tiny patterns, outfits that clash with your logo colors.", mood: "Professional, real, on-brand" },
   { type: "pets", palette: [["Forest", "#3f5a43"], ["Rust", "#a85a3a"], ["Cream", "#efe6d6"], ["Denim", "#5d7898"], ["Mustard", "#d4a43a"]], fabrics: "Denim and cotton that fur won't cling to. Nothing delicate.", pairs: ["Pick colors that contrast with your pet's fur.", "Dark pet? Wear cream or mustard. Light pet? Wear forest or denim.", "One fun accessory for your pet, like a bandana."], avoid: "Black clothes with a light-haired pet. Bring a lint roller anyway.", mood: "Happy, outdoorsy, playful" }
 );
 
@@ -165,5 +175,6 @@ const KITS = [
   ["senior", "35mm + 85mm", "Golden hour, off-camera flash", "Props, a second outfit spot"],
   ["men", "85mm", "Off-camera flash with grid, or window light", "Darker backgrounds for mood"],
   ["newborn", "50mm + 100mm macro", "Window light or LED, never direct flash", "Space heater, white noise"],
+  ["branding", "35mm + 85mm + 100mm macro", "Window light plus an off-camera flash or LED", "Products, props, a step stool for flat lays"],
   ["pets", "70-200mm + 35mm", "Natural light, fast shutter", "Treats, squeaky toys, a helper"]
 ];

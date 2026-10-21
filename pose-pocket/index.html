@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Pose Pocket by Echocraft: a free posing guide for photographers, with 440 poses, session flows, a golden hour finder and client tools.">
+<meta name="description" content="Pose Pocket by Echocraft: a free posing guide for photographers, with 465 poses, session flows, a golden hour finder and client tools.">
 <meta name="theme-color" content="#f6f4f0">
 <link rel="icon" type="image/png" href="../images/logo-icon.png">
 <link rel="apple-touch-icon" href="../images/logo.png">
@@ -304,6 +304,7 @@ function P(who, tag, rows) { rows.forEach(r => POSES.push({ who, tag, sketch: r[
 <script src="data/poses-men.js"></script>
 <script src="data/poses-newborn.js"></script>
 <script src="data/poses-pets.js"></script>
+<script src="data/poses-branding.js"></script>
 <script src="data/flows.js"></script>
 <script src="data/guides.js"></script>
 <script src="data/extras.js"></script>
@@ -320,7 +321,8 @@ const TYPES = [
   { id: "senior", label: "Seniors & grads", code: "SNR", note: "Show who they are right now: their style, their friends and the things they love." },
   { id: "men", label: "Men's portraits", code: "MEN", note: "Give his hands a job and his chin a direction. Confidence follows." },
   { id: "newborn", label: "Newborn & milestones", code: "NB", note: "Safety first: keep baby low, warm and within arm's reach. Never prop baby on anything high." },
-  { id: "pets", label: "Pets", code: "PET", note: "Get low, bring treats and a squeaky toy, and let the pet set the pace." }
+  { id: "pets", label: "Pets", code: "PET", note: "Get low, bring treats and a squeaky toy, and let the pet set the pace." },
+  { id: "branding", label: "Business branding", code: "BRD", note: "Tell the story of the business: the person, the work, the space and the product. Shoot wide, detail and portrait for every setup." }
 ];
 const typeOf = id => TYPES.find(t => t.id === id);
 const typeByCode = code => TYPES.find(t => t.code === code);
@@ -336,6 +338,7 @@ const PROMPTS = {
   senior: ["Tell me the best thing that happened this year.", "Say your graduation year like you just won an award.", "What are you going to miss the most?", "Give me your 'I'm so out of here' face.", "Tell me where you want to be in ten years.", "Laugh like your best friend just texted you something wild."],
   men: ["Tell me about the last thing you built, fixed or made.", "Tell me about your favorite meal, in detail.", "Give me the look you'd give a ref who made a bad call.", "Tell me the best advice you've ever gotten.", "Pretend you just heard your team won.", "Say 'I'm kind of a big deal' with a straight face."],
   newborn: ["Parents: tell baby what you already love about them.", "Whisper baby's full name.", "Tell each other who baby looks like.", "Big sibling: give baby a gentle kiss on the head.", "Sing baby your favorite song, softly.", "Tell baby about your first night home."],
+  branding: ["Tell me why you started this business.", "Tell me about your favorite customer ever.", "Explain what you do like I'm five years old.", "Tell me about your biggest win this year.", "Show me your 'just closed the deal' face.", "Tell me the funniest thing a customer has ever said."],
   pets: ["Ask your pet who's a good boy or girl, in your silliest voice.", "Say 'treat' or 'walk' and watch the ears go up.", "Tell your pet a secret.", "Give a slow scratch behind the ears.", "Call their name from right behind the camera.", "Pretend you're going to steal their toy."]
 };
 
