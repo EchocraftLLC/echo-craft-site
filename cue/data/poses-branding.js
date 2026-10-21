@@ -1,0 +1,28 @@
+// Business branding. Row: [sketch, name, cue, why it works, what to skip]
+P("branding", "", [
+  ["head", "Brand headshot", "Angle your shoulders, push your forehead toward me, and smile like you're meeting a new client.", "The one for your website, LinkedIn and Google profile.", "A stiff passport-style smile."],
+  ["arms", "Confident crossed arms", "Cross your arms loosely, front shoulder toward me, and lean your weight back.", "Says 'I know my stuff' for about pages and ads.", "Gripping your arms tight."],
+  ["lean", "Doorway welcome", "Lean on the door frame of your shop or office like you're welcoming someone in.", "Invites people into your business.", "Blocking the sign or the space behind you."],
+  ["sit", "At the desk", "Sit at your desk, turn your chair a little toward me, and rest one hand on the laptop.", "Shows you at work, approachable and focused.", "Hunching over the screen."],
+  ["sit", "Hands at work", "Keep doing your craft (typing, cutting, mixing, sketching). I'll come in close.", "Detail shots tell people what you actually do.", "Posing your hands. Keep them working."],
+  ["head", "Look up from the work", "Keep working, then look up at me when I say your name.", "A candid, mid-moment portrait.", "Looking up before I call you."],
+  ["stand", "With your product", "Hold your product at chest height, label toward me, and smile at it, then at me.", "Puts your product and your face together.", "Hiding your face behind it."],
+  ["two", "Product flat lay", "Lay out your products, tools and logo pieces on a table. I'll shoot from above.", "Social posts, website banners and ads.", "Clutter. Leave space for text."],
+  ["two", "Client conversation", "Sit across from a client or friend and talk like it's a real meeting.", "Shows how you work with people.", "Both looking at the camera."],
+  ["stand", "Presenting", "Stand by a whiteboard, screen or easel and explain something with your hands.", "Great for coaches, speakers and teachers.", "Pointing straight at the camera."],
+  ["walk", "Walk into work", "Walk toward me through your space with your coffee or bag.", "Energetic and real for headers and reels.", "Watching your feet."],
+  ["stand", "Phone call", "Take a pretend phone call and laugh at something they said.", "Busy, in-demand and natural.", "Holding the phone over your face."],
+  ["sit", "Notebook planning", "Write in a notebook or planner, pen moving, eyes down.", "Shows the thinking behind the business.", "A blank page. Write something real."],
+  ["lean", "Counter lean", "Lean on your counter or shelf with your forearms and look at me.", "Relaxed and friendly for shops and studios.", "Slumping your shoulders."],
+  ["head", "Thoughtful look away", "Look out the window like you're planning your next big idea.", "Gives you editorial shots for blog posts.", "Squinting into bright light."],
+  ["stand", "Brand color moment", "Stand by a wall or prop in your brand color and give me a big smile.", "Builds a recognizable look across your feed.", "Colors that clash with your logo."],
+  ["sit", "Coffee break", "Sit with a coffee, hands around the mug, and laugh at something.", "Warm and human for social posts.", "Hiding your mouth with the cup."],
+  ["team", "Team huddle", "Gather the team around a table or screen and talk through a real project.", "Shows the people behind the brand.", "Everyone facing the camera."],
+  ["group", "Team portrait", "Stand close in a loose V with the owner in front, shoulders angled in.", "A polished team photo for the about page.", "Standing in a straight line."],
+  ["stand", "Behind the scenes", "Set up your workspace, pack an order or prep a service like a normal day.", "The behind-the-scenes content people love.", "Tidying so much it looks fake."],
+  ["sit", "Steps or stool sit", "Sit on a stool or step, elbows on your knees, and lean toward me.", "Casual and approachable for personal brands.", "Slouching back."],
+  ["arms", "Hands on hips", "Hands at your waist, elbows back, chin forward, and give me a confident smile.", "Bold and strong for launch posts.", "Elbows sticking straight out."],
+  ["walk", "Outside the business", "Stand or walk in front of your storefront, sign or building.", "Shows where to find you.", "Cutting off the sign."],
+  ["head", "Laughing candid", "Tell me the funniest thing a customer has ever said to you.", "Real personality sells better than perfect poses.", "A forced laugh. Just tell the story."],
+  ["stand", "Copy space portrait", "Stand to one side of the frame by a clean wall and look at me.", "Leaves room for text on ads, banners and flyers.", "Busy backgrounds behind you."]
+]);

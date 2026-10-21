@@ -1,0 +1,1141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Cue by Echocraft Photography: a free posing app for photographers, with 460 poses, session flows, a golden hour finder and client tools.">
+<meta name="theme-color" content="#f6f4f0">
+<link rel="icon" type="image/png" href="../images/logo-icon.png">
+<link rel="apple-touch-icon" href="../images/logo.png">
+<link rel="canonical" href="https://echocraftllc.com/cue/">
+<script src="../js/cue-switch.js"></script>
+<script>if (window.CUE_ON === false) location.replace("../index.html");</script>
+<script>window.POSE_POCKET_SITE = { url: "https://echocraftllc.com/cue/", home: "../index.html", homeLabel: "echocraftllc.com", email: "Shaine.echocraft@gmail.com", phone: "(302) 803-6742", deckPdf: "deck/cue-cards-print.pdf" };</script>
+<title>Cue · For Photographers · Echocraft Photography</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a phone-first studio app. Sticky top bar, scrolling content in one column, fixed tab bar at the bottom. */
+:root {
+  --bg: #f6f4f0;
+  --surface: #ffffff;
+  --surface-2: #eeebe5;
+  --ink: #16181b;
+  --muted: #676b72;
+  --line: #e5e1d9;
+  --accent: #8b5e34;
+  --accent-ink: #ffffff;
+  --good: #2f7a55;
+  --shadow: 0 1px 2px rgba(22, 20, 16, .04), 0 8px 24px -14px rgba(22, 20, 16, .18);
+  --serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --r: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1012; --surface: #18191c; --surface-2: #222327; --ink: #f2efe9; --muted: #9c9fa6;
+    --line: #2b2d32; --accent: #d4a373; --accent-ink: #1b1207; --good: #6cc496;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1012; --surface: #18191c; --surface-2: #222327; --ink: #f2efe9; --muted: #9c9fa6;
+  --line: #2b2d32; --accent: #d4a373; --accent-ink: #1b1207; --good: #6cc496;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--sans); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p { margin: 0; }
+h1 { font: 500 38px/1.05 var(--serif); letter-spacing: -.02em; text-wrap: balance; }
+h2 { font: 500 24px/1.2 var(--serif); letter-spacing: -.01em; text-wrap: balance; }
+h3 { font: 600 16px/1.3 var(--sans); text-wrap: balance; }
+.muted { color: var(--muted); }
+.small { font-size: 14px; }
+.eyebrow { font: 600 11px/1.4 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.code { font: 500 11px/1.4 var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-variant-numeric: tabular-nums; }
+.accent { color: var(--accent); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* frame */
+.bar { position: sticky; top: 0; z-index: 8; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+.barin { max-width: 640px; margin: 0 auto; height: 56px; display: flex; align-items: center; gap: 6px; padding: 0 max(10px, env(safe-area-inset-right, 0px)) 0 max(10px, env(safe-area-inset-left, 0px)); }
+.bar .title { flex: 1; min-width: 0; font: 600 16px var(--sans); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 6px; }
+.iconbtn { width: 40px; height: 40px; border-radius: 12px; border: 0; background: transparent; color: var(--ink); display: grid; place-items: center; cursor: pointer; flex: none; }
+.iconbtn:hover { background: var(--surface-2); }
+.wrap { max-width: 640px; margin: 0 auto; padding: 0 max(16px, env(safe-area-inset-right, 0px)) calc(112px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.view { display: grid; gap: 18px; padding-top: 20px; min-width: 0; }
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+.tabsin { max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.tab { position: relative; border: 0; background: none; padding: 9px 2px 10px; display: grid; justify-items: center; gap: 3px; font: 500 11px var(--sans); color: var(--muted); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tab svg.i { width: 23px; height: 23px; }
+.tab[aria-current="page"] { color: var(--accent); }
+.badge { position: absolute; top: 5px; left: calc(50% + 5px); min-width: 18px; height: 18px; border-radius: 9px; padding: 0 5px; background: var(--accent); color: var(--accent-ink); font: 700 10px/18px var(--sans); }
+.ainote { position: relative; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: var(--r); padding: 16px 18px; display: grid; gap: 8px; box-shadow: var(--shadow); }
+.ainote h3 { font: 500 19px/1.3 var(--serif); padding-right: 28px; }
+.ainote p { font-size: 15px; color: var(--muted); }
+.ainote .x { position: absolute; top: 8px; right: 8px; }
+.preview { background: var(--ink); color: var(--bg); border-radius: 12px; padding: 10px 12px 10px 14px; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.preview span { flex: 1; }
+
+/* surfaces */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 12px; box-shadow: var(--shadow); min-width: 0; }
+.card ul, .card ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.note { background: var(--surface-2); border-radius: 12px; padding: 12px 14px; font-size: 14px; }
+.note b { color: var(--accent); }
+.callout { border-left: 3px solid var(--accent); }
+.sect { display: grid; gap: 10px; }
+.sect > .eyebrow { padding-left: 2px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.btn { height: 46px; padding: 0 20px; border-radius: 12px; border: 1px solid var(--ink); background: var(--ink); color: var(--bg); font: 600 15px var(--sans); display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; text-decoration: none; white-space: nowrap; }
+.btn.accent { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.ghost { background: var(--surface); color: var(--ink); border-color: var(--line); }
+.btn.sm { height: 36px; padding: 0 14px; font-size: 14px; border-radius: 10px; }
+.btn.block { width: 100%; }
+.btn:disabled { opacity: .4; cursor: default; }
+.link { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.toast { font-size: 14px; color: var(--good); min-height: 1.4em; }
+textarea.out, textarea.field { width: 100%; min-height: 120px; font: 14px/1.5 var(--sans); padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); resize: vertical; }
+.field, .search { width: 100%; height: 46px; font: 16px var(--sans); padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.searchwrap { position: relative; }
+.searchwrap svg { position: absolute; left: 14px; top: 13px; color: var(--muted); }
+.searchwrap .search { padding-left: 42px; }
+label.lbl { font: 600 13px var(--sans); color: var(--muted); display: block; margin-bottom: -6px; }
+.guideimg { width: 100%; height: auto; border-radius: 12px; display: block; border: 1px solid var(--line); }
+
+/* chips */
+.scroller { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 2px 16px; }
+.scroller::-webkit-scrollbar { display: none; }
+.chip { flex: none; height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 500 14px var(--sans); cursor: pointer; white-space: nowrap; }
+.chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.seg { display: flex; gap: 2px; padding: 3px; background: var(--surface-2); border-radius: 12px; overflow-x: auto; scrollbar-width: none; }
+.seg button { flex: 1 0 auto; height: 34px; padding: 0 12px; border: 0; border-radius: 9px; background: none; font: 500 13px var(--sans); color: var(--muted); cursor: pointer; white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+
+/* home */
+.hello { display: flex; gap: 14px; align-items: center; }
+.mono { width: 54px; height: 54px; border-radius: 50%; flex: none; display: grid; place-items: center; background: var(--ink); color: var(--bg); font: 500 24px var(--serif); overflow: hidden; }
+.mono img { width: 100%; height: 100%; object-fit: cover; }
+.hero { position: relative; border-radius: 20px; overflow: hidden; min-height: 230px; display: grid; align-content: end; padding: 20px; color: #fff; background: #2a2622; text-align: left; border: 0; cursor: pointer; width: 100%; font: inherit; }
+.hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.05) 10%, rgba(0,0,0,.35) 45%, rgba(0,0,0,.82)); }
+.hero > * { position: relative; z-index: 1; }
+.hero h2 { font-size: 28px; color: #fff; text-shadow: 0 1px 12px rgba(0,0,0,.35); }
+.hero .eyebrow { color: rgba(255,255,255,.8); }
+.hero .go { margin-top: 12px; justify-self: start; background: #fff; color: #16181b; border-radius: 999px; padding: 8px 16px; font: 600 14px var(--sans); }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); }
+.stats div { padding: 14px 8px; text-align: center; }
+.stats div + div { border-left: 1px solid var(--line); }
+.stats b { display: block; font: 500 24px/1.1 var(--serif); }
+.stats span { font-size: 12px; color: var(--muted); }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.tile { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; cursor: pointer; display: grid; gap: 2px; align-content: start; box-shadow: var(--shadow); min-width: 0; }
+.tiles > .tile:last-child:nth-child(odd) { grid-column: span 2; }
+.tile .ic { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 13%, transparent); color: var(--accent); margin-bottom: 10px; }
+.tile b { font: 600 15px/1.3 var(--sans); }
+.tile span { font-size: 13px; line-height: 1.4; color: var(--muted); }
+.steps { counter-reset: s; display: grid; gap: 12px; }
+.steps li { list-style: none; display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; }
+.steps li::before { counter-increment: s; content: counter(s); width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font: 600 13px var(--sans); }
+.foot { text-align: center; font-size: 13px; color: var(--muted); padding-top: 8px; }
+
+/* pose grid */
+.pgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 12px; }
+.pcell { position: relative; min-width: 0; }
+.popen { display: grid; gap: 7px; width: 100%; text-align: left; background: none; border: 0; padding: 0; cursor: pointer; }
+.ph { aspect-ratio: 3 / 4; width: 100%; border-radius: 14px; overflow: hidden; background: var(--surface-2); position: relative; display: grid; place-items: center; }
+.ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ph svg.sk { width: 50%; height: auto; }
+.pcell .nm { font: 500 16px/1.25 var(--serif); }
+.heart { position: absolute; top: 8px; right: 8px; width: 36px; height: 36px; border-radius: 50%; border: 0; background: rgba(255,255,255,.94); color: #16181b; display: grid; place-items: center; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.18); }
+.heart svg { width: 19px; height: 19px; }
+.heart[aria-pressed="true"] { color: #d0453f; }
+.heart[aria-pressed="true"] path { fill: currentColor; }
+.sk * { stroke: var(--muted); fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.sk circle { fill: var(--muted); stroke: none; }
+.sk.after * { stroke: var(--accent); }
+.sk.after circle { fill: var(--accent); }
+.more { justify-self: center; }
+@media (min-width: 540px) { .pgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* pose detail sheet */
+.sheet { position: fixed; inset: 0; z-index: 20; background: var(--bg); overflow-y: auto; overscroll-behavior: contain; }
+.sheetin { max-width: 640px; margin: 0 auto; display: grid; gap: 12px; padding: calc(env(safe-area-inset-top, 0px) + 8px) max(16px, env(safe-area-inset-right, 0px)) calc(96px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.sheettop { display: flex; align-items: center; gap: 8px; }
+.sheettop .code { flex: 1; text-align: center; }
+.sheet .ph { width: min(100%, calc(60vh * .75)); justify-self: center; }
+.sheet h2 { font-size: 30px; }
+.cue { font-size: 18px; line-height: 1.5; }
+.why { font-size: 15px; color: var(--muted); }
+.avoid { font-size: 15px; }
+.avoid b, .skip b { color: var(--accent); font-weight: 600; }
+.sheetnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 21; background: var(--bg); border-top: 1px solid var(--line); padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.sheetnav div { max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.heartbig { height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); display: inline-flex; align-items: center; gap: 6px; font: 600 14px var(--sans); cursor: pointer; }
+.heartbig svg { width: 18px; height: 18px; }
+.heartbig[aria-pressed="true"] { color: #d0453f; border-color: currentColor; }
+.heartbig[aria-pressed="true"] path { fill: currentColor; }
+
+/* session mode */
+.flowlist { display: grid; gap: 10px; }
+.flow { display: grid; grid-template-columns: 64px 1fr auto; gap: 14px; align-items: center; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 14px 10px 10px; cursor: pointer; box-shadow: var(--shadow); min-width: 0; }
+.flow .ph { border-radius: 10px; }
+.flow b { font: 500 17px/1.25 var(--serif); display: block; }
+.flow .code { display: block; margin-bottom: 2px; }
+.flow > svg { color: var(--muted); }
+.flow.feature { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.flow.feature .code, .flow.feature > svg { color: color-mix(in srgb, var(--bg) 70%, transparent); }
+.ghline { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; font-size: 14px; cursor: pointer; text-align: left; width: 100%; }
+.ghline svg { color: #d08a2a; }
+.step { display: grid; gap: 12px; }
+.step .ph { width: min(100%, calc(52vh * .75)); justify-self: center; }
+.step h2 { font-size: 30px; }
+.progress { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.progress i { display: block; height: 100%; background: var(--accent); }
+.stagebar { display: flex; gap: 6px; flex-wrap: wrap; }
+.stagebar span { font: 500 12px var(--sans); padding: 4px 10px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+.stagebar span.on { background: var(--accent); color: var(--accent-ink); }
+.stepnav { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+.stepnav .btn { height: 54px; font-size: 16px; }
+
+/* fixes */
+.ba { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fig { aspect-ratio: 3 / 4; border-radius: 12px; background: var(--surface-2); display: grid; place-items: center; position: relative; overflow: hidden; }
+.fig img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.fig svg { width: 60%; }
+.fig .tag { position: absolute; top: 8px; left: 8px; z-index: 1; font: 600 10px var(--sans); letter-spacing: .1em; text-transform: uppercase; padding: 4px 8px; border-radius: 999px; background: rgba(255,255,255,.92); color: #16181b; }
+.fig.after .tag { background: var(--accent); color: var(--accent-ink); }
+
+/* tables */
+.tablewrap { overflow-x: auto; margin: 0 -18px; padding: 0 18px; }
+table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 10px; border-bottom: 1px solid var(--line); }
+th { font: 600 11px var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+td:first-child { font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+
+/* wear */
+.mood { display: grid; grid-template-columns: repeat(6, 1fr); grid-auto-rows: 58px; gap: 6px; }
+.sw { border-radius: 10px; padding: 7px 9px; display: flex; flex-direction: column; justify-content: flex-end; font-size: 12px; line-height: 1.2; font-weight: 500; }
+.sw:nth-child(1) { grid-column: span 3; grid-row: span 2; }
+.sw:nth-child(n+2) { grid-column: span 3; }
+.sw code { font: 10px var(--sans); opacity: .8; letter-spacing: .04em; }
+.moodword { font: 500 24px/1.25 var(--serif); }
+
+/* editable lists */
+.edit { display: grid; gap: 8px; }
+.edit .item { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; }
+.edit input[type="text"] { width: 100%; min-width: 0; font: 15px var(--sans); padding: 9px 11px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); }
+.edit input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent); }
+.x { border: 0; background: transparent; color: var(--muted); font-size: 20px; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; }
+.qn { font: 600 12px var(--sans); color: var(--accent); width: 22px; text-align: center; }
+.qa { display: grid; gap: 6px; }
+.qa label { font-weight: 600; font-size: 15px; }
+.qa textarea { min-height: 70px; }
+
+/* deck */
+.deck { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.pcard { aspect-ratio: 2.5 / 3.5; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 6px; display: grid; grid-template-rows: auto 1fr auto; gap: 6px; cursor: pointer; text-align: left; box-shadow: var(--shadow); min-width: 0; }
+.pcard .ph { aspect-ratio: auto; border-radius: 8px; }
+.pcard .ph svg { width: 46%; }
+.pcard b { font: 500 14px/1.2 var(--serif); padding: 0 4px 4px; }
+.pcard .code { padding: 2px 4px 0; }
+.lock { position: fixed; inset: 0; z-index: 20; background: #0d0e10; color: #f2efe9; display: grid; place-items: center; padding: max(24px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.lockcard { width: min(92vw, 420px); aspect-ratio: 9 / 19.5; max-height: calc(100% - 64px); margin-bottom: 48px; background: var(--surface); color: var(--ink); border-radius: 30px; padding: 24px 20px; display: grid; grid-template-rows: 1fr auto auto auto auto; gap: 10px; }
+.lockcard .ph { aspect-ratio: auto; height: 100%; }
+.lockcard h2 { font-size: 28px; }
+.locknav { position: fixed; bottom: max(14px, env(safe-area-inset-bottom, 0px)); left: 0; right: 0; display: flex; justify-content: center; gap: 8px; }
+.locknav .btn { background: #f2efe9; color: #16181b; border-color: #f2efe9; }
+
+/* golden hour */
+.ghgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ghcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: grid; gap: 8px; box-shadow: var(--shadow); min-width: 0; }
+.ghrow { display: grid; gap: 1px; }
+.ghrow b { font: 500 18px/1.25 var(--serif); }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+.timeline { position: relative; height: 34px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+.timeline .now { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink); }
+.ticks { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 4px; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+
+/* lists with thumbs */
+.mini { display: grid; grid-template-columns: 52px 1fr auto; gap: 12px; align-items: center; }
+.mini .ph { border-radius: 8px; }
+.mini .ph svg { width: 60%; }
+.thumbs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.thumbs .ph { width: 54px; flex: none; border-radius: 8px; }
+details summary { cursor: pointer; font-weight: 600; font-size: 14px; color: var(--accent); }
+pre.msg { white-space: pre-wrap; font: 13px/1.5 var(--sans); margin: 8px 0 0; background: var(--bg); border-radius: 10px; padding: 12px; }
+.sendbtns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sendbtns > :last-child:nth-child(odd) { grid-column: span 2; }
+@media (max-width: 370px) { h1 { font-size: 32px; } .tiles, .ghgrid { grid-template-columns: 1fr; } .tab { font-size: 10px; } }
+@media (prefers-reduced-motion: no-preference) { .chip, .tab, .heart { transition: background-color .15s, color .15s; } }
+</style>
+<style>html, body { margin: 0; }</style>
+</head>
+<body>
+
+
+<header class="bar">
+  <div class="barin">
+    <button class="iconbtn" id="homeBtn" aria-label="Back"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="title" id="barTitle">Cue</div>
+    <button class="iconbtn" id="themeBtn" aria-label="Theme"></button>
+  </div>
+</header>
+<div class="wrap"><main id="app"></main></div>
+<nav class="tabs" aria-label="Main"><div class="tabsin" id="tabs"></div></nav>
+
+<script>
+const POSES = [];
+function P(who, tag, rows) { rows.forEach(r => POSES.push({ who, tag, sketch: r[0], name: r[1], cue: r[2], why: r[3], avoid: r[4] })); }
+</script>
+<script src="data/poses-couples.js"></script>
+<script src="data/poses-wedding.js"></script>
+<script src="data/poses-maternity.js"></script>
+<script src="data/poses-corporate.js"></script>
+<script src="data/poses-kids.js"></script>
+<script src="data/poses-plus.js"></script>
+<script src="data/poses-groups.js"></script>
+<script src="data/poses-seniors.js"></script>
+<script src="data/poses-men.js"></script>
+<script src="data/poses-newborn.js"></script>
+<script src="data/poses-pets.js"></script>
+<script src="data/poses-branding.js"></script>
+<script src="data/flows.js"></script>
+<script src="data/guides.js"></script>
+<script src="data/extras.js"></script>
+<script src="data/photos.js"></script>
+<script>
+const TYPES = [
+  { id: "couple", label: "Couples", code: "CPL", note: "Stay close, keep touching, and talk to each other more than to me." },
+  { id: "wedding", label: "Weddings & brides", code: "WED", note: "Poses for the bride, the couple and the wedding party." },
+  { id: "maternity", label: "Maternity", code: "MAT", note: "Best between 28 and 34 weeks, when the bump shows and you still feel comfy." },
+  { id: "corporate", label: "Corporate", code: "CORP", note: "Headshots and work portraits for LinkedIn, websites and press." },
+  { id: "kids", label: "Kids & Sweet 16", code: "KIDS", note: "Little ones get games, not poses. Sweet 16s get to bring the attitude." },
+  { id: "plus", label: "Plus size", code: "PLUS", note: "Angles and posture that show off your shape and make you feel great." },
+  { id: "group", label: "Groups", code: "GRP", note: "Families, friends and teams. The trick is to stand closer than feels normal." },
+  { id: "senior", label: "Seniors & grads", code: "SNR", note: "Show who they are right now: their style, their friends and the things they love." },
+  { id: "men", label: "Men's portraits", code: "MEN", note: "Give his hands a job and his chin a direction. Confidence follows." },
+  { id: "newborn", label: "Newborn & milestones", code: "NB", note: "Safety first: keep baby low, warm and within arm's reach. Never prop baby on anything high." },
+  { id: "pets", label: "Pets", code: "PET", note: "Get low, bring treats and a squeaky toy, and let the pet set the pace." },
+  { id: "branding", label: "Business branding", code: "BRD", note: "Tell the story of the business: the person, the work, the space and the product. Shoot wide, detail and portrait for every setup." }
+];
+const typeOf = id => TYPES.find(t => t.id === id);
+const typeByCode = code => TYPES.find(t => t.code === code);
+
+const PROMPTS = {
+  couple: ["Tell each other your partner's worst habit.", "Rate each other's dance moves out of ten.", "Whisper what you're having for dinner tonight.", "Do your best impression of how you first met.", "Try to make your partner laugh without speaking.", "Look at each other and say 'blue cheese' very romantically.", "Tell each other who said 'I love you' first, and argue about it.", "Describe your partner in three words. Go!"],
+  wedding: ["Tell your new spouse the first thing you'll eat at the reception.", "Whisper your new last name in your best movie voice.", "Wedding party: point at who's crying first tonight.", "Hold hands and say 'we did it!' together.", "Tell each other one word for how today feels.", "Pretend you just got away with something."],
+  maternity: ["Tell the baby a secret.", "Say the name you're not using, very dramatically.", "Partner: tell the bump a dad or mom joke.", "Think about the first time you'll hold them.", "Guess the baby's first word.", "Describe your weirdest craving."],
+  corporate: ["Tell me about a win you're proud of this year.", "Pretend you just got great news in an email.", "Say your job title like it's a movie trailer.", "Think about your favorite part of the work week.", "Explain what you do in five words.", "Give me your 'I've got this' face."],
+  kids: ["Show me your best monster face.", "What's the silliest animal sound you can make?", "Sweet 16: give me your red carpet look.", "Tell me who your best friend is.", "Sweet 16: laugh like you just heard the best gossip.", "Pretend the ground is lava!"],
+  plus: ["Give me your 'I look amazing today' face.", "Think about your favorite song and hum a bit of it.", "Tell me about the best compliment you've ever gotten.", "Laugh like your best friend just said something outrageous.", "Strike the pose you'd do on a runway.", "Tell me your go-to coffee order, very dramatically."],
+  group: ["Everyone point at who snores the loudest.", "Make the silliest face you can, on three.", "Kids, squeeze a grown-up as hard as you can.", "Whoever laughs first has to do a little dance.", "Say 'stinky socks' as loud as you can.", "Point at who's always late."],
+  senior: ["Tell me the best thing that happened this year.", "Say your graduation year like you just won an award.", "What are you going to miss the most?", "Give me your 'I'm so out of here' face.", "Tell me where you want to be in ten years.", "Laugh like your best friend just texted you something wild."],
+  men: ["Tell me about the last thing you built, fixed or made.", "Tell me about your favorite meal, in detail.", "Give me the look you'd give a ref who made a bad call.", "Tell me the best advice you've ever gotten.", "Pretend you just heard your team won.", "Say 'I'm kind of a big deal' with a straight face."],
+  newborn: ["Parents: tell baby what you already love about them.", "Whisper baby's full name.", "Tell each other who baby looks like.", "Big sibling: give baby a gentle kiss on the head.", "Sing baby your favorite song, softly.", "Tell baby about your first night home."],
+  branding: ["Tell me why you started this business.", "Tell me about your favorite customer ever.", "Explain what you do like I'm five years old.", "Tell me about your biggest win this year.", "Show me your 'just closed the deal' face.", "Tell me the funniest thing a customer has ever said."],
+  pets: ["Ask your pet who's a good boy or girl, in your silliest voice.", "Say 'treat' or 'walk' and watch the ears go up.", "Tell your pet a secret.", "Give a slow scratch behind the ears.", "Call their name from right behind the camera.", "Pretend you're going to steal their toy."]
+};
+
+// Simple figure sketches stand in for photos until real ones are added.
+const SKETCH = {
+  stand: '<circle cx="30" cy="12" r="7"/><path d="M30 20v28M30 48l-8 26M30 48l6 26M30 28l-12 12M30 28l10 14"/>',
+  hip: '<circle cx="30" cy="12" r="7"/><path d="M30 20v28M30 48l-8 26M30 48l6 26M30 28l-12 12M30 28l14 6l-10 8"/>',
+  lean: '<path d="M50 4v76"/><circle cx="34" cy="13" r="7"/><path d="M36 21l6 27M42 48l-12 26M42 48l4 26M38 30l10 4M38 30l-10 12"/>',
+  walk: '<circle cx="30" cy="12" r="7"/><path d="M30 20v28M30 48l-12 24M30 48l12 24M30 28l-12 10M30 28l12 8"/>',
+  sit: '<circle cx="26" cy="20" r="7"/><path d="M26 28l2 26h20M48 54v20M28 54l-4 20M8 54h46M27 36l12 10"/>',
+  look: '<circle cx="26" cy="12" r="7"/><path d="M28 20l2 28M30 48l-8 26M30 48l6 26M29 28l12 10M29 28l-2 16"/>',
+  head: '<circle cx="30" cy="28" r="13"/><path d="M6 76c2-18 12-26 24-26s22 8 24 26"/>',
+  arms: '<circle cx="30" cy="12" r="7"/><path d="M30 20v28M30 48l-6 26M30 48l6 26M18 34h24M18 34l4-6M42 34l-4-6"/>',
+  bump: '<circle cx="28" cy="12" r="7"/><path d="M28 20v10c10 4 12 16 2 20M28 30v20M28 50l-6 24M28 50l4 24M28 30l10 10M28 30l-4 20"/>',
+  dress: '<circle cx="30" cy="12" r="7"/><path d="M30 20v18M30 38l-18 36h36zM30 26l-10 12M30 26l10 12"/>',
+  jump: '<circle cx="30" cy="12" r="7"/><path d="M30 20v24M30 44l-10 10l4 10M30 44l10 10l-4 10M30 26l-14-10M30 26l14-10M8 78h44"/>',
+  two: '<circle cx="20" cy="14" r="6"/><circle cx="40" cy="12" r="6"/><path d="M20 21v26M20 47l-5 27M20 47l4 27M40 19v28M40 47l-4 27M40 47l5 27M20 28l20 4"/>',
+  hug: '<circle cx="24" cy="14" r="6"/><circle cx="36" cy="12" r="6"/><path d="M24 21v26M24 47l-4 27M24 47l3 27M36 19v28M36 47l-3 27M36 47l4 27M36 28l-14 6M24 28l14 6"/>',
+  group: '<circle cx="14" cy="16" r="5"/><circle cx="46" cy="16" r="5"/><circle cx="30" cy="36" r="4"/><path d="M14 22v24M14 46l-4 28M14 46l3 28M46 22v24M46 46l-3 28M46 46l4 28M30 41v14M30 55l-4 19M30 55l4 19M14 30l14 14M46 30l-14 14"/>',
+  team: '<circle cx="12" cy="20" r="5"/><circle cx="30" cy="14" r="5"/><circle cx="48" cy="20" r="5"/><path d="M12 26v22M12 48l-3 26M12 48l3 26M30 20v26M30 46l-3 28M30 46l3 28M48 26v22M48 48l-3 26M48 48l3 26"/>',
+  ground: '<circle cx="16" cy="40" r="5"/><circle cx="32" cy="38" r="5"/><circle cx="46" cy="44" r="4"/><path d="M4 70h52M16 46v14M32 44v16M46 49v11M16 60l-8 10M32 60l8 10M16 52l16 0"/>'
+};
+// Before and after figures for the micro adjustment guide.
+const BA = {
+  chin: ['<circle cx="26" cy="24" r="13"/><path d="M22 37q8 6 16 0M24 42q8 5 14 0M28 44v14M10 76c2-12 10-18 20-18s18 6 20 18"/>',
+         '<circle cx="34" cy="26" r="13"/><path d="M26 38l8 4M30 40v18M10 76c2-12 10-18 20-18s18 6 20 18"/>'],
+  arms: ['<circle cx="30" cy="12" r="7"/><path d="M30 20v28M30 48l-6 26M30 48l6 26M24 24c-8 0-10 4-10 6v8c0 4 4 6 10 6h12c6 0 10-2 10-6v-8c0-2-2-6-10-6M22 26l-2 22M38 26l2 22"/>',
+         '<circle cx="30" cy="12" r="7"/><path d="M30 20v28M30 48l-6 26M30 48l6 26M24 24c-6 0-8 4-8 6v8c0 4 4 6 8 6h12c4 0 8-2 8-6v-8c0-2-2-6-8-6M22 26l-10 12l6 10M38 26l10 12l-6 10"/>'],
+  belly: ['<circle cx="30" cy="12" r="7"/><path d="M30 20v4M16 24h28M18 24c-6 10-6 20 0 26h24c6-6 6-16 0-26M22 50l-2 24M38 50l2 24M16 26l-4 20M44 26l4 20"/>',
+          '<circle cx="32" cy="12" r="7"/><path d="M32 20v4M22 24h20M24 24c-4 10-4 20 0 26h16c4-6 4-16 0-26M28 50l-6 24M36 50l2 24M22 26l-6 12l8 8M42 26l2 20"/>'],
+  shoulders: ['<circle cx="30" cy="14" r="7"/><path d="M12 22h36M30 22v26M30 48l-6 26M30 48l6 26M12 22l-2 24M48 22l2 24"/>',
+              '<circle cx="30" cy="12" r="7"/><path d="M30 20v6M16 30l14-4l12 4M30 26v22M30 48l-6 26M30 48l6 26M16 30l-2 20M42 30l2 20"/>'],
+  legs: ['<circle cx="30" cy="12" r="7"/><path d="M30 20v28M24 48v26M36 48v26M20 74h8M32 74h8M30 28l-10 16M30 28l10 16"/>',
+         '<circle cx="30" cy="12" r="7"/><path d="M30 20v28M30 48l-8 12l4 14M30 48l6 26M22 76l6-2M34 74h8M30 28l-10 16M30 28l10 16"/>']
+};
+
+// Line icons.
+const ICON = {
+  home: '<path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/>',
+  grid: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+  play: '<circle cx="12" cy="12" r="9"/><path d="M10 8.5l5 3.5-5 3.5z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  heart: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+  wand: '<path d="M4 20L15 9M14 4v3M18 6l-2 2M20 10h-3M12 8l4 4"/>',
+  smile: '<circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0M9 9.5h.01M15 9.5h.01"/>',
+  chat: '<path d="M5 18l-1 3 4-2h9a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v8"/><path d="M8 10h8M8 13h5"/>',
+  cards: '<rect x="7" y="3" width="12" height="16" rx="2"/><path d="M5 6.5v12A2.5 2.5 0 0 0 7.5 21H15"/>',
+  camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  light: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9V16h7v-2.1A6 6 0 0 0 12 3z"/>',
+  shirt: '<path d="M8 4l-4 3 2 4 2-1v10h8V10l2 1 2-4-4-3a4 4 0 0 1-8 0z"/>',
+  clip: '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/>',
+  check: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/>',
+  brush: '<circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r="1.2"/><circle cx="12" cy="7.5" r="1.2"/><circle cx="15.5" cy="10" r="1.2"/><path d="M13 16.5a2 2 0 1 1-2-2"/>',
+  inbox: '<path d="M4 13l2.5-8h11L20 13v6H4z"/><path d="M4 13h5l1 2h4l1-2h5"/>',
+  link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  hand: '<path d="M8 13V6a1.5 1.5 0 0 1 3 0v5M11 11V4.5a1.5 1.5 0 0 1 3 0V11M14 11V6a1.5 1.5 0 0 1 3 0v7c0 4-2.5 7-6 7-2.5 0-4-1.5-5.5-4L4 13a1.5 1.5 0 0 1 2.5-1.5L8 13"/>',
+  send: '<path d="M21 3L10 14M21 3l-7 18-4-7-7-4z"/>',
+  chev: '<path d="M9 6l6 6-6 6"/>',
+  frame: '<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><circle cx="12" cy="12" r="3"/>',
+  close: '<path d="M6 6l12 12M18 6L6 18"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5L12 13l8.5-6.5"/>',
+  msg: '<path d="M4 5h16v11H9l-5 4z"/>',
+  copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+  share: '<path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>',
+  pin: '<path d="M12 21s-6-5.3-6-11a6 6 0 0 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/>'
+};
+const ic = (name, cls) => `<svg class="i ${cls || ""}" viewBox="0 0 24 24" aria-hidden="true">${ICON[name]}</svg>`;
+
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const sk = (inner, cls) => `<svg class="sk ${cls || ""}" viewBox="0 0 60 80" aria-hidden="true">${inner}</svg>`;
+const key = p => p.frame.replace(" ", "-");
+const ph = (p, lazy = true) => `<div class="ph">${PHOTOS.has(key(p)) ? `<img src="photos/${key(p)}.webp" alt="${esc(p.name)}"${lazy ? ' loading="lazy"' : ""}>` : sk(SKETCH[p.sketch])}</div>`;
+
+// Number each pose within its type, like CPL 03.
+POSES.forEach(p => { const t = typeOf(p.who); t.n = (t.n || 0) + 1; p.id = p.who + t.n; p.frame = t.code + " " + String(t.n).padStart(2, "0"); });
+const poseById = id => POSES.find(p => p.id === id);
+FIXES.forEach((f, i) => { const k = "FIX-" + String(i + 1).padStart(2, "0"); if (PHOTOS.has(k + "-before") && PHOTOS.has(k + "-after")) f.photo = { before: `photos/${k}-before.webp`, after: `photos/${k}-after.webp` }; });
+const byName = (type, name) => POSES.find(p => p.who === type && p.name === name);
+
+// Cue Cards: 100 essentials, picked round-robin across each type's sub-groups.
+const DECK_SPLIT = { couple: 15, wedding: 15, maternity: 14, corporate: 14, kids: 14, plus: 14, group: 14 };
+const DECK = [];
+TYPES.filter(t => DECK_SPLIT[t.id]).forEach(t => {
+  const tags = [...new Set(POSES.filter(p => p.who === t.id).map(p => p.tag))];
+  const pools = tags.map(tag => POSES.filter(p => p.who === t.id && p.tag === tag));
+  let i = 0;
+  while (DECK.filter(p => p.who === t.id).length < DECK_SPLIT[t.id]) {
+    const pool = pools[i % pools.length], k = Math.floor(i / pools.length);
+    if (pool[k]) DECK.push(pool[k]);
+    i++;
+  }
+});
+
+// Per-viewer storage. Everything here stays in this browser only.
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("pp_" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("pp_" + k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+};
+let picks = store.get("picks", []);
+// Set by the website copy of the app (window.POSE_POCKET_SITE); empty inside Claude.
+const HOSTED = window.POSE_POCKET_SITE || null;
+const BRAND_DEFAULT = { name: "Echocraft Photography", color: "", logo: "", email: HOSTED ? HOSTED.email || "" : "", phone: HOSTED ? HOSTED.phone || "" : "" };
+let brand = { ...BRAND_DEFAULT, ...store.get("brand", {}) };
+if (brand.name === "Shaine Photography") brand.name = "Echocraft Photography";
+let shared = null;          // studio settings the photographer shared through the app's database
+let db = null, owner = false;
+let clientMode = false, previewing = false;
+const state = { type: "couple", tag: "All", q: "", limit: 30, fixArea: "All", wearType: "couple", season: ["winter", "winter", "spring", "spring", "spring", "summer", "summer", "summer", "fall", "fall", "fall", "winter"][new Date().getMonth()], ptype: "couple", flow: null, custom: null, step: 0, lock: null, sheet: null, inbox: null, inboxWhere: "browser", ghDate: "" };
+
+function applyBrand() {
+  // Very light or very dark brand colors would make buttons unreadable, so those keep the default accent.
+  const l = /^#[0-9a-f]{6}$/i.test(brand.color || "") ? lum(brand.color) : -1;
+  if (l > .12 && l < .8) document.documentElement.style.setProperty("--accent", brand.color);
+  else document.documentElement.style.removeProperty("--accent");
+}
+const questions = () => (clientMode && shared && Array.isArray(shared.questions) ? shared.questions : store.get("questions", QUESTIONS)).filter(q => q && q.trim());
+const monogram = () => `<div class="mono">${brand.logo ? `<img src="${brand.logo}" alt="">` : esc((brand.name || "P").trim()[0] || "P")}</div>`;
+
+// A note shown when the app opens, explaining the AI-made pose photos.
+const aiNote = () => store.get("aiNoteSeen", false) ? "" : `<aside class="ainote" aria-label="About the photos"><button class="x" data-ainote aria-label="Close">×</button>
+  <span class="eyebrow">About these photos</span>
+  <h3>A quick, honest note about AI</h3>
+  <p>The pose photos in Cue were made with generative AI. We know AI isn't everyone's thing, and we respect that. We use it because it helps us picture what a pose, a light or a whole session might look like before we ever pick up a camera.</p>
+  <p>Seeing an idea first can make it easier to say yes to it, and sometimes that's how a dream shoot becomes real. These images are a starting point, never a replacement. The real moments still come from you and the person behind the camera.</p>
+  <div class="row"><button class="btn sm" data-ainote>Got it</button></div></aside>`;
+const aiLink = `<button class="link" data-ainoteshow>About the AI photos</button>`;
+const heartPath = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+const chips = (attr, current, items) => `<div class="scroller" role="group">${items.map(([id, label]) => `<button class="chip" data-${attr}="${esc(id)}" aria-pressed="${id === current}">${esc(label)}</button>`).join("")}</div>`;
+const seg = (attr, current, items) => `<div class="seg" role="group">${items.map(([id, label]) => `<button data-${attr}="${esc(id)}" aria-pressed="${id === current}">${esc(label)}</button>`).join("")}</div>`;
+const tile = (v, icon, title, sub) => `<button class="tile" data-go="${v}"><span class="ic">${ic(icon)}</span><b>${title}</b><span>${sub}</span></button>`;
+
+function poseCell(p, list) {
+  const on = picks.includes(p.id);
+  return `<article class="pcell">
+    <button class="popen" data-open="${p.id}" data-list="${list}">${ph(p)}<span><span class="code">${p.frame}${p.tag ? " · " + esc(p.tag) : ""}</span><span class="nm" style="display:block">${esc(p.name)}</span></span></button>
+    <button class="heart" data-heart="${p.id}" aria-pressed="${on}" aria-label="${on ? "Remove" : "Add"} ${esc(p.name)} ${on ? "from" : "to"} my picks">${heartPath}</button>
+  </article>`;
+}
+const lists = {};   // id lists the pose sheet can page through
+
+// ---------- Golden hour (NOAA-style sun position, works offline) ----------
+const RAD = Math.PI / 180;
+function sunElev(t, lat, lon) {
+  const d = t / 864e5 + 2440587.5 - 2451545.0;
+  const g = (357.529 + 0.98560028 * d) * RAD, q = 280.459 + 0.98564736 * d;
+  const L = (q + 1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g)) * RAD, e = (23.439 - 0.00000036 * d) * RAD;
+  const ra = Math.atan2(Math.cos(e) * Math.sin(L), Math.cos(L)), dec = Math.asin(Math.sin(e) * Math.sin(L));
+  const gmst = (18.697374558 + 24.06570982441908 * d) % 24;
+  const ha = (gmst * 15 + lon) * RAD - ra;
+  return Math.asin(Math.sin(lat * RAD) * Math.sin(dec) + Math.cos(lat * RAD) * Math.cos(dec) * Math.cos(ha)) / RAD;
+}
+function tzOffset(tz, t) {
+  const p = {}; new Intl.DateTimeFormat("en-US", { timeZone: tz, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" }).formatToParts(new Date(t)).forEach(x => p[x.type] = +x.value);
+  return Date.UTC(p.year, p.month - 1, p.day, p.hour % 24, p.minute, p.second) - t;
+}
+function sunDay(loc, ymd) {
+  const [y, m, d] = ymd.split("-").map(Number);
+  const noon = Date.UTC(y, m - 1, d, 12);
+  const t0 = Date.UTC(y, m - 1, d) - tzOffset(loc.tz, noon);
+  const pts = []; for (let i = 0; i <= 1440; i += 2) pts.push([t0 + i * 6e4, sunElev(t0 + i * 6e4, loc.lat, loc.lon)]);
+  const cross = (th, rising) => { for (let i = 1; i < pts.length; i++) { const [ta, a] = pts[i - 1], [tb, b] = pts[i]; if (rising ? a < th && b >= th : a >= th && b < th) return ta + (tb - ta) * (th - a) / (b - a); } return null; };
+  return { t0, pts, blueAM: cross(-6, true), goldAM: cross(-4, true), rise: cross(-0.833, true), goldAMend: cross(6, true), goldPM: cross(6, false), set: cross(-0.833, false), bluePM: cross(-4, false), bluePMend: cross(-6, false) };
+}
+const fmtTime = (t, tz) => t == null ? "—" : new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit" }).format(new Date(t));
+const todayIn = tz => new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+function ghLoc() {
+  const s = store.get("ghLoc", null);
+  if (s && typeof s.lat === "number") return s;
+  const c = CITIES[0]; return { name: c[0], lat: c[1], lon: c[2], tz: c[3] };
+}
+const elevColor = e => e < -6 ? "#1f2638" : e < -4 ? "#3e5c9e" : e < 6 ? "#e3a24a" : "#bcd6ea";
+
+// ---------- Client message ----------
+function clientMessage() {
+  const a = store.get("answers", {}), qs = questions(), ps = picks.map(poseById).filter(Boolean);
+  const name = (a.name || "").trim(), type = typeOf(a.type);
+  let s = `Hi ${brand.name}! Here are my answers and pose picks.\n\nName: ${name || "(not given)"}\nSession: ${type ? type.label : "(not picked)"}\n`;
+  if (a.date) s += `Date I'm hoping for: ${a.date}\n`;
+  s += `\nQUESTIONS\n` + qs.map((q, i) => `${i + 1}. ${q}\n${(a["q" + i] || "").trim() || "-"}`).join("\n\n");
+  s += `\n\nMY POSE PICKS (${ps.length})\n` + (ps.length ? ps.map(p => `${key(p)} ${p.name}`).join("\n") : "-");
+  return s + "\n\nSent from Cue";
+}
+function parseMessage(txt) {
+  const get = re => ((txt.match(re) || [])[1] || "").trim();
+  const ids = [];
+  for (const m of txt.matchAll(/\b([A-Z]{2,4})-(\d{2})\b/g)) { const t = typeByCode(m[1]); if (!t) continue; const p = POSES.find(x => x.who === t.id && x.frame === t.code + " " + m[2]); if (p && !ids.includes(p.id)) ids.push(p.id); }
+  return { name: get(/^Name:\s*(.+)$/m) || "Client", session: get(/^Session:\s*(.+)$/m), date: get(/^Date I'm hoping for:\s*(.+)$/m), ids, text: txt.trim().slice(0, 20000), at: Date.now() };
+}
+
+// ---------- Shared database: studio settings and client inbox ----------
+let saveTimer = null;
+function shareSettings() {
+  if (!db || !owner) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    db.doc("settings/studio").set({ name: brand.name, color: brand.color, logo: brand.logo, email: brand.email || "", phone: brand.phone || "", questions: store.get("questions", QUESTIONS), updated: Date.now() }).catch(() => {});
+  }, 900);
+}
+async function loadShared() {
+  if (!db) return;
+  try {
+    const s = await db.doc("settings/studio").get();
+    const v = s.exists ? s.data() : null;
+    if (!v) { if (owner) shareSettings(); return; }
+    shared = v;
+    const fromDb = { name: v.name || BRAND_DEFAULT.name, color: v.color || "", logo: v.logo || "", email: v.email || "", phone: v.phone || "" };
+    if (owner) { brand = { ...brand, ...fromDb }; store.set("brand", brand); if (Array.isArray(v.questions)) store.set("questions", v.questions); }
+    else brand = fromDb;
+    applyBrand(); render();
+  } catch (e) {}
+}
+async function inboxLoad() {
+  if (db && owner) {
+    try { const q = await db.collection("inbox").orderBy("at", "desc").limit(100).get(); state.inbox = q.docs.map(d => ({ id: d.id, ...d.data() })); state.inboxWhere = "app"; return; } catch (e) {}
+  }
+  state.inbox = store.get("inbox", []); state.inboxWhere = "browser";
+}
+async function inboxAdd(entry) {
+  if (state.inboxWhere === "app") { await db.collection("inbox").add(entry); return inboxLoad(); }
+  const l = store.get("inbox", []); l.unshift({ id: "b" + Date.now(), ...entry }); store.set("inbox", l); state.inbox = l;
+}
+async function inboxDelete(id) {
+  if (state.inboxWhere === "app") { await db.doc("inbox/" + id).delete(); return inboxLoad(); }
+  const l = store.get("inbox", []).filter(x => x.id !== id); store.set("inbox", l); state.inbox = l;
+}
+
+// ---------- Views ----------
+const VIEWS = {
+  home: { title: "Cue", render() {
+    const hero = ["WED-01", "CPL-01", "MAT-01"].find(k => PHOTOS.has(k));
+    return `${aiNote()}<div class="hello">${monogram()}<div><div class="eyebrow">${esc(brand.name)}</div><h1>Cue</h1></div></div>
+      <button class="hero" data-go="session">${hero ? `<img src="photos/${hero}.webp" alt="">` : ""}<span class="eyebrow">Session Mode</span><h2>Walk into every shoot with a plan</h2><span class="go">Start a session</span></button>
+      <div class="stats"><div><b>${POSES.length}</b><span>poses</span></div><div><b>${FLOWS.length}</b><span>session flows</span></div><div><b>${TYPES.length}</b><span>session types</span></div></div>
+      <section class="sect"><div class="eyebrow">During the shoot</div><div class="tiles">
+        ${tile("poses", "grid", "Pose library", "Browse and save favorites")}
+        ${tile("session", "play", "Session Mode", "Tap through a ready-made flow")}
+        ${tile("fixes", "wand", "Micro adjustments", FIXES.length + " small fixes, big difference")}
+        ${tile("hands", "hand", "Hands & expressions", "What to do with hands and faces")}
+        ${tile("shy", "smile", "Shy clients & kids", "Games that get real smiles")}
+        ${tile("prompts", "chat", "Prompts", "Lines that spark real laughs")}
+      </div></section>
+      <section class="sect"><div class="eyebrow">Light & camera</div><div class="tiles">
+        ${tile("golden", "sun", "Golden hour finder", "Best light for any day and city")}
+        ${tile("light", "light", "Light & location", "Window, shade, golden hour, beach, city")}
+        ${tile("angles", "frame", "Angles & framing", "Camera height by body and goal")}
+        ${tile("gear", "camera", "Camera gear", "Lenses, flash, lights, reflectors")}
+        ${tile("deck", "cards", "Cue Cards", "100 essentials as cards")}
+      </div></section>
+      <section class="sect"><div class="eyebrow">Your clients</div><div class="tiles">
+        ${tile("inbox", "inbox", "Client inbox", "Answers and picks clients send you")}
+        ${tile("clientlink", "link", "Client link", "The simple version for clients")}
+        ${tile("wear", "shirt", "What to wear", TYPES.length + " brandable guides")}
+        ${tile("questions", "clip", "Questionnaire", "Edit the questions clients answer")}
+        ${tile("checklist", "check", "Shoot checklist", "Gear, location and flow")}
+        ${tile("brand", "brush", "Your studio", "Name, color, logo and contact")}
+      </div></section>
+      <p class="foot">Cue by ${esc(brand.name)}. Free to use. ${aiLink}${HOSTED ? `<br><a class="link" href="${esc(HOSTED.home)}">Back to ${esc(HOSTED.homeLabel)}</a>` : ""}</p>`;
+  }},
+
+  poses: { title: "Pose library", render() {
+    const t = typeOf(state.type);
+    const inType = POSES.filter(p => p.who === t.id);
+    const tags = [...new Set(inType.map(p => p.tag).filter(Boolean))];
+    const q = state.q.trim().toLowerCase();
+    const shown = q ? POSES.filter(p => (p.name + " " + p.cue + " " + p.frame).toLowerCase().includes(q)) : inType.filter(p => state.tag === "All" || p.tag === state.tag);
+    lists.lib = shown.map(p => p.id);
+    return `<div class="searchwrap">${ic("search")}<input class="search" id="poseSearch" type="search" placeholder="Search all ${POSES.length} poses" value="${esc(state.q)}" aria-label="Search poses"></div>
+      ${q ? "" : chips("type", state.type, TYPES.map(x => [x.id, x.label]))}
+      ${q || tags.length < 2 ? "" : seg("tag", state.tag, [["All", "All"], ...tags.map(x => [x, x])])}
+      <p class="muted small">${q ? shown.length + " matches" : esc(t.note) + " <b>" + shown.length + " poses.</b>"}</p>
+      <div class="pgrid">${shown.slice(0, state.limit).map(p => poseCell(p, "lib")).join("")}</div>
+      ${shown.length > state.limit ? `<button class="btn ghost more" data-more>Show ${Math.min(30, shown.length - state.limit)} more</button>` : ""}`;
+  }},
+
+  session: { title: "Session Mode", render() {
+    const loc = ghLoc(), day = sunDay(loc, todayIn(loc.tz));
+    const ghl = `<button class="ghline" data-go="golden">${ic("sun")}<span>Golden hour today in ${esc(loc.name)}: <b>${fmtTime(day.goldPM, loc.tz)} to ${fmtTime(day.set, loc.tz)}</b></span></button>`;
+    if (!state.flow) {
+      const thumb = f => { const first = f.stages.flatMap(s => s[1]).map(n => byName(f.type, n)).find(p => p && PHOTOS.has(key(p))) || byName(f.type, f.stages[0][1][0]); return ph(first); };
+      return `<div><h2>Pick a session flow</h2><p class="muted small" style="margin-top:6px">Each flow runs in shooting order: warm-up first, must-haves early, the fun stuff last.</p></div>
+        ${ghl}
+        ${picks.length ? `<button class="flow feature" data-flow="picks"><div class="ph">${ic("heart")}</div><span><span class="code">${picks.length} poses</span><b>Shoot my picks</b></span>${ic("chev")}</button>` : ""}
+        <div class="flowlist">${FLOWS.map(f => { const n = f.stages.reduce((a, s) => a + s[1].length, 0); return `<button class="flow" data-flow="${f.id}">${thumb(f)}<span><span class="code">${esc(typeOf(f.type).label)} · ${n} poses · ${esc(f.length)}</span><b>${esc(f.name)}</b></span>${ic("chev")}</button>`; }).join("")}</div>`;
+    }
+    let name, steps, stages;
+    if (state.flow === "picks" || state.flow === "custom") {
+      const ids = state.flow === "picks" ? picks : state.custom.ids;
+      name = state.flow === "picks" ? "My picks" : state.custom.name;
+      steps = ids.map(poseById).filter(Boolean).map(p => ({ stage: typeOf(p.who).label, p }));
+      stages = [...new Set(steps.map(s => s.stage))];
+    } else {
+      const f = FLOWS.find(x => x.id === state.flow);
+      name = f.name;
+      steps = f.stages.flatMap(([stage, names]) => names.map(n => ({ stage, p: byName(f.type, n) }))).filter(s => s.p);
+      stages = f.stages.map(s => s[0]);
+    }
+    if (!steps.length) return `<p class="muted">No poses in this flow yet.</p><button class="btn ghost" data-flow="">All flows</button>`;
+    const i = Math.min(state.step, steps.length - 1), s = steps[i];
+    return `<div class="row" style="justify-content:space-between"><span class="eyebrow">${esc(name)}</span><button class="btn ghost sm" data-flow="">All flows</button></div>
+      <div class="progress" aria-hidden="true"><i style="width:${((i + 1) / steps.length) * 100}%"></i></div>
+      <div class="stagebar">${stages.map(st => `<span class="${st === s.stage ? "on" : ""}">${esc(st)}</span>`).join("")}</div>
+      <section class="step" aria-live="polite">
+        <span class="code">Pose ${i + 1} of ${steps.length} · ${esc(s.stage)} · ${s.p.frame}</span>
+        ${ph(s.p, false)}
+        <h2>${esc(s.p.name)}</h2>
+        <p class="cue">${esc(s.p.cue)}</p>
+        <p class="why">${esc(s.p.why)}</p>
+        <p class="avoid"><b>Skip:</b> ${esc(s.p.avoid)}</p>
+        ${i + 1 < steps.length ? `<p class="small muted">Next up: ${esc(steps[i + 1].p.name)}</p>` : `<p class="small accent"><b>Last pose. That's a wrap!</b></p>`}
+      </section>
+      <div class="stepnav"><button class="btn ghost" data-stepby="-1" ${i === 0 ? "disabled" : ""}>Back</button><button class="btn accent" data-stepby="1" ${i + 1 >= steps.length ? "disabled" : ""}>Next pose</button></div>`;
+  }},
+
+  fixes: { title: "Micro adjustments", render() {
+    const areas = ["All", ...new Set(FIXES.map(f => f.area))];
+    const shown = FIXES.filter(f => state.fixArea === "All" || f.area === state.fixArea);
+    const fig = (f, which) => {
+      const photo = f.photo && f.photo[which];
+      return `<div class="fig ${which}"><span class="tag">${which}</span>${photo ? `<img src="${esc(photo)}" alt="${which} photo for ${esc(f.name)}" loading="lazy">` : sk(BA[f.fig][which === "before" ? 0 : 1], which)}</div>`;
+    };
+    return `<div class="card callout"><p><b>How to coach it:</b> never name the body part you're fixing. Give the cue ("forehead toward me") and tell them it's the trick models use. Clients hear direction, not criticism.</p></div>
+      ${chips("area", state.fixArea, areas.map(a => [a, a]))}
+      ${shown.map(f => `<article class="card">
+        <span class="eyebrow">${esc(f.area)}</span><h2>${esc(f.name)}</h2>
+        <div class="ba">${fig(f, "before")}${fig(f, "after")}</div>
+        <p class="small muted"><b>Before:</b> ${esc(f.before)}</p>
+        <p><b>Say:</b> "${esc(f.cue)}"</p>
+        <p class="why">${esc(f.why)}</p>
+        <p class="note"><b>Plus-size tip:</b> ${esc(f.plus)}</p>
+      </article>`).join("")}`;
+  }},
+
+  hands: { title: "Hands & expressions", render() {
+    const block = (title, intro, rows, label) => `<section class="card"><h2>${title}</h2><p class="muted small">${intro}</p>
+      ${rows.map(([n, cue, why], i) => `<div style="display:grid;gap:3px;padding-top:12px;border-top:1px solid var(--line)"><span class="code">${label} ${String(i + 1).padStart(2, "0")}</span><h3>${esc(n)}</h3><p>"${esc(cue)}"</p><p class="why small">${esc(why)}</p></div>`).join("")}</section>`;
+    return block("Hands", "Hands show nerves first. Give them a job, keep them soft, and show the edge, not the palm.", HANDS, "Hands")
+      + block("Expressions", "Don't ask for a smile. Give them a thought, a feeling or something silly to do, and the expression follows.", EXPRESSIONS, "Face");
+  }},
+
+  shy: { title: "Shy clients & wiggly kids", render() {
+    const block = (title, intro, rows) => `<section class="card"><h2>${title}</h2><p class="muted small">${intro}</p>
+      ${rows.map(([n, how, when]) => `<div style="display:grid;gap:3px;padding-top:12px;border-top:1px solid var(--line)"><h3>${esc(n)}</h3><p>${esc(how)}</p><p class="code">Best for: ${esc(when)}</p></div>`).join("")}</section>`;
+    return block("Shy adults", "Most adults freeze because they don't know what to do. Give them something to do and they forget the camera.", SHY.adults)
+      + block("Wiggly kids", "Kids don't pose, they play. Turn every shot into a game and keep the must-haves for the first ten minutes.", SHY.kids);
+  }},
+
+  prompts: { title: "Prompts", render() {
+    return `<div><h2>Real moments, not stiff smiles</h2><p class="muted small" style="margin-top:6px">Call these out during the shoot. The real laugh comes from doing it.</p></div>
+      ${chips("ptype", state.ptype, TYPES.map(x => [x.id, x.label]))}
+      <section class="card" style="min-height:200px;align-content:space-between"><p class="moodword" id="promptText" aria-live="polite">${esc(randomPrompt())}</p>
+      <button class="btn accent" data-nextprompt>Next prompt</button></section>`;
+  }},
+
+  angles: { title: "Angles & framing", render() {
+    return `<section class="card"><h2>Camera height cheat sheet</h2>
+      <img class="guideimg" src="photos/angles-camera-height.webp" alt="Camera height cheat sheet: above eye level, eye level, chest height, waist height and knee height, with the effect and best use of each" loading="lazy">
+      <div class="tablewrap"><table><thead><tr><th>Camera height</th><th>What it does</th><th>Use it for</th></tr></thead><tbody>${HEIGHTS.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>
+      <section class="card"><h2>By body type and goal</h2>
+      <img class="guideimg" src="photos/angles-body-type.webp" alt="By body type and goal: camera height, framing and tips for plus size, petite, tall, broad shoulders, mature clients, kids, couples with a height difference, maternity, groups and headshots" loading="lazy">
+      <div class="tablewrap"><table><thead><tr><th>Who or what</th><th>Camera height</th><th>Framing</th><th>Pro tip</th></tr></thead><tbody>${ANGLES.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>
+      <section class="card callout"><h3>The cropping rule</h3><p>${esc(CROP_RULE)}</p></section>`;
+  }},
+
+  light: { title: "Light & location", render() {
+    return `<button class="ghline" data-go="golden">${ic("sun")}<span>Find golden hour for any day and city</span></button>` + LIGHT.map(l => `<section class="card"><h2>${esc(l.name)}</h2>${l.img ? `<img class="guideimg" src="${esc(l.img)}" alt="${esc(l.imgAlt || l.name)}" loading="lazy">` : ""}<p class="muted">${esc(l.look)}</p>
+      <p><b>Where to put them:</b> ${esc(l.place)}</p>
+      <ul>${l.tweaks.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
+      <p class="small"><b>Best for:</b> ${esc(l.best)}</p><p class="avoid small"><b>Watch out:</b> ${esc(l.avoid)}</p></section>`).join("");
+  }},
+
+  golden: { title: "Golden hour finder", render() {
+    const loc = ghLoc(), ymd = state.ghDate || todayIn(loc.tz), d = sunDay(loc, ymd), tz = loc.tz;
+    const custom = !CITIES.some(c => c[0] === loc.name);
+    const slots = []; for (let i = 0; i < d.pts.length - 1; i += 5) slots.push(elevColor(d.pts[i][1]));
+    const grad = slots.map((c, i) => `${c} ${(i / slots.length * 100).toFixed(2)}% ${((i + 1) / slots.length * 100).toFixed(2)}%`).join(",");
+    const now = Date.now(), nowPct = ymd === todayIn(tz) ? (now - d.t0) / 864e5 * 100 : -1;
+    const row = (label, a, b, color) => `<div class="ghrow"><span class="small muted"><i class="dot" style="background:${color}"></i>${label}</span><b>${b === undefined ? fmtTime(a, tz) : `${fmtTime(a, tz)} – ${fmtTime(b, tz)}`}</b></div>`;
+    const noSet = d.rise == null && d.set == null;
+    return `<section class="card">
+        <label class="lbl" for="ghCity">Location</label>
+        <select class="field" id="ghCity">${custom ? `<option value="custom" selected>${esc(loc.name)}</option>` : ""}${CITIES.map((c, i) => `<option value="${i}" ${c[0] === loc.name ? "selected" : ""}>${esc(c[0])}</option>`).join("")}</select>
+        <div class="row"><button class="btn ghost sm" data-geo>${ic("pin")}Use my location</button><span class="toast" id="toast" role="status"></span></div>
+        <label class="lbl" for="ghDate">Date</label>
+        <input class="field" id="ghDate" type="date" value="${ymd}">
+      </section>
+      ${noSet ? `<div class="note">The sun doesn't rise or set here on this day, so there's no golden hour.</div>` : `
+      <div><div class="timeline" style="background:linear-gradient(90deg,${grad})">${nowPct >= 0 && nowPct <= 100 ? `<span class="now" style="left:${nowPct}%" title="Now"></span>` : ""}</div>
+        <div class="ticks"><span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>12 AM</span></div></div>
+      <div class="legend"><span><i class="dot" style="background:#3e5c9e"></i>Blue hour</span><span><i class="dot" style="background:#e3a24a"></i>Golden hour</span><span><i class="dot" style="background:#bcd6ea"></i>Daylight</span></div>
+      <div class="ghgrid">
+        <div class="ghcard"><span class="eyebrow">Evening</span>${row("Golden hour", d.goldPM, d.bluePM, "#e3a24a")}${row("Sunset", d.set, undefined, "#d0453f")}${row("Blue hour", d.bluePM, d.bluePMend, "#3e5c9e")}</div>
+        <div class="ghcard"><span class="eyebrow">Morning</span>${row("Blue hour", d.blueAM, d.goldAM, "#3e5c9e")}${row("Sunrise", d.rise, undefined, "#d0453f")}${row("Golden hour", d.goldAM, d.goldAMend, "#e3a24a")}</div>
+      </div>
+      <section class="card"><h3>Plan the session</h3><ul>
+        <li>Start about <b>${fmtTime(d.goldPM == null ? null : d.goldPM - 45 * 6e4, tz)}</b> so the warm-up and must-haves are done before the best light.</li>
+        <li>Save backlit, silhouette and movement poses for the last 20 minutes before sunset.</li>
+        <li>Blue hour after sunset is great for city lights and moody couples shots. Bring a fast lens or a flash.</li>
+        <li>Hills, buildings and trees block the sun early. Scout the spot or arrive 15 minutes sooner.</li>
+      </ul><p class="small muted">Times are for ${esc(loc.name)} (${esc(tz.replace(/_/g, " "))}) and accurate to about a minute on flat ground.</p></section>`}`;
+  }},
+
+  gear: { title: "Camera gear", render() {
+    const sec = state.gear || GEAR[0].name, g = GEAR.find(x => x.name === sec);
+    return `<div><h2>What to bring and when</h2><p class="muted small" style="margin-top:6px">Lenses, flash, continuous light and reflectors, plus a ready kit for every session type.</p></div>
+      ${chips("gear", sec, [...GEAR.map(x => [x.name, x.name]), ["Kits", "Kit by session"]])}
+      ${g ? `<section class="card"><h2>${esc(g.name)}</h2><p class="muted small">${esc(g.intro)}</p>
+        ${g.rows.map(([n, use, tip]) => `<div style="display:grid;gap:3px;padding-top:12px;border-top:1px solid var(--line)"><h3>${esc(n)}</h3><p>${esc(use)}</p><p class="note"><b>Tip:</b> ${esc(tip)}</p></div>`).join("")}</section>`
+      : `<section class="card"><h2>Kit by session type</h2><div class="tablewrap"><table><thead><tr><th>Session</th><th>Lenses</th><th>Light</th><th>Also pack</th></tr></thead><tbody>${KITS.map(([t, ...r]) => `<tr><td>${esc(typeOf(t).label)}</td>${r.map(c => `<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`}`;
+  }},
+
+  wear: { title: "What to wear", render() {
+    const w = WEAR.find(x => x.type === state.wearType) || WEAR[0], t = typeOf(w.type), se = SEASONS.find(x => x.id === state.season);
+    const board = pal => `<div class="mood" aria-label="Color moodboard">${pal.map(([n, hex]) => `<div class="sw" style="background:${hex};color:${lum(hex) > .55 ? "#16181b" : "#f8f9f6"}">${esc(n)}<code>${hex}</code></div>`).join("")}</div>`;
+    return `<div class="hello">${monogram()}<div><div class="eyebrow">${esc(brand.name)}</div><h2>What to wear: ${esc(t.label)}${se ? " in " + se.name.toLowerCase() : ""}</h2></div></div>
+      ${chips("wear", w.type, WEAR.map(x => [x.type, typeOf(x.type).label]))}
+      ${seg("season", state.season, [["all", "Year-round"], ...SEASONS.map(x => [x.id, x.name])])}
+      ${board(se ? se.palette : w.palette)}
+      <p class="moodword">${esc(se ? se.mood : w.mood)}</p>
+      ${se ? `<section class="card"><h3>${esc(se.name)} outfits</h3><p><b>Fabrics:</b> ${esc(se.fabrics)}</p><ul>${se.ideas.map(x => `<li>${esc(x)}</li>`).join("")}</ul><p class="note"><b>Location tip:</b> ${esc(se.tip)}</p></section>
+      <div class="sect"><div class="eyebrow">Year-round colors for ${esc(t.label)}</div><div class="seg" style="padding:6px;gap:6px">${w.palette.map(([n, hex]) => `<span title="${esc(n)}" style="flex:1;height:30px;border-radius:7px;background:${hex}"></span>`).join("")}</div></div>` : ""}
+      <section class="card"><p><b>Fabrics that photograph well:</b> ${esc(w.fabrics)}</p>
+        <h3>Outfit ideas</h3><ul>${w.pairs.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
+        <p class="avoid"><b>Skip:</b> ${esc(w.avoid)}</p></section>
+      <section class="card"><h3>Every session</h3><ul>
+        <li>Pick 2 or 3 colors and mix them. Matching outfits look like uniforms.</li>
+        <li>Solid colors and texture beat logos and tiny stripes.</li>
+        <li>Clothes that fit you today beat baggy or tight.</li>
+        <li>Bring a backup outfit and a lint roller.</li></ul></section>
+      ${clientMode ? "" : `<section class="card"><h3>Send it or take it to Canva</h3>
+        <p class="small muted">Copy this guide with its color codes, then paste it into a message or a Canva design.</p>
+        <div class="row"><button class="btn" data-copy="wear">${ic("copy")}Copy this guide</button></div><p class="toast" id="toast" role="status"></p></section>`}`;
+  }},
+
+  questions: { title: "Client questionnaire", render() {
+    const qs = store.get("questions", QUESTIONS);
+    return `<p class="muted">These are the questions your clients answer in the client link. Edit, add or remove them.${db && owner ? " Changes go to your client link automatically." : " Your changes save in this browser."}</p>
+      <section class="card"><div class="edit" id="qEdit">${qs.map((q, i) => `<div class="item"><span class="qn">${i + 1}</span><input type="text" id="q${i}" data-q="${i}" value="${esc(q)}" aria-label="Question ${i + 1}"><button class="x" data-delq="${i}" aria-label="Remove question ${i + 1}">×</button></div>`).join("")}</div>
+      <div class="row"><button class="btn ghost sm" data-addq>Add a question</button><button class="btn ghost sm" data-resetq>Reset to default</button></div></section>
+      <div class="row"><button class="btn" data-copy="questions">${ic("copy")}Copy as a list</button><button class="btn ghost" data-go="clientlink">${ic("link")}Client link</button></div>
+      <p class="toast" id="toast" role="status"></p>`;
+  }},
+
+  checklist: { title: "Shoot checklist", render() {
+    const cl = store.get("checklist", CHECKLIST), done = store.get("checked", {});
+    return `<p class="muted">Tick things off as you prep. Edit any line, or add your own. It all saves in this browser.</p>
+      ${Object.entries(cl).map(([g, items]) => `<section class="card"><h3>${esc(g)}</h3><div class="edit">${items.map((it, i) => { const k = g + "|" + i; return `<div class="item"><input type="checkbox" id="c-${esc(k)}" data-check="${esc(k)}" ${done[k] ? "checked" : ""} aria-label="Done"><input type="text" id="t-${esc(k)}" data-citem="${esc(g)}" data-ci="${i}" value="${esc(it)}" aria-label="Checklist item"><button class="x" data-delc="${esc(g)}" data-ci="${i}" aria-label="Remove item">×</button></div>`; }).join("")}</div>
+        <div class="row"><button class="btn ghost sm" data-addc="${esc(g)}">Add item</button></div></section>`).join("")}
+      <div class="row"><button class="btn" data-copy="checklist">${ic("copy")}Copy checklist</button><button class="btn ghost sm" data-resetc>Untick all</button><button class="btn ghost sm" data-resetcl>Reset to default</button></div>
+      <p class="toast" id="toast" role="status"></p>`;
+  }},
+
+  deck: { title: "Cue Cards", render() {
+    return `<p class="muted">The 100 essentials. Tap a card to open it phone-size: screenshot it for your lock screen, or swipe through on set. The printable version (2.5 × 3.5 in) comes as a separate PDF.${HOSTED && HOSTED.deckPdf ? ` <a class="link" href="${esc(HOSTED.deckPdf)}" download>Download printable Cue Cards</a>` : ""}</p>
+      <div class="deck">${DECK.map((p, i) => `<button class="pcard" data-card="${i}"><span class="code">${String(i + 1).padStart(3, "0")} · ${typeOf(p.who).code}</span>${ph(p)}<b>${esc(p.name)}</b></button>`).join("")}</div>`;
+  }},
+
+  brand: { title: "Your studio", render() {
+    return `<p class="muted">Your name, color, logo and contact details show on the home screen, the What to Wear guide and your client link.${db && owner ? " They sync to your client link automatically." : ""}</p>
+      <section class="card">
+        <label class="lbl" for="bName">Studio name</label><input class="field" id="bName" type="text" value="${esc(brand.name)}">
+        <label class="lbl" for="bEmail">Email for client messages</label><input class="field" id="bEmail" type="email" placeholder="you@example.com" value="${esc(brand.email)}">
+        <label class="lbl" for="bPhone">Phone for texts (optional)</label><input class="field" id="bPhone" type="tel" placeholder="(555) 123-4567" value="${esc(brand.phone)}">
+        <label class="lbl" for="bColor">Brand color</label><div class="row"><input id="bColor" type="color" value="${brand.color || "#8b5e34"}" style="width:56px;height:40px;border:none;background:none;padding:0"><button class="btn ghost sm" data-resetcolor>Use default</button></div>
+        <label class="lbl" for="bLogo">Logo</label><input id="bLogo" type="file" accept="image/*">
+        ${brand.logo ? `<div class="row">${monogram()}<button class="btn ghost sm" data-nologo>Remove logo</button></div>` : ""}
+        <p class="toast" id="toast" role="status"></p>
+      </section>`;
+  }},
+
+  clientlink: { title: "Client link", render() {
+    if (HOSTED) {
+      const url = HOSTED.url + "#client";
+      return `<section class="card"><h2>One link for every client</h2>
+        <p>Clients get a simpler version of Cue: they browse poses, read What to Wear, answer your questionnaire and tap a heart on poses they love. Then one button sends it all to you.</p>
+        <input class="field" readonly value="${esc(url)}" aria-label="Client link" onclick="this.select()">
+        <div class="row"><button class="btn accent" data-copylink="${esc(url)}">${ic("copy")}Copy client link</button><button class="btn ghost" data-preview>Preview</button></div>
+        <p class="toast" id="toast" role="status"></p>
+        <ol class="steps" style="padding:0">
+          <li><span>Send that link to your client by text or email.</span></li>
+          <li><span>They tap <b>Send to ${esc(brand.name)}</b>. It opens their email or texts with everything filled in.</span></li>
+          <li><span>Paste their message into your <button class="link" data-go="inbox">Client inbox</button> to see their picks with photos and shoot them in Session Mode.</span></li>
+        </ol></section>
+      <div class="note">On the website, your studio settings, edited questions and inbox save on this device only. Clients see the default questions.</div>`;
+    }
+    return `<section class="card"><h2>One link for every client</h2>
+        <p>Clients get a simpler version of Cue: they browse poses, read What to Wear, answer your questionnaire and tap a heart on poses they love. Then one button sends it all to you.</p>
+        <ol class="steps" style="padding:0">
+          <li><span>Open the <b>Share</b> menu for this app and turn on link sharing.</span></li>
+          <li><span>Send that link to your client. Anyone who isn't you sees the client version automatically.</span></li>
+          <li><span>They tap <b>Send to ${esc(brand.name)}</b>. It opens their email or texts with everything filled in.</span></li>
+          <li><span>Paste their message into your <button class="link" data-go="inbox">Client inbox</button> to see their picks with photos and shoot them in Session Mode.</span></li>
+        </ol>
+        <button class="btn accent" data-preview>Preview what clients see</button></section>
+      <section class="card"><h3>Before you share</h3><ul>
+        <li>Add your email and phone under <button class="link" data-go="brand">Your studio</button> so clients can send to you.</li>
+        <li>Check your <button class="link" data-go="questions">questionnaire</button>.</li>
+        ${db && owner ? "" : "<li>Your studio details and questions sync to clients once the app is opened from its shared link. Until then clients see the defaults.</li>"}
+      </ul></section>
+      <div class="note">Clients can't drop answers straight into your inbox, because people outside your account can't save to the app. Sending by email or text keeps it simple and works on every phone.</div>`;
+  }},
+
+  inbox: { title: "Client inbox", render() {
+    if (!state.inbox) { inboxLoad().then(render); return `<p class="muted">Loading your inbox…</p>`; }
+    return `<section class="card"><h2>Add a client's message</h2>
+        <p class="small muted">When a client sends their answers and picks, copy their whole email or text and paste it here.</p>
+        <textarea class="field" id="inboxPaste" placeholder="Paste the client's message"></textarea>
+        <div class="row"><button class="btn accent" data-inboxadd>Add to inbox</button><span class="toast" id="toast" role="status"></span></div>
+        <p class="small muted">${state.inboxWhere === "app" ? "Saved to your app, so you'll see it on any device." : "Saved in this browser only."}</p></section>
+      ${state.inbox.length ? state.inbox.map(e => { const ps = (e.ids || []).map(poseById).filter(Boolean); return `<article class="card">
+        <div><span class="code">${new Date(e.at).toLocaleDateString()}${e.session ? " · " + esc(e.session) : ""}${e.date ? " · " + esc(e.date) : ""}</span><h2>${esc(e.name)}</h2></div>
+        ${ps.length ? `<div class="thumbs">${ps.map(p => `<button class="popen" style="width:auto" data-open="${p.id}" data-list="inbox-${esc(e.id)}">${ph(p)}</button>`).join("")}</div>` : `<p class="small muted">No pose picks in this message.</p>`}
+        <details><summary>Answers and full message</summary><pre class="msg">${esc(e.text)}</pre></details>
+        <div class="row">${ps.length ? `<button class="btn sm" data-shoot="${esc(e.id)}">${ic("play")}Shoot their ${ps.length} picks</button>` : ""}<button class="btn ghost sm" data-inboxdel="${esc(e.id)}">Delete</button></div>
+      </article>`; }).join("") : `<p class="muted" style="text-align:center">No client messages yet.</p>`}`;
+  }},
+
+  picks: { title: "My picks", render() {
+    const ps = picks.map(poseById).filter(Boolean);
+    lists.picks = ps.map(p => p.id);
+    return `<div><h2>Your picks</h2><p class="muted small" style="margin-top:6px">${ps.length ? ps.length + " poses saved." : "Tap the heart on any pose to save it here."}</p></div>
+      ${ps.length ? `<div class="row"><button class="btn accent" data-flow="picks">${ic("play")}Shoot these</button><button class="btn ghost" data-copy="picks">${ic("copy")}Copy list</button><button class="btn ghost sm" data-clearpicks>Clear all</button></div>
+      <div class="pgrid">${ps.map(p => poseCell(p, "picks")).join("")}</div>` : `<button class="btn" data-go="poses">Browse poses</button>`}
+      <p class="toast" id="toast" role="status"></p>`;
+  }}
+};
+
+// Client views replace a few pro views when the app is opened by a client.
+const CLIENT = {
+  home: { title: "Welcome", render() {
+    const hero = ["CPL-01", "WED-01", "MAT-01"].find(k => PHOTOS.has(k));
+    return `${aiNote()}<div class="hello">${monogram()}<div><div class="eyebrow">${esc(brand.name)}</div><h1>Let's plan your session</h1></div></div>
+      <button class="hero" data-go="poses">${hero ? `<img src="photos/${hero}.webp" alt="">` : ""}<span class="eyebrow">${POSES.length} poses</span><h2>Find the poses you love</h2><span class="go">Browse poses</span></button>
+      <section class="card"><h3>Four easy steps</h3><ol class="steps" style="padding:0">
+        <li><span>Browse poses and tap ${ic("heart")} on the ones you love.</span></li>
+        <li><span>Read <button class="link" data-go="wear">What to wear</button> for your session.</span></li>
+        <li><span>Answer a few <button class="link" data-go="questions">quick questions</button>.</span></li>
+        <li><span>Tap <b>Send</b> and it all goes to ${esc(brand.name)}.</span></li>
+      </ol></section>
+      <div class="tiles">
+        ${tile("poses", "grid", "Poses", "Tap the heart to save")}
+        ${tile("wear", "shirt", "What to wear", "Colors and outfit ideas")}
+        ${tile("questions", "clip", "Questions", questions().length + " quick questions")}
+        ${tile("picks", "send", "Send", "Your answers and picks")}
+      </div>
+      <p class="foot">Photographer? <button class="link" data-pro>Open the full Cue app</button><br>${aiLink}</p>`;
+  }},
+
+  questions: { title: "Questions", render() {
+    const a = store.get("answers", {}), qs = questions();
+    return `<div><h2>A few quick questions</h2><p class="muted small" style="margin-top:6px">Answer what you can. It saves as you type, and you'll send it with your picks.</p></div>
+      <section class="card">
+        <div class="qa"><label for="aName">Your name</label><input class="field" id="aName" data-ans="name" value="${esc(a.name)}" autocomplete="name"></div>
+        <div class="qa"><label for="aType">Type of session</label><select class="field" id="aType" data-ans="type"><option value="">Choose one</option>${TYPES.map(t => `<option value="${t.id}" ${a.type === t.id ? "selected" : ""}>${esc(t.label)}</option>`).join("")}</select></div>
+        <div class="qa"><label for="aDate">Date you're hoping for</label><input class="field" id="aDate" data-ans="date" value="${esc(a.date)}" placeholder="For example, May 12 at 6 PM"></div>
+      </section>
+      <section class="card">${qs.map((q, i) => `<div class="qa"><label for="a${i}">${i + 1}. ${esc(q)}</label><textarea class="field" id="a${i}" data-ans="q${i}">${esc(a["q" + i])}</textarea></div>`).join("")}</section>
+      <button class="btn accent block" data-go="picks">${ic("send")}Next: send to ${esc(brand.name)}</button>`;
+  }},
+
+  picks: { title: "Send", render() {
+    const ps = picks.map(poseById).filter(Boolean), a = store.get("answers", {}), qs = questions();
+    const answered = qs.filter((q, i) => (a["q" + i] || "").trim()).length;
+    lists.picks = ps.map(p => p.id);
+    const msg = clientMessage(), subject = `My session details for ${brand.name}`;
+    const mail = `mailto:${encodeURIComponent(brand.email || "")}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg)}`;
+    const sms = `sms:${encodeURIComponent((brand.phone || "").replace(/[^\d+]/g, ""))}?&body=${encodeURIComponent(msg)}`;
+    return `<div><h2>Send to ${esc(brand.name)}</h2><p class="muted small" style="margin-top:6px">${ps.length} pose picks · ${answered} of ${qs.length} questions answered${a.name ? "" : " · add your name in Questions"}</p></div>
+      <section class="card">
+        <div class="sendbtns">
+          <a class="btn accent" href="${mail}" target="_blank" rel="noopener">${ic("mail")}Email it</a>
+          <a class="btn" href="${sms}" target="_blank" rel="noopener">${ic("msg")}Text it</a>
+          ${navigator.share ? `<button class="btn ghost" data-share>${ic("share")}Share</button>` : ""}
+          <button class="btn ghost" data-copy="client">${ic("copy")}Copy</button>
+        </div>
+        ${brand.email || brand.phone ? `<p class="small muted">Or send it yourself to ${[brand.email, brand.phone].filter(Boolean).map(esc).join(" or ")}.</p>` : ""}
+        <p class="toast" id="toast" role="status"></p>
+        <details><summary>See the message</summary><pre class="msg">${esc(msg)}</pre></details>
+      </section>
+      ${ps.length ? `<div class="pgrid">${ps.map(p => poseCell(p, "picks")).join("")}</div>` : `<button class="btn ghost" data-go="poses">Pick some poses first</button>`}
+      ${answered ? "" : `<button class="btn ghost" data-go="questions">Answer the questions</button>`}`;
+  }}
+};
+const CLIENT_OK = ["home", "poses", "wear", "questions", "picks"];
+const viewDef = v => (clientMode && CLIENT[v]) || VIEWS[v];
+
+function lum(hex) { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; }
+let lastPrompt = "";
+function randomPrompt() { const l = PROMPTS[state.ptype]; let n; do { n = l[Math.floor(Math.random() * l.length)]; } while (l.length > 1 && n === lastPrompt); return (lastPrompt = n); }
+
+function copyText(kind) {
+  if (kind === "picks") {
+    const ps = picks.map(poseById).filter(Boolean);
+    return ps.length ? `Pose picks:\n` + TYPES.map(t => { const g = ps.filter(p => p.who === t.id); return g.length ? `\n${t.label}\n` + g.map(p => `- ${key(p)} ${p.name}`).join("\n") : ""; }).join("") : "";
+  }
+  if (kind === "client") return clientMessage();
+  if (kind === "questions") return `${brand.name}: before your session\n\n` + questions().map((q, i) => `${i + 1}. ${q}\n`).join("\n");
+  if (kind === "checklist") { const done = store.get("checked", {}); return Object.entries(store.get("checklist", CHECKLIST)).map(([g, it]) => `${g}\n` + it.map((x, i) => `[${done[g + "|" + i] ? "x" : " "}] ${x}`).join("\n")).join("\n\n"); }
+  if (kind === "wear") { const w = WEAR.find(x => x.type === state.wearType) || WEAR[0]; const se = SEASONS.find(x => x.id === state.season); return `${brand.name}: What to wear for ${typeOf(w.type).label}${se ? " in " + se.name.toLowerCase() : ""}\n\nMood: ${se ? se.mood : w.mood}\nColors: ${(se ? se.palette : w.palette).map(([n, h]) => `${n} ${h}`).join(", ")}\n${se ? `${se.name} fabrics: ${se.fabrics}\n${se.name} ideas:\n${se.ideas.map(x => "- " + x).join("\n")}\nTip: ${se.tip}\n\n` : ""}Fabrics: ${w.fabrics}\n\nOutfit ideas:\n${w.pairs.map(x => "- " + x).join("\n")}\n\nSkip: ${w.avoid}`; }
+  return "";
+}
+
+function toast(msg) { const t = document.getElementById("toast"); if (t) t.textContent = msg; }
+
+// ---------- Navigation ----------
+let view = "home";
+function tabsHtml() {
+  const t = (v, icon, label, badge) => `<button class="tab" data-go="${v}" ${view === v ? 'aria-current="page"' : ""}>${ic(icon)}<span>${label}</span>${badge ? `<span class="badge">${badge}</span>` : ""}</button>`;
+  return clientMode
+    ? t("home", "home", "Home") + t("poses", "grid", "Poses") + t("wear", "shirt", "Wear") + t("questions", "clip", "Questions") + t("picks", "send", "Send", picks.length)
+    : t("home", "home", "Home") + t("poses", "grid", "Poses") + t("session", "play", "Session") + t("golden", "sun", "Golden hour") + t("picks", "heart", "Picks", picks.length);
+}
+function go(v, keepScroll) {
+  if (!VIEWS[v] || (clientMode && !CLIENT_OK.includes(v))) v = "home";
+  view = v; state.sheet = null;
+  render();
+  if (!keepScroll) window.scrollTo(0, 0);
+  const h = "#" + (clientMode && !previewing ? "client/" : "") + v;
+  if (location.hash !== h) { try { history.replaceState(null, "", h); } catch (e) {} }
+}
+function render() {
+  const def = viewDef(view);
+  document.getElementById("barTitle").textContent = view === "home" ? brand.name : def.title;
+  document.getElementById("homeBtn").hidden = view === "home";
+  document.getElementById("tabs").innerHTML = tabsHtml();
+  const banner = previewing ? `<div class="preview">${ic("link")}<span>Client preview</span><button class="btn sm" style="background:var(--bg);color:var(--ink)" data-endpreview>Exit</button></div>` : "";
+  document.getElementById("app").innerHTML = `<div class="view">${banner}${def.render()}</div>` + (state.lock != null ? lockHtml() : "") + (state.sheet ? sheetHtml() : "");
+  document.body.style.overflow = state.lock != null || state.sheet ? "hidden" : "";
+}
+function lockHtml() {
+  const p = DECK[state.lock];
+  return `<div class="lock" role="dialog" aria-label="Pose card ${state.lock + 1}"><div class="lockcard">
+    ${ph(p, false)}
+    <span class="code">${String(state.lock + 1).padStart(3, "0")} · ${typeOf(p.who).label}</span>
+    <h2>${esc(p.name)}</h2><p>${esc(p.cue)}</p><p class="avoid small"><b>Skip:</b> ${esc(p.avoid)}</p></div>
+    <div class="locknav"><button class="btn" data-lockby="-1">Prev</button><button class="btn" data-lockclose>Close</button><button class="btn" data-lockby="1">Next</button></div></div>`;
+}
+function sheetHtml() {
+  const ids = lists[state.sheet.list] || [state.sheet.id];
+  let i = ids.indexOf(state.sheet.id); if (i < 0) i = 0;
+  const p = poseById(ids[i]), on = picks.includes(p.id);
+  return `<div class="sheet" role="dialog" aria-label="${esc(p.name)}"><div class="sheetin">
+      <div class="sheettop"><button class="iconbtn" data-sheetclose aria-label="Close">${ic("close")}</button><span class="code">${i + 1} of ${ids.length}</span><button class="heartbig" data-heart="${p.id}" aria-pressed="${on}">${heartPath}${on ? "Saved" : "Save"}</button></div>
+      ${ph(p, false)}
+      <span class="code">${p.frame} · ${esc(typeOf(p.who).label)}${p.tag ? " · " + esc(p.tag) : ""}</span>
+      <h2>${esc(p.name)}</h2>
+      <p class="cue">${esc(p.cue)}</p>
+      <p class="why">${esc(p.why)}</p>
+      <p class="avoid"><b>Skip:</b> ${esc(p.avoid)}</p>
+    </div>
+    <div class="sheetnav"><div><button class="btn ghost" data-sheetby="-1" ${i === 0 ? "disabled" : ""}>Previous</button><button class="btn" data-sheetby="1" ${i + 1 >= ids.length ? "disabled" : ""}>Next</button></div></div></div>`;
+}
+function sheetStep(n) {
+  const ids = lists[state.sheet.list] || []; const i = ids.indexOf(state.sheet.id) + n;
+  if (i >= 0 && i < ids.length) { state.sheet.id = ids[i]; render(); document.querySelector(".sheet")?.scrollTo(0, 0); }
+}
+
+document.getElementById("homeBtn").addEventListener("click", () => { state.lock = null; if (view === "session" && state.flow) { state.flow = null; return render(); } go("home"); });
+document.getElementById("tabs").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if (b) { if (b.dataset.go === "session") state.flow = null; go(b.dataset.go); } });
+
+const app = document.getElementById("app");
+app.addEventListener("click", e => {
+  const d = e.target.closest("button")?.dataset; if (!d) return;
+  if (d.go) return go(d.go);
+  if (d.open) { state.sheet = { id: d.open, list: d.list }; return render(); }
+  if (d.sheetclose !== undefined) { state.sheet = null; return render(); }
+  if (d.sheetby) return sheetStep(Number(d.sheetby));
+  if (d.type) { state.type = d.type; state.tag = "All"; state.limit = 30; return render(); }
+  if (d.tag) { state.tag = d.tag; state.limit = 30; return render(); }
+  if (d.more !== undefined) { state.limit += 30; return render(); }
+  if (d.heart) { const id = d.heart; picks = picks.includes(id) ? picks.filter(x => x !== id) : [...picks, id]; store.set("picks", picks); return render(); }
+  if (d.flow !== undefined) { state.flow = d.flow || null; state.step = 0; if (state.flow) requestWake(); if (view !== "session") return go("session"); render(); return window.scrollTo(0, 0); }
+  if (d.shoot) { const en = state.inbox.find(x => x.id === d.shoot); state.custom = { name: en.name + "'s picks", ids: en.ids }; state.flow = "custom"; state.step = 0; requestWake(); return go("session"); }
+  if (d.stepby) { state.step = Math.max(0, state.step + Number(d.stepby)); render(); return window.scrollTo(0, 0); }
+  if (d.gear) { state.gear = d.gear; return render(); }
+  if (d.area) { state.fixArea = d.area; return render(); }
+  if (d.ptype) { state.ptype = d.ptype; return render(); }
+  if (d.nextprompt !== undefined) { document.getElementById("promptText").textContent = randomPrompt(); return; }
+  if (d.season) { state.season = d.season; return render(); }
+  if (d.wear) { state.wearType = d.wear; return render(); }
+  if (d.card) { state.lock = Number(d.card); requestWake(); return render(); }
+  if (d.lockby) { state.lock = (state.lock + Number(d.lockby) + DECK.length) % DECK.length; return render(); }
+  if (d.lockclose !== undefined) { state.lock = null; return render(); }
+  if (d.clearpicks !== undefined) { picks = []; store.set("picks", picks); render(); return toast("Cleared your picks."); }
+  if (d.addq !== undefined) { const qs = store.get("questions", QUESTIONS); qs.push(""); store.set("questions", qs); render(); return document.getElementById("q" + (qs.length - 1))?.focus(); }
+  if (d.delq) { const qs = store.get("questions", QUESTIONS); qs.splice(Number(d.delq), 1); store.set("questions", qs); shareSettings(); return render(); }
+  if (d.resetq !== undefined) { store.set("questions", QUESTIONS); shareSettings(); render(); return toast("Back to the default questions."); }
+  if (d.addc) { const cl = store.get("checklist", CHECKLIST); cl[d.addc].push(""); store.set("checklist", cl); return render(); }
+  if (d.delc) { const cl = store.get("checklist", CHECKLIST); cl[d.delc].splice(Number(d.ci), 1); store.set("checklist", cl); store.set("checked", {}); return render(); }
+  if (d.resetc !== undefined) { store.set("checked", {}); return render(); }
+  if (d.resetcl !== undefined) { store.set("checklist", CHECKLIST); store.set("checked", {}); return render(); }
+  if (d.resetcolor !== undefined) { brand.color = ""; store.set("brand", brand); applyBrand(); shareSettings(); return render(); }
+  if (d.nologo !== undefined) { brand.logo = ""; store.set("brand", brand); shareSettings(); return render(); }
+  if (d.ainote !== undefined) { store.set("aiNoteSeen", true); return render(); }
+  if (d.ainoteshow !== undefined) { store.set("aiNoteSeen", false); render(); return window.scrollTo(0, 0); }
+  if (d.copylink) { navigator.clipboard.writeText(d.copylink).then(() => toast("Copied the client link.")).catch(() => toast("Select the link above and copy it.")); return; }
+  if (d.preview !== undefined) { clientMode = true; previewing = true; return go("home"); }
+  if (d.endpreview !== undefined) { clientMode = false; previewing = false; return go("clientlink"); }
+  if (d.pro !== undefined) { store.set("mode", "pro"); clientMode = false; previewing = false; return go("home"); }
+  if (d.geo !== undefined) {
+    if (!navigator.geolocation) return toast("Location isn't available here.");
+    toast("Finding you…");
+    navigator.geolocation.getCurrentPosition(pos => {
+      store.set("ghLoc", { name: "My location", lat: +pos.coords.latitude.toFixed(3), lon: +pos.coords.longitude.toFixed(3), tz: Intl.DateTimeFormat().resolvedOptions().timeZone });
+      render();
+    }, () => toast("Couldn't get your location. Pick a city instead."), { timeout: 10000 });
+    return;
+  }
+  if (d.inboxadd !== undefined) {
+    const txt = document.getElementById("inboxPaste").value;
+    if (!txt.trim()) return toast("Paste a message first.");
+    const en = parseMessage(txt);
+    inboxAdd(en).then(() => { render(); toast(`Added ${en.name} with ${en.ids.length} picks.`); }).catch(() => toast("Couldn't save that. Try again."));
+    return;
+  }
+  if (d.inboxdel) { if (confirm("Delete this message?")) inboxDelete(d.inboxdel).then(render).catch(() => toast("Couldn't delete that.")); return; }
+  if (d.share !== undefined) { navigator.share({ title: `My session details for ${brand.name}`, text: clientMessage() }).catch(() => {}); return; }
+  if (d.copy) {
+    const txt = copyText(d.copy);
+    if (!txt) return toast("Pick at least one pose first.");
+    navigator.clipboard.writeText(txt).then(() => toast(d.copy === "client" ? `Copied. Paste it into an email or text to ${brand.name}.` : "Copied. Paste it into a text, email or Canva.")).catch(() => {
+      const ta = document.createElement("textarea"); ta.className = "out"; ta.value = txt; ta.readOnly = true;
+      document.getElementById("toast").replaceWith(ta); ta.select();
+    });
+  }
+});
+app.addEventListener("input", e => {
+  const el = e.target;
+  if (el.id === "poseSearch") { state.q = el.value; state.limit = 30; const pos = el.selectionStart; render(); const s = document.getElementById("poseSearch"); s.focus(); s.setSelectionRange(pos, pos); return; }
+  if (el.dataset.q !== undefined) { const qs = store.get("questions", QUESTIONS); qs[Number(el.dataset.q)] = el.value; store.set("questions", qs); shareSettings(); }
+  if (el.dataset.citem) { const cl = store.get("checklist", CHECKLIST); cl[el.dataset.citem][Number(el.dataset.ci)] = el.value; store.set("checklist", cl); }
+  if (el.dataset.ans) { const a = store.get("answers", {}); a[el.dataset.ans] = el.value; store.set("answers", a); }
+  if (el.id === "bName") { brand.name = el.value || "Your studio"; store.set("brand", brand); document.getElementById("barTitle").textContent = "Your studio"; shareSettings(); }
+  if (el.id === "bEmail") { brand.email = el.value.trim(); store.set("brand", brand); shareSettings(); }
+  if (el.id === "bPhone") { brand.phone = el.value.trim(); store.set("brand", brand); shareSettings(); }
+  if (el.id === "bColor") { brand.color = el.value; store.set("brand", brand); applyBrand(); shareSettings(); }
+});
+app.addEventListener("change", e => {
+  const el = e.target;
+  if (el.dataset.check) { const done = store.get("checked", {}); done[el.dataset.check] = el.checked; store.set("checked", done); }
+  if (el.id === "ghCity" && el.value !== "custom") { const c = CITIES[Number(el.value)]; store.set("ghLoc", { name: c[0], lat: c[1], lon: c[2], tz: c[3] }); return render(); }
+  if (el.id === "ghDate") { state.ghDate = el.value; return render(); }
+  if (el.id === "bLogo" && el.files[0]) {
+    // Shrink the logo so it fits in storage.
+    const img = new Image(), r = new FileReader();
+    r.onload = () => { img.onload = () => { const c = document.createElement("canvas"), s = 160 / Math.max(img.width, img.height); c.width = img.width * s; c.height = img.height * s; c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); brand.logo = c.toDataURL("image/png"); if (store.set("brand", brand)) { shareSettings(); render(); } else toast("This browser won't save the logo. Try a smaller image."); }; img.src = r.result; };
+    r.readAsDataURL(el.files[0]);
+  }
+});
+document.addEventListener("keydown", e => {
+  if (e.target.matches && e.target.matches("input, textarea, select")) return;
+  if (state.sheet) { if (e.key === "ArrowRight") sheetStep(1); if (e.key === "ArrowLeft") sheetStep(-1); if (e.key === "Escape") { state.sheet = null; render(); } }
+  else if (state.lock != null) { if (e.key === "ArrowRight") { state.lock = (state.lock + 1) % DECK.length; render(); } if (e.key === "ArrowLeft") { state.lock = (state.lock + DECK.length - 1) % DECK.length; render(); } if (e.key === "Escape") { state.lock = null; render(); } }
+  else if (view === "session" && state.flow) { if (e.key === "ArrowRight") { state.step++; render(); } if (e.key === "ArrowLeft" && state.step > 0) { state.step--; render(); } }
+});
+// Keep the screen on while using cards or Session Mode, where the browser allows it.
+function requestWake() { try { navigator.wakeLock?.request("screen").catch(() => {}); } catch (e) {} }
+
+function fromHash() {
+  const h = location.hash.slice(1);
+  if (h === "client" || h.startsWith("client/")) return { client: true, v: h.split("/")[1] || "home" };
+  return { client: false, v: h };
+}
+window.addEventListener("hashchange", () => { const r = fromHash(); if (r.client && !clientMode) clientMode = true; if (VIEWS[r.v] && r.v !== view) go(r.v); });
+
+// Theme: follow the device, or a light/dark choice remembered in this browser.
+const THEMES = { auto: ["sun", "Theme: matches your device. Tap for light."], light: ["sun", "Theme: light. Tap for dark."], dark: ["moon", "Theme: dark. Tap to match your device."] };
+ICON.moon = '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>';
+ICON.auto = '<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17z" fill="currentColor"/>';
+function applyTheme() {
+  const t = store.get("theme", "auto");
+  if (t === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", t);
+  const b = document.getElementById("themeBtn");
+  b.innerHTML = ic(t === "auto" ? "auto" : THEMES[t][0]); b.setAttribute("aria-label", THEMES[t][1]); b.title = THEMES[t][1];
+}
+document.getElementById("themeBtn").addEventListener("click", () => { const order = ["auto", "light", "dark"]; store.set("theme", order[(order.indexOf(store.get("theme", "auto")) + 1) % 3]); applyTheme(); });
+applyTheme();
+
+applyBrand();
+const start = fromHash();
+const forcedClient = start.client;
+clientMode = forcedClient;
+go(VIEWS[start.v] ? start.v : "home");
+
+// Who's viewing: the photographer sees the full app; anyone else sees the client version.
+(async () => {
+  if (!window.claude || !window.claude.use) return;
+  const [u, d] = await Promise.all([claude.use("user").catch(() => null), claude.use("db").catch(() => null)]);
+  db = d;
+  owner = u ? await u.isOwner().catch(() => false) : false;
+  if (!owner && !forcedClient && store.get("mode", "") !== "pro") { clientMode = true; go(CLIENT_OK.includes(view) ? view : "home", true); }
+  await loadShared();
+  if (view === "inbox") { state.inbox = null; render(); }
+})();
+</script>
+
+</body>
+</html>

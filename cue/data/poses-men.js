@@ -1,0 +1,28 @@
+// Men's portraits. Row: [sketch, name, cue, why it works, what to skip]
+P("men", "", [
+  ["stand", "The relaxed stand", "Turn your body away a little, weight on your back foot, shoulders loose.", "Looks confident without trying.", "Standing square like a passport photo."],
+  ["head", "Chin forward", "Push your chin slightly toward me, then down a touch.", "Defines the jawline.", "Lifting your chin up."],
+  ["head", "The squinch", "Tighten your lower eyelids a little, like you know something I don't.", "Confident eyes instead of a surprised stare.", "Squinting your whole face."],
+  ["arms", "Arms crossed, relaxed", "Cross your arms loosely, hands visible, front shoulder toward me.", "Strong but approachable.", "Gripping your arms tight."],
+  ["hip", "Hand in pocket", "One hand in your pocket, thumb out, other arm relaxed.", "Easygoing and natural.", "Both hands buried in your pockets."],
+  ["lean", "Wall lean", "Lean your shoulder on the wall, cross one ankle over the other.", "Relaxed, cool and natural.", "Leaning your whole back."],
+  ["walk", "Walking toward me", "Walk slowly toward me and look past the camera, then at me.", "Movement looks natural and strong.", "Marching or looking down."],
+  ["stand", "Sleeve roll", "Roll up one sleeve and look over at me as you finish.", "Gives your hands a job and adds character.", "Staring at your arm."],
+  ["stand", "Watch check", "Glance at your watch, then look up at me.", "A natural action that looks sharp.", "Holding your wrist up high."],
+  ["sit", "Seated, elbows on knees", "Sit forward with elbows on your knees and hands loosely clasped.", "Engaged and down to earth.", "Hunching your back. Lean from your hips."],
+  ["sit", "Ankle on knee", "Sit back with one ankle on the other knee, arm along the chair.", "Relaxed and in charge.", "Slumping down in the seat."],
+  ["head", "Laugh and look down", "Laugh at something, look down, then bring your eyes back up.", "A real, warm expression.", "Faking the laugh."],
+  ["stand", "Jacket on shoulder", "Hook your jacket on two fingers over your shoulder.", "Classic, confident menswear look.", "Gripping the jacket."],
+  ["stand", "Adjust the collar", "Straighten your collar or jacket with both hands and look at me.", "Natural movement that reads as polished.", "Looking down at your hands."],
+  ["look", "Over the shoulder", "Turn away and look back over your shoulder.", "Strong and a little moody.", "Twisting too far."],
+  ["head", "Look into the distance", "Look off to the side at something far away.", "A thoughtful, editorial portrait.", "Looking down at the ground."],
+  ["sit", "Steps sit", "Sit on a step, one leg stretched out, arm on your knee.", "Casual and confident.", "Both legs bunched up."],
+  ["stand", "Coffee in hand", "Hold your coffee at chest height and look at me.", "Friendly and relaxed.", "Hiding your mouth with the cup."],
+  ["head", "Hand to beard or chin", "Rest your knuckles lightly near your chin or beard.", "Thoughtful and gives your hand a job.", "Pressing your face into your hand."],
+  ["stand", "Hands clasped low", "Stand tall with hands loosely clasped in front at your belt.", "Simple, strong and clean.", "Clasping your hands too high."],
+  ["lean", "Railing lean", "Lean forward on a railing with your forearms and look at me.", "Relaxed and great with a view.", "Slumping your shoulders."],
+  ["stand", "Hobby moment", "Hold something you love, like a guitar, a tool or a camera.", "Shows who you are.", "Holding it in front of your face."],
+  ["head", "Moody light", "Turn your face toward the light until one side glows and the other falls into shadow.", "Dramatic and masculine.", "Turning so far your nose crosses your cheek."],
+  ["walk", "Walk past", "Walk past me without looking, then glance over when I call you.", "Feels like a candid street shot.", "Looking at the camera the whole time."],
+  ["arms", "Power stance", "Feet shoulder-width apart, arms crossed loosely, chin slightly down.", "Bold and strong for a final shot.", "Locking your knees."]
+]);
