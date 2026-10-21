@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Pose Pocket by Echocraft: a free posing guide for photographers, with 440 poses, session flows, a golden hour finder and client tools.">
+<meta name="description" content="Cue by Echocraft Photography: a free posing app for photographers, with 465 poses, session flows, a golden hour finder and client tools.">
 <meta name="theme-color" content="#f6f4f0">
 <link rel="icon" type="image/png" href="../images/logo-icon.png">
 <link rel="apple-touch-icon" href="../images/logo.png">
-<link rel="canonical" href="https://echocraftllc.com/pose-pocket/">
-<script>window.POSE_POCKET_SITE = { url: "https://echocraftllc.com/pose-pocket/", home: "../index.html", homeLabel: "echocraftllc.com", email: "Shaine.echocraft@gmail.com", phone: "(302) 803-6742", deckPdf: "deck/pocket-pose-deck-print.pdf" };</script>
-<title>Pose Pocket · For Photographers · Echocraft</title>
+<link rel="canonical" href="https://echocraftllc.com/cue/">
+<script>window.POSE_POCKET_SITE = { url: "https://echocraftllc.com/cue/", home: "../index.html", homeLabel: "echocraftllc.com", email: "Shaine.echocraft@gmail.com", phone: "(302) 803-6742", deckPdf: "deck/pocket-pose-deck-print.pdf" };</script>
+<title>Cue · For Photographers · Echocraft Photography</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap">
 <style>
@@ -282,7 +282,7 @@ pre.msg { white-space: pre-wrap; font: 13px/1.5 var(--sans); margin: 8px 0 0; ba
 <header class="bar">
   <div class="barin">
     <button class="iconbtn" id="homeBtn" aria-label="Back"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-    <div class="title" id="barTitle">Pose Pocket</div>
+    <div class="title" id="barTitle">Cue</div>
     <button class="iconbtn" id="themeBtn" aria-label="Theme"></button>
   </div>
 </header>
@@ -462,7 +462,7 @@ const monogram = () => `<div class="mono">${brand.logo ? `<img src="${brand.logo
 const aiNote = () => store.get("aiNoteSeen", false) ? "" : `<aside class="ainote" aria-label="About the photos"><button class="x" data-ainote aria-label="Close">×</button>
   <span class="eyebrow">About these photos</span>
   <h3>Made with AI, inspired by photographers</h3>
-  <p>The pose photos in Pose Pocket are made with generative AI. Not because we want to replace photographers, but because AI is a tool. It's one we can use for inspiration and help, never to take away our passion for photography or the real moments only a person behind the camera can capture.</p>
+  <p>The pose photos in Cue are made with generative AI. Not because we want to replace photographers, but because AI is a tool. It's one we can use for inspiration and help, never to take away our passion for photography or the real moments only a person behind the camera can capture.</p>
   <div class="row"><button class="btn sm" data-ainote>Got it</button></div></aside>`;
 const aiLink = `<button class="link" data-ainoteshow>About the AI photos</button>`;
 const heartPath = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
@@ -519,7 +519,7 @@ function clientMessage() {
   if (a.date) s += `Date I'm hoping for: ${a.date}\n`;
   s += `\nQUESTIONS\n` + qs.map((q, i) => `${i + 1}. ${q}\n${(a["q" + i] || "").trim() || "-"}`).join("\n\n");
   s += `\n\nMY POSE PICKS (${ps.length})\n` + (ps.length ? ps.map(p => `${key(p)} ${p.name}`).join("\n") : "-");
-  return s + "\n\nSent from Pose Pocket";
+  return s + "\n\nSent from Cue";
 }
 function parseMessage(txt) {
   const get = re => ((txt.match(re) || [])[1] || "").trim();
@@ -567,9 +567,9 @@ async function inboxDelete(id) {
 
 // ---------- Views ----------
 const VIEWS = {
-  home: { title: "Pose Pocket", render() {
+  home: { title: "Cue", render() {
     const hero = ["WED-01", "CPL-01", "MAT-01"].find(k => PHOTOS.has(k));
-    return `${aiNote()}<div class="hello">${monogram()}<div><div class="eyebrow">${esc(brand.name)}</div><h1>Pose Pocket</h1></div></div>
+    return `${aiNote()}<div class="hello">${monogram()}<div><div class="eyebrow">${esc(brand.name)}</div><h1>Cue</h1></div></div>
       <button class="hero" data-go="session">${hero ? `<img src="photos/${hero}.webp" alt="">` : ""}<span class="eyebrow">Session Mode</span><h2>Walk into every shoot with a plan</h2><span class="go">Start a session</span></button>
       <div class="stats"><div><b>${POSES.length}</b><span>poses</span></div><div><b>${FLOWS.length}</b><span>session flows</span></div><div><b>${TYPES.length}</b><span>session types</span></div></div>
       <section class="sect"><div class="eyebrow">During the shoot</div><div class="tiles">
@@ -595,7 +595,7 @@ const VIEWS = {
         ${tile("checklist", "check", "Shoot checklist", "Gear, location and flow")}
         ${tile("brand", "brush", "Your studio", "Name, color, logo and contact")}
       </div></section>
-      <p class="foot">Pose Pocket by ${esc(brand.name)}. Free to use. ${aiLink}${HOSTED ? `<br><a class="link" href="${esc(HOSTED.home)}">Back to ${esc(HOSTED.homeLabel)}</a>` : ""}</p>`;
+      <p class="foot">Cue by ${esc(brand.name)}. Free to use. ${aiLink}${HOSTED ? `<br><a class="link" href="${esc(HOSTED.home)}">Back to ${esc(HOSTED.homeLabel)}</a>` : ""}</p>`;
   }},
 
   poses: { title: "Pose library", render() {
@@ -812,7 +812,7 @@ const VIEWS = {
     if (HOSTED) {
       const url = HOSTED.url + "#client";
       return `<section class="card"><h2>One link for every client</h2>
-        <p>Clients get a simpler Pose Pocket: they browse poses, read What to Wear, answer your questionnaire and tap a heart on poses they love. Then one button sends it all to you.</p>
+        <p>Clients get a simpler version of Cue: they browse poses, read What to Wear, answer your questionnaire and tap a heart on poses they love. Then one button sends it all to you.</p>
         <input class="field" readonly value="${esc(url)}" aria-label="Client link" onclick="this.select()">
         <div class="row"><button class="btn accent" data-copylink="${esc(url)}">${ic("copy")}Copy client link</button><button class="btn ghost" data-preview>Preview</button></div>
         <p class="toast" id="toast" role="status"></p>
@@ -824,7 +824,7 @@ const VIEWS = {
       <div class="note">On the website, your studio settings, edited questions and inbox save on this device only. Clients see the default questions.</div>`;
     }
     return `<section class="card"><h2>One link for every client</h2>
-        <p>Clients get a simpler Pose Pocket: they browse poses, read What to Wear, answer your questionnaire and tap a heart on poses they love. Then one button sends it all to you.</p>
+        <p>Clients get a simpler version of Cue: they browse poses, read What to Wear, answer your questionnaire and tap a heart on poses they love. Then one button sends it all to you.</p>
         <ol class="steps" style="padding:0">
           <li><span>Open the <b>Share</b> menu for this app and turn on link sharing.</span></li>
           <li><span>Send that link to your client. Anyone who isn't you sees the client version automatically.</span></li>
@@ -883,7 +883,7 @@ const CLIENT = {
         ${tile("questions", "clip", "Questions", questions().length + " quick questions")}
         ${tile("picks", "send", "Send", "Your answers and picks")}
       </div>
-      <p class="foot">Photographer? <button class="link" data-pro>Open the full Pose Pocket</button><br>${aiLink}</p>`;
+      <p class="foot">Photographer? <button class="link" data-pro>Open the full Cue app</button><br>${aiLink}</p>`;
   }},
 
   questions: { title: "Questions", render() {
