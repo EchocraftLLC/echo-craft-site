@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" href="../images/logo-icon.png">
 <link rel="apple-touch-icon" href="../images/logo.png">
 <link rel="canonical" href="https://echocraftllc.com/cue/">
-<script>window.POSE_POCKET_SITE = { url: "https://echocraftllc.com/cue/", home: "../index.html", homeLabel: "echocraftllc.com", email: "Shaine.echocraft@gmail.com", phone: "(302) 803-6742", deckPdf: "deck/pocket-pose-deck-print.pdf" };</script>
+<script>window.POSE_POCKET_SITE = { url: "https://echocraftllc.com/cue/", home: "../index.html", homeLabel: "echocraftllc.com", email: "Shaine.echocraft@gmail.com", phone: "(302) 803-6742", deckPdf: "deck/cue-cards-print.pdf" };</script>
 <title>Cue · For Photographers · Echocraft Photography</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap">
@@ -419,7 +419,7 @@ const poseById = id => POSES.find(p => p.id === id);
 FIXES.forEach((f, i) => { const k = "FIX-" + String(i + 1).padStart(2, "0"); if (PHOTOS.has(k + "-before") && PHOTOS.has(k + "-after")) f.photo = { before: `photos/${k}-before.webp`, after: `photos/${k}-after.webp` }; });
 const byName = (type, name) => POSES.find(p => p.who === type && p.name === name);
 
-// The Pocket Pose Deck: 100 essentials, picked round-robin across each type's sub-groups.
+// Cue Cards: 100 essentials, picked round-robin across each type's sub-groups.
 const DECK_SPLIT = { couple: 15, wedding: 15, maternity: 14, corporate: 14, kids: 14, plus: 14, group: 14 };
 const DECK = [];
 TYPES.filter(t => DECK_SPLIT[t.id]).forEach(t => {
@@ -585,7 +585,7 @@ const VIEWS = {
         ${tile("light", "light", "Light & location", "Window, shade, golden hour, beach, city")}
         ${tile("angles", "frame", "Angles & framing", "Camera height by body and goal")}
         ${tile("gear", "camera", "Camera gear", "Lenses, flash, lights, reflectors")}
-        ${tile("deck", "cards", "Pocket Pose Deck", "100 essentials as cards")}
+        ${tile("deck", "cards", "Cue Cards", "100 essentials as cards")}
       </div></section>
       <section class="sect"><div class="eyebrow">Your clients</div><div class="tiles">
         ${tile("inbox", "inbox", "Client inbox", "Answers and picks clients send you")}
@@ -790,8 +790,8 @@ const VIEWS = {
       <p class="toast" id="toast" role="status"></p>`;
   }},
 
-  deck: { title: "Pocket Pose Deck", render() {
-    return `<p class="muted">The 100 essentials. Tap a card to open it phone-size: screenshot it for your lock screen, or swipe through on set. The printable playing-card version (2.5 × 3.5 in) comes as a separate PDF.${HOSTED && HOSTED.deckPdf ? ` <a class="link" href="${esc(HOSTED.deckPdf)}" download>Download the printable deck</a>` : ""}</p>
+  deck: { title: "Cue Cards", render() {
+    return `<p class="muted">The 100 essentials. Tap a card to open it phone-size: screenshot it for your lock screen, or swipe through on set. The printable version (2.5 × 3.5 in) comes as a separate PDF.${HOSTED && HOSTED.deckPdf ? ` <a class="link" href="${esc(HOSTED.deckPdf)}" download>Download printable Cue Cards</a>` : ""}</p>
       <div class="deck">${DECK.map((p, i) => `<button class="pcard" data-card="${i}"><span class="code">${String(i + 1).padStart(3, "0")} · ${typeOf(p.who).code}</span>${ph(p)}<b>${esc(p.name)}</b></button>`).join("")}</div>`;
   }},
 
