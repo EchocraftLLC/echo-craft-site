@@ -74,6 +74,7 @@ PAGE = """<!doctype html>
       <a href="about.html">About</a>
       <a href="pricing.html">Pricing</a>
       <a href="book.html">Book a session</a>
+      <a href="cue/" class="nav-cta">For Photographers</a>
     </nav>
     <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span></button>
   </header>
@@ -98,7 +99,7 @@ PAGE = """<!doctype html>
   <footer class="site-footer">
     <a href="index.html"><img src="images/logo.png" alt="Echocraft — Photography" class="site-footer__logo" /></a>
     <span>&copy; <span id="year"></span> Echocraft. Traveling across Pennsylvania.</span>
-    <span class="footer-contact"><a href="mailto:Shaine.echocraft@gmail.com">Shaine.echocraft@gmail.com</a> &middot; <a href="tel:+13028036742">(302) 803-6742</a></span>
+    <span class="footer-contact"><a href="mailto:hello@echocraftllc.com">hello@echocraftllc.com</a> &middot; <a href="tel:+13028036742">(302) 803-6742</a></span>
     <div class="footer-links">
       <a href="index.html">Home</a>
       <a href="book.html">Book a session</a>
@@ -115,6 +116,7 @@ PAGE = """<!doctype html>
   </footer>
 
   <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+  <script src="js/cue-switch.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
