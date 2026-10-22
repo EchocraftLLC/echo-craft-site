@@ -84,7 +84,7 @@ svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-widt
 .preview span { flex: 1; }
 
 /* surfaces */
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 12px; box-shadow: var(--shadow); min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; box-shadow: var(--shadow); min-width: 0; }
 .card ul, .card ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
 .note { background: var(--surface-2); border-radius: 12px; padding: 12px 14px; font-size: 14px; }
 .note b { color: var(--accent); }
@@ -101,7 +101,7 @@ svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-widt
 .link { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .toast { font-size: 14px; color: var(--good); min-height: 1.4em; }
 textarea.out, textarea.field { width: 100%; min-height: 120px; font: 14px/1.5 var(--sans); padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); resize: vertical; }
-.field, .search { width: 100%; height: 46px; font: 16px var(--sans); padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.field, .search { width: 100%; min-width: 0; max-width: 100%; height: 46px; font: 16px var(--sans); padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
 .searchwrap { position: relative; }
 .searchwrap svg { position: absolute; left: 14px; top: 13px; color: var(--muted); }
 .searchwrap .search { padding-left: 42px; }
@@ -469,9 +469,18 @@ const store = {
 let picks = store.get("picks", []);
 // Set by the website copy of the app (window.POSE_POCKET_SITE); empty inside Claude.
 const HOSTED = window.POSE_POCKET_SITE || null;
-const BRAND_DEFAULT = { name: "Echocraft Photography", color: "", logo: "", email: HOSTED ? HOSTED.email || "" : "", phone: HOSTED ? HOSTED.phone || "" : "" };
+// On the website, each photographer starts blank and fills in their own studio.
+const BRAND_DEFAULT = { name: HOSTED ? "Your studio" : "Echocraft Photography", color: "", logo: "", email: "", phone: "" };
 let brand = { ...BRAND_DEFAULT, ...store.get("brand", {}) };
 if (brand.name === "Shaine Photography") brand.name = "Echocraft Photography";
+const ownBrand = brand;
+// Website clients get the studio from their link (?studio=&email=&phone=), or the site owner's details for a plain #client link.
+const clientBrand = (() => {
+  if (!HOSTED) return null;
+  const q = new URLSearchParams(location.search), color = q.get("color") || "";
+  if (q.get("studio") || q.get("email") || q.get("phone")) return { name: q.get("studio") || "your photographer", email: q.get("email") || "", phone: q.get("phone") || "", color: /^#[0-9a-f]{6}$/i.test(color) ? color : "", logo: "" };
+  return { name: "Echocraft Photography", email: HOSTED.email || "", phone: HOSTED.phone || "", color: "", logo: "" };
+})();
 let shared = null;          // studio settings the photographer shared through the app's database
 let db = null, owner = false;
 let clientMode = false, previewing = false;
@@ -550,10 +559,14 @@ function sunDay(loc, ymd) {
 }
 const fmtTime = (t, tz) => t == null ? "—" : new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit" }).format(new Date(t));
 const todayIn = tz => new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+// Until someone picks a city, start from a big city in their own time zone.
+const TZ_CITY = { "America/New_York": "New York, NY", "America/Detroit": "Detroit, MI", "America/Chicago": "Chicago, IL", "America/Denver": "Denver, CO", "America/Phoenix": "Phoenix, AZ", "America/Los_Angeles": "Los Angeles, CA" };
 function ghLoc() {
   const s = store.get("ghLoc", null);
   if (s && typeof s.lat === "number") return s;
-  const c = CITIES[0]; return { name: c[0], lat: c[1], lon: c[2], tz: c[3] };
+  let tz = ""; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {}
+  const c = CITIES.find(x => x[0] === TZ_CITY[tz]) || CITIES.find(x => x[3] === tz) || CITIES.find(x => x[0] === "New York, NY");
+  return { name: c[0], lat: c[1], lon: c[2], tz: c[3] };
 }
 const dayStart = (loc, ymd) => { const [y, m, d] = ymd.split("-").map(Number); return Date.UTC(y, m - 1, d) - tzOffset(loc.tz, Date.UTC(y, m - 1, d, 12)); };
 function moonDay(loc, ymd) {
@@ -750,7 +763,7 @@ const VIEWS = {
         ${tile("checklist", "check", "Shoot checklist", "Gear, location and flow")}
         ${tile("brand", "brush", "Your studio", "Name, color, logo and contact")}
       </div></section>
-      <p class="foot">Cue by ${esc(brand.name)}. Free to use. ${aiLink}${HOSTED ? `<br><a class="link" href="${esc(HOSTED.home)}">Back to ${esc(HOSTED.homeLabel)}</a>` : ""}</p>`;
+      <p class="foot">Cue by Echocraft Photography. Free to use. ${aiLink}${HOSTED ? `<br><a class="link" href="${esc(HOSTED.home)}">Back to ${esc(HOSTED.homeLabel)}</a>` : ""}</p>`;
   }},
 
   poses: { title: "Pose library", render() {
@@ -983,9 +996,9 @@ const VIEWS = {
   brand: { title: "Your studio", render() {
     return `<p class="muted">Your name, color, logo and contact details show on the home screen, the What to Wear guide and your client link.${db && owner ? " They sync to your client link automatically." : ""}</p>
       <section class="card">
-        <label class="lbl" for="bName">Studio name</label><input class="field" id="bName" type="text" value="${esc(brand.name)}">
-        <label class="lbl" for="bEmail">Email for client messages</label><input class="field" id="bEmail" type="email" placeholder="you@example.com" value="${esc(brand.email)}">
-        <label class="lbl" for="bPhone">Phone for texts (optional)</label><input class="field" id="bPhone" type="tel" placeholder="(555) 123-4567" value="${esc(brand.phone)}">
+        <label class="lbl" for="bName">Studio name</label><input class="field" id="bName" type="text" placeholder="Name of thy kingdom" value="${esc(brand.name === "Your studio" ? "" : brand.name)}">
+        <label class="lbl" for="bEmail">Email for client messages</label><input class="field" id="bEmail" type="email" placeholder="Email address" value="${esc(brand.email)}">
+        <label class="lbl" for="bPhone">Phone for texts (optional)</label><input class="field" id="bPhone" type="tel" placeholder="555-555-1234" value="${esc(brand.phone)}">
         <label class="lbl" for="bColor">Brand color</label><div class="row"><input id="bColor" type="color" value="${brand.color || "#8b5e34"}" style="width:56px;height:40px;border:none;background:none;padding:0"><button class="btn ghost sm" data-resetcolor>Use default</button></div>
         <label class="lbl" for="bLogo">Logo</label><input id="bLogo" type="file" accept="image/*">
         ${brand.logo ? `<div class="row">${monogram()}<button class="btn ghost sm" data-nologo>Remove logo</button></div>` : ""}
@@ -995,7 +1008,9 @@ const VIEWS = {
 
   clientlink: { title: "Client link", render() {
     if (HOSTED) {
-      const url = HOSTED.url + "#client";
+      const q = new URLSearchParams(Object.entries({ studio: brand.name === "Your studio" ? "" : brand.name, email: brand.email, phone: brand.phone, color: brand.color }).filter(([, v]) => v));
+      const url = HOSTED.url + (q.toString() ? "?" + q : "") + "#client";
+      if (!brand.email && !brand.phone) return `<section class="card"><h2>Set up your studio first</h2><p>Your client link sends clients' picks and answers to you, so it needs your email or phone number.</p><div class="row"><button class="btn accent" data-go="brand">Add your details</button></div></section>`;
       return `<section class="card"><h2>One link for every client</h2>
         <p>Clients get a simpler version of Cue: they browse poses, read What to Wear, answer your questionnaire and tap a heart on poses they love. Then one button sends it all to you.</p>
         <input class="field" readonly value="${esc(url)}" aria-label="Client link" onclick="this.select()">
@@ -1144,6 +1159,7 @@ function go(v, keepScroll) {
   if (location.hash !== h) { try { history.replaceState(null, "", h); } catch (e) {} }
 }
 function render() {
+  if (HOSTED) { const b = clientMode && !previewing ? clientBrand : ownBrand; if (b !== brand) { brand = b; applyBrand(); } }
   const def = viewDef(view);
   document.getElementById("barTitle").textContent = view === "home" ? brand.name : def.title;
   document.getElementById("homeBtn").hidden = view === "home";
