@@ -256,6 +256,30 @@ tr:last-child td { border-bottom: 0; }
 .ghgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .ghcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: grid; gap: 8px; box-shadow: var(--shadow); min-width: 0; }
 .ghrow { display: grid; gap: 1px; }
+.setgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+.setgrid .kv { font: 500 16px/1.3 var(--serif); }
+.range { width: 100%; accent-color: var(--accent); }
+.sunread { display: flex; align-items: baseline; gap: 10px; }
+.sunread .big { font: 500 26px/1.2 var(--serif); }
+.dial { width: 100%; max-width: 280px; margin: 0 auto; display: block; }
+.dial .ring { fill: var(--surface-2); stroke: var(--line); stroke-width: 1.5; }
+.dial .dl { font: 600 11px var(--sans); fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
+.dial .dl.sm { font-size: 9px; fill: var(--muted); }
+.dial .mk { fill: #d0453f; }
+.dial .ml { font: 9px var(--sans); fill: var(--muted); text-anchor: middle; dominant-baseline: central; }
+.dial .ray { stroke-width: 3; stroke-linecap: round; }
+.dial .shadow { stroke: var(--muted); stroke-width: 2; stroke-dasharray: 3 4; }
+.dial .sunball { stroke: var(--surface); stroke-width: 2; }
+.dial .hub { fill: var(--ink); }
+.moonrow { display: flex; align-items: center; gap: 16px; }
+.moon { width: 88px; height: 88px; flex: none; }
+.moon .dark { fill: color-mix(in srgb, var(--ink) 18%, transparent); }
+.moon .lit { fill: #f1e7cf; }
+.dofgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dofgrid > div { display: grid; gap: 12px; min-width: 0; }
+.dofbar { position: relative; height: 14px; border-radius: 7px; background: var(--surface-2); border: 1px solid var(--line); margin: 6px 0 4px; }
+.dofbar .zone { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--accent) 45%, transparent); border-radius: 7px; }
+.dofbar .subj { position: absolute; top: -4px; bottom: -4px; width: 3px; margin-left: -1.5px; background: var(--ink); border-radius: 2px; }
 .ghrow b { font: 500 18px/1.25 var(--serif); }
 .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
 .timeline { position: relative; height: 34px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
@@ -273,7 +297,7 @@ details summary { cursor: pointer; font-weight: 600; font-size: 14px; color: var
 pre.msg { white-space: pre-wrap; font: 13px/1.5 var(--sans); margin: 8px 0 0; background: var(--bg); border-radius: 10px; padding: 12px; }
 .sendbtns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .sendbtns > :last-child:nth-child(odd) { grid-column: span 2; }
-@media (max-width: 370px) { h1 { font-size: 32px; } .tiles, .ghgrid { grid-template-columns: 1fr; } .tab { font-size: 10px; } }
+@media (max-width: 370px) { h1 { font-size: 32px; } .tiles, .ghgrid, .dofgrid { grid-template-columns: 1fr; } .tab { font-size: 10px; } }
 @media (prefers-reduced-motion: no-preference) { .chip, .tab, .heart { transition: background-color .15s, color .15s; } }
 </style>
 <style>html, body { margin: 0; }</style>
@@ -406,6 +430,8 @@ const ICON = {
   msg: '<path d="M4 5h16v11H9l-5 4z"/>',
   copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
   share: '<path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>',
+  learn: '<path d="M3 8l9-4 9 4-9 4z"/><path d="M7 10v5c0 1.5 2.5 3 5 3s5-1.5 5-3v-5M21 8v6"/>',
+  compass: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
   pin: '<path d="M12 21s-6-5.3-6-11a6 6 0 0 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/>'
 };
 const ic = (name, cls) => `<svg class="i ${cls || ""}" viewBox="0 0 24 24" aria-hidden="true">${ICON[name]}</svg>`;
@@ -449,7 +475,7 @@ if (brand.name === "Shaine Photography") brand.name = "Echocraft Photography";
 let shared = null;          // studio settings the photographer shared through the app's database
 let db = null, owner = false;
 let clientMode = false, previewing = false;
-const state = { type: "couple", tag: "All", q: "", limit: 30, fixArea: "All", wearType: "couple", season: ["winter", "winter", "spring", "spring", "spring", "summer", "summer", "summer", "fall", "fall", "fall", "winter"][new Date().getMonth()], ptype: "couple", flow: null, custom: null, step: 0, lock: null, sheet: null, inbox: null, inboxWhere: "browser", ghDate: "" };
+const state = { type: "couple", tag: "All", q: "", limit: 30, fixArea: "All", wearType: "couple", season: ["winter", "winter", "spring", "spring", "spring", "summer", "summer", "summer", "fall", "fall", "fall", "winter"][new Date().getMonth()], ptype: "couple", flow: null, custom: null, step: 0, lock: null, sheet: null, inbox: null, inboxWhere: "browser", ghDate: "", tool: "sun", sunMin: null, lesson: "settings" };
 
 function applyBrand() {
   // Very light or very dark brand colors would make buttons unreadable, so those keep the default accent.
@@ -484,23 +510,40 @@ const lists = {};   // id lists the pose sheet can page through
 
 // ---------- Golden hour (NOAA-style sun position, works offline) ----------
 const RAD = Math.PI / 180;
-function sunElev(t, lat, lon) {
-  const d = t / 864e5 + 2440587.5 - 2451545.0;
+const j2000 = t => t / 864e5 + 2440587.5 - 2451545.0;
+function sunEq(d) {
   const g = (357.529 + 0.98560028 * d) * RAD, q = 280.459 + 0.98564736 * d;
   const L = (q + 1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g)) * RAD, e = (23.439 - 0.00000036 * d) * RAD;
-  const ra = Math.atan2(Math.cos(e) * Math.sin(L), Math.cos(L)), dec = Math.asin(Math.sin(e) * Math.sin(L));
-  const gmst = (18.697374558 + 24.06570982441908 * d) % 24;
-  const ha = (gmst * 15 + lon) * RAD - ra;
-  return Math.asin(Math.sin(lat * RAD) * Math.sin(dec) + Math.cos(lat * RAD) * Math.cos(dec) * Math.cos(ha)) / RAD;
+  return { lon: L, ra: Math.atan2(Math.cos(e) * Math.sin(L), Math.cos(L)), dec: Math.asin(Math.sin(e) * Math.sin(L)) };
+}
+// Low-precision moon (good to a few minutes for rise and set).
+function moonEq(d) {
+  const L = (218.316 + 13.176396 * d) * RAD, M = (134.963 + 13.064993 * d) * RAD, F = (93.272 + 13.229350 * d) * RAD, e = 23.4397 * RAD;
+  const l = L + 6.289 * RAD * Math.sin(M), b = 5.128 * RAD * Math.sin(F);
+  return { lon: l, ra: Math.atan2(Math.sin(l) * Math.cos(e) - Math.tan(b) * Math.sin(e), Math.cos(l)), dec: Math.asin(Math.sin(b) * Math.cos(e) + Math.cos(b) * Math.sin(e) * Math.sin(l)) };
+}
+// Altitude and compass bearing (0 = north, 90 = east) in degrees.
+function horizon({ ra, dec }, d, lat, lon) {
+  const gmst = (18.697374558 + 24.06570982441908 * d) % 24, ha = (gmst * 15 + lon) * RAD - ra, phi = lat * RAD;
+  return {
+    alt: Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(ha)) / RAD,
+    az: (Math.atan2(Math.sin(ha), Math.cos(ha) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi)) / RAD + 540) % 360
+  };
+}
+const sunPos = (t, lat, lon) => horizon(sunEq(j2000(t)), j2000(t), lat, lon);
+const moonPos = (t, lat, lon) => horizon(moonEq(j2000(t)), j2000(t), lat, lon);
+const sunElev = (t, lat, lon) => sunPos(t, lat, lon).alt;
+// Moon phase: elongation from the sun (0 new, 180 full) and lit fraction.
+function moonPhase(t) {
+  const d = j2000(t), el = ((moonEq(d).lon - sunEq(d).lon) / RAD % 360 + 360) % 360;
+  return { el, lit: (1 - Math.cos(el * RAD)) / 2 };
 }
 function tzOffset(tz, t) {
   const p = {}; new Intl.DateTimeFormat("en-US", { timeZone: tz, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" }).formatToParts(new Date(t)).forEach(x => p[x.type] = +x.value);
   return Date.UTC(p.year, p.month - 1, p.day, p.hour % 24, p.minute, p.second) - t;
 }
 function sunDay(loc, ymd) {
-  const [y, m, d] = ymd.split("-").map(Number);
-  const noon = Date.UTC(y, m - 1, d, 12);
-  const t0 = Date.UTC(y, m - 1, d) - tzOffset(loc.tz, noon);
+  const t0 = dayStart(loc, ymd);
   const pts = []; for (let i = 0; i <= 1440; i += 2) pts.push([t0 + i * 6e4, sunElev(t0 + i * 6e4, loc.lat, loc.lon)]);
   const cross = (th, rising) => { for (let i = 1; i < pts.length; i++) { const [ta, a] = pts[i - 1], [tb, b] = pts[i]; if (rising ? a < th && b >= th : a >= th && b < th) return ta + (tb - ta) * (th - a) / (b - a); } return null; };
   return { t0, pts, blueAM: cross(-6, true), goldAM: cross(-4, true), rise: cross(-0.833, true), goldAMend: cross(6, true), goldPM: cross(6, false), set: cross(-0.833, false), bluePM: cross(-4, false), bluePMend: cross(-6, false) };
@@ -512,6 +555,31 @@ function ghLoc() {
   if (s && typeof s.lat === "number") return s;
   const c = CITIES[0]; return { name: c[0], lat: c[1], lon: c[2], tz: c[3] };
 }
+const dayStart = (loc, ymd) => { const [y, m, d] = ymd.split("-").map(Number); return Date.UTC(y, m - 1, d) - tzOffset(loc.tz, Date.UTC(y, m - 1, d, 12)); };
+function moonDay(loc, ymd) {
+  const t0 = dayStart(loc, ymd), pts = [];
+  for (let i = 0; i <= 1440; i += 10) pts.push([t0 + i * 6e4, moonPos(t0 + i * 6e4, loc.lat, loc.lon).alt]);
+  const cross = rising => { for (let i = 1; i < pts.length; i++) { const [ta, a] = pts[i - 1], [tb, b] = pts[i]; if (rising ? a < 0.125 && b >= 0.125 : a >= 0.125 && b < 0.125) return ta + (tb - ta) * (0.125 - a) / (b - a); } return null; };
+  return { rise: cross(true), set: cross(false) };
+}
+// Next time the moon reaches an elongation (0 new, 180 full), searched hour by hour.
+function nextPhase(t, target) {
+  const off = x => ((moonPhase(x).el - target) % 360 + 540) % 360 - 180;
+  for (let h = 1, a = t; h < 24 * 40; h++) { const b = t + h * 36e5; if (off(a) < 0 && off(b) >= 0) return a + (b - a) * -off(a) / (off(b) - off(a)); a = b; }
+  return null;
+}
+const PHASES = ["New moon", "Waxing crescent", "First quarter", "Waxing gibbous", "Full moon", "Waning gibbous", "Last quarter", "Waning crescent"];
+const phaseName = el => PHASES[Math.floor(((el + 22.5) % 360) / 45)];
+const DIRS = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+const dirName = az => DIRS[Math.round(az / 22.5) % 16];
+const fmtDate = (t, tz) => new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short", month: "short", day: "numeric" }).format(new Date(t));
+const locCard = (loc, ymd) => { const custom = !CITIES.some(c => c[0] === loc.name); return `<section class="card">
+        <label class="lbl" for="ghCity">Location</label>
+        <select class="field" id="ghCity">${custom ? `<option value="custom" selected>${esc(loc.name)}</option>` : ""}${CITIES.map((c, i) => `<option value="${i}" ${c[0] === loc.name ? "selected" : ""}>${esc(c[0])}</option>`).join("")}</select>
+        <div class="row"><button class="btn ghost sm" data-geo>${ic("pin")}Use my location</button><span class="toast" id="toast" role="status"></span></div>
+        <label class="lbl" for="ghDate">Date</label>
+        <input class="field" id="ghDate" type="date" value="${ymd}">
+      </section>`; };
 const elevColor = e => e < -6 ? "#1f2638" : e < -4 ? "#3e5c9e" : e < 6 ? "#e3a24a" : "#bcd6ea";
 
 // ---------- Client message ----------
@@ -569,6 +637,88 @@ async function inboxDelete(id) {
 }
 
 // ---------- Views ----------
+// ---------- Light tools ----------
+function sunPanel(loc, d) {
+  const t = d.t0 + state.sunMin * 6e4, p = sunPos(t, loc.lat, loc.lon), tz = loc.tz;
+  const pt = (az, r) => [100 + r * Math.sin(az * RAD), 100 - r * Math.cos(az * RAD)].map(v => v.toFixed(1));
+  const mark = (tm, label) => { if (tm == null) return ""; const az = sunPos(tm, loc.lat, loc.lon).az, [x, y] = pt(az, 78), [lx, ly] = pt(az, 62); return `<circle cx="${x}" cy="${y}" r="3.5" class="mk"/><text x="${lx}" y="${ly}" class="ml">${label}</text>`; };
+  const up = p.alt > -0.833, [sx, sy] = pt(p.az, 78), [hx, hy] = pt(p.az + 180, 70);
+  const dial = `<svg class="dial" viewBox="0 0 200 200" role="img" aria-label="Sun direction ${Math.round(p.az)} degrees"><g id="dialRot">
+      <circle cx="100" cy="100" r="78" class="ring"/>
+      ${DIRS.filter((_, i) => i % 2 === 0).map((n, i) => { const [x, y] = pt(i * 45, 92); return `<text x="${x}" y="${y}" class="${i % 2 ? "dl sm" : "dl"}">${n}</text>`; }).join("")}
+      ${mark(d.rise, "rise")}${mark(d.set, "set")}
+      ${up ? `<line x1="100" y1="100" x2="${hx}" y2="${hy}" class="shadow"/><line x1="100" y1="100" x2="${sx}" y2="${sy}" class="ray" style="stroke:${elevColor(p.alt)}"/><circle cx="${sx}" cy="${sy}" r="9" class="sunball" style="fill:${elevColor(p.alt)}"/>` : ""}
+      <circle cx="100" cy="100" r="4" class="hub"/></g></svg>`;
+  const what = up ? `The sun is <b>${Math.round(p.alt)}° up</b> in the <b>${dirName(p.az)}</b> (${Math.round(p.az)}°). Shadows point ${dirName((p.az + 180) % 360)}.` : "The sun is down at this time.";
+  return `<div class="sunread"><b class="big">${fmtTime(t, tz)}</b><span class="small muted">${p.alt >= 6 ? "Daylight" : p.alt >= -4 ? "Golden hour" : p.alt >= -6 ? "Blue hour" : "Night"}</span></div>${dial}<p>${what}</p><p class="small muted" id="facing"></p>`;
+}
+function moonDisc(el, lit) {
+  const r = 40, rx = Math.abs(1 - 2 * lit) * r, gib = lit > 0.5;
+  return `<svg class="moon" viewBox="-50 -50 100 100" aria-hidden="true"><circle r="${r}" class="dark"/>
+    <path class="lit" transform="${el > 180 ? "scale(-1,1)" : ""}" d="M0 ${-r}A${r} ${r} 0 0 1 0 ${r}A${rx.toFixed(1)} ${r} 0 0 ${gib ? 1 : 0} 0 ${-r}z"/></svg>`;
+}
+function moonPanel(loc, ymd) {
+  const tz = loc.tz, t0 = dayStart(loc, ymd), noon = t0 + 12 * 36e5, ph = moonPhase(noon), md = moonDay(loc, ymd);
+  const from = ymd === todayIn(tz) ? Date.now() : t0, full = nextPhase(from, 180), nu = nextPhase(from, 0);
+  const row = (label, a) => `<div class="ghrow"><span class="small muted">${label}</span><b>${a}</b></div>`;
+  return `<section class="card moonrow">${moonDisc(ph.el, ph.lit)}<div><h2>${phaseName(ph.el)}</h2><p class="muted">${Math.round(ph.lit * 100)}% lit</p></div></section>
+    <div class="ghgrid">
+      <div class="ghcard"><span class="eyebrow">This day</span>${row("Moonrise", fmtTime(md.rise, tz))}${row("Moonset", fmtTime(md.set, tz))}</div>
+      <div class="ghcard"><span class="eyebrow">Coming up</span>${row("Full moon", full ? fmtDate(full, tz) : "—")}${row("New moon", nu ? fmtDate(nu, tz) : "—")}</div>
+    </div>
+    <section class="card"><h3>Shooting with the moon</h3><ul>
+      <li>A full moon rises around sunset, so a moonrise behind your couple can land right in golden hour.</li>
+      <li>The moon looks biggest near the horizon. Back up and zoom in (200mm or more) to make it loom behind people.</li>
+      <li>Expose for the moon and light your client with flash, or the moon turns into a white blob.</li>
+      <li>For stars and the Milky Way, plan near the new moon when the sky is darkest.</li>
+    </ul><p class="small muted">Times are for ${esc(loc.name)} and accurate to within a few minutes.</p></section>`;
+}
+const SENSORS = [["ff", "Full frame", 0.030], ["apsc", "APS-C (Sony, Nikon, Fuji)", 0.020], ["canon", "APS-C (Canon)", 0.019], ["m43", "Micro Four Thirds", 0.015], ["mf", "Medium format (GFX)", 0.036]];
+const FOCALS = [14, 16, 20, 24, 28, 35, 40, 50, 56, 70, 85, 100, 105, 135, 200];
+const FSTOPS = [1.2, 1.4, 1.8, 2, 2.8, 4, 5.6, 8, 11, 16];
+const dofGet = () => Object.assign({ sensor: "ff", f: 85, n: 2.8, dist: 10 }, store.get("dof", {}));
+// Near and far limits of sharp focus, in feet.
+function dof(c, f, n, ft) {
+  const s = ft * 304.8, H = f * f / (n * c) + f, near = s * (H - f) / (H + s - 2 * f), far = s < H ? s * (H - f) / (H - s) : Infinity;
+  return { near: near / 304.8, far: far / 304.8, hyper: H / 304.8 };
+}
+const fmtLen = ft => ft === Infinity ? "Infinity" : ft < 2 ? `${Math.round(ft * 12)} in` : `${ft.toFixed(ft < 10 ? 1 : 0)} ft`;
+function dofForm() {
+  const o = dofGet(), opt = (list, cur, lab) => list.map(v => `<option value="${v}" ${String(v) === String(cur) ? "selected" : ""}>${lab(v)}</option>`).join("");
+  return `<label class="lbl" for="dofSensor">Camera</label><select class="field" id="dofSensor" data-dof="sensor">${SENSORS.map(([id, n]) => `<option value="${id}" ${id === o.sensor ? "selected" : ""}>${n}</option>`).join("")}</select>
+    <div class="dofgrid"><div><label class="lbl" for="dofF">Lens</label><select class="field" id="dofF" data-dof="f">${opt(FOCALS, o.f, v => v + "mm")}</select></div>
+    <div><label class="lbl" for="dofN">Aperture</label><select class="field" id="dofN" data-dof="n">${opt(FSTOPS, o.n, v => "f/" + v)}</select></div></div>
+    <label class="lbl" for="dofDist">Distance to your client (feet)</label><input class="field" id="dofDist" data-dof="dist" type="number" inputmode="decimal" min="1" max="500" step="0.5" value="${o.dist}">`;
+}
+function dofPanel() {
+  const o = dofGet(), c = SENSORS.find(x => x[0] === o.sensor)[2], f = +o.f, n = +o.n, ft = Math.max(1, +o.dist || 10), r = dof(c, f, n, ft);
+  const total = r.far - r.near, span = Math.max(ft * 2, Math.min(r.far, ft * 4)), pct = v => Math.min(100, v / span * 100).toFixed(1);
+  // Widest aperture that keeps a group of this depth sharp, focusing a third of the way in.
+  const groupStop = depth => FSTOPS.find(N => { const g = dof(c, f, N, ft); return g.near <= ft - depth / 3 && g.far >= ft + depth * 2 / 3; });
+  const groups = [["Couple, faces side by side", 1], ["Two rows", 2.5], ["Three rows", 4]];
+  return `<section class="card"><div class="ghgrid">
+      <div class="ghrow"><span class="small muted">Sharp from</span><b>${fmtLen(r.near)}</b></div>
+      <div class="ghrow"><span class="small muted">to</span><b>${fmtLen(r.far)}</b></div></div>
+      <div class="dofbar" aria-hidden="true"><span class="zone" style="left:${pct(r.near)}%;width:${(pct(r.far) - pct(r.near)).toFixed(1)}%"></span><span class="subj" style="left:${pct(ft)}%"></span></div>
+      <p>Total depth in focus: <b>${fmtLen(total)}</b>.${r.far === Infinity ? "" : ` Everything past ${fmtLen(r.hyper)} is sharp if you focus there (the hyperfocal distance).`}</p></section>
+    <section class="card"><h3>Will everyone be sharp?</h3><p class="small muted">The widest aperture that keeps the group in focus at ${fmtLen(ft)} with a ${f}mm lens. Focus on the faces about a third of the way into the group.</p>
+      ${groups.map(([label, depth]) => { const N = groupStop(depth); return `<div class="ghrow"><span class="small muted">${label} (${fmtLen(depth)} deep)</span><b>${N ? "f/" + N + " or narrower" : "Step back or use f/16+"}</b></div>`; }).join("")}
+    </section>`;
+}
+let compassOn = false;
+function onHeading(e) {
+  const h = e.webkitCompassHeading != null ? e.webkitCompassHeading : e.absolute && e.alpha != null ? 360 - e.alpha : null, g = document.getElementById("dialRot");
+  if (h == null || !g) return;
+  g.setAttribute("transform", `rotate(${(-h).toFixed(1)} 100 100)`);
+  const f = document.getElementById("facing"); if (f) f.textContent = `Your phone is pointing ${dirName((h + 360) % 360)}. The top of the dial is the way you're facing.`;
+}
+async function startCompass() {
+  try { if (window.DeviceOrientationEvent && DeviceOrientationEvent.requestPermission && (await DeviceOrientationEvent.requestPermission()) !== "granted") return toast("Compass permission was turned off."); } catch (e) { return toast("The compass isn't available here."); }
+  if (!compassOn) { window.addEventListener("deviceorientationabsolute", onHeading); window.addEventListener("deviceorientation", onHeading); compassOn = true; }
+  toast("Hold your phone flat and turn around.");
+  setTimeout(() => { const g = document.getElementById("dialRot"); if (g && !g.getAttribute("transform")) toast("No compass found. Use the directions on the dial instead."); }, 2500);
+}
+
 const VIEWS = {
   home: { title: "Cue", render() {
     const hero = ["WED-01", "CPL-01", "MAT-01"].find(k => PHOTOS.has(k));
@@ -588,6 +738,8 @@ const VIEWS = {
         ${tile("light", "light", "Light & location", "Window, shade, golden hour, beach, city")}
         ${tile("angles", "frame", "Angles & framing", "Camera height by body and goal")}
         ${tile("gear", "camera", "Camera gear", "Lenses, flash, lights, reflectors")}
+        ${tile("tools", "compass", "Light tools", "Sun direction, moon, depth of field")}
+        ${tile("learn", "learn", "Camera basics", "Focal lengths and settings by situation")}
         ${tile("deck", "cards", "Cue Cards", "100 essentials as cards")}
       </div></section>
       <section class="sect"><div class="eyebrow">Your clients</div><div class="tiles">
@@ -714,19 +866,12 @@ const VIEWS = {
 
   golden: { title: "Golden hour finder", render() {
     const loc = ghLoc(), ymd = state.ghDate || todayIn(loc.tz), d = sunDay(loc, ymd), tz = loc.tz;
-    const custom = !CITIES.some(c => c[0] === loc.name);
     const slots = []; for (let i = 0; i < d.pts.length - 1; i += 5) slots.push(elevColor(d.pts[i][1]));
     const grad = slots.map((c, i) => `${c} ${(i / slots.length * 100).toFixed(2)}% ${((i + 1) / slots.length * 100).toFixed(2)}%`).join(",");
     const now = Date.now(), nowPct = ymd === todayIn(tz) ? (now - d.t0) / 864e5 * 100 : -1;
     const row = (label, a, b, color) => `<div class="ghrow"><span class="small muted"><i class="dot" style="background:${color}"></i>${label}</span><b>${b === undefined ? fmtTime(a, tz) : `${fmtTime(a, tz)} – ${fmtTime(b, tz)}`}</b></div>`;
     const noSet = d.rise == null && d.set == null;
-    return `<section class="card">
-        <label class="lbl" for="ghCity">Location</label>
-        <select class="field" id="ghCity">${custom ? `<option value="custom" selected>${esc(loc.name)}</option>` : ""}${CITIES.map((c, i) => `<option value="${i}" ${c[0] === loc.name ? "selected" : ""}>${esc(c[0])}</option>`).join("")}</select>
-        <div class="row"><button class="btn ghost sm" data-geo>${ic("pin")}Use my location</button><span class="toast" id="toast" role="status"></span></div>
-        <label class="lbl" for="ghDate">Date</label>
-        <input class="field" id="ghDate" type="date" value="${ymd}">
-      </section>
+    return `${locCard(loc, ymd)}
       ${noSet ? `<div class="note">The sun doesn't rise or set here on this day, so there's no golden hour.</div>` : `
       <div><div class="timeline" style="background:linear-gradient(90deg,${grad})">${nowPct >= 0 && nowPct <= 100 ? `<span class="now" style="left:${nowPct}%" title="Now"></span>` : ""}</div>
         <div class="ticks"><span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>12 AM</span></div></div>
@@ -740,7 +885,44 @@ const VIEWS = {
         <li>Save backlit, silhouette and movement poses for the last 20 minutes before sunset.</li>
         <li>Blue hour after sunset is great for city lights and moody couples shots. Bring a fast lens or a flash.</li>
         <li>Hills, buildings and trees block the sun early. Scout the spot or arrive 15 minutes sooner.</li>
-      </ul><p class="small muted">Times are for ${esc(loc.name)} (${esc(tz.replace(/_/g, " "))}) and accurate to about a minute on flat ground.</p></section>`}`;
+      </ul><p class="small muted">Times are for ${esc(loc.name)} (${esc(tz.replace(/_/g, " "))}) and accurate to about a minute on flat ground.</p></section>
+      <button class="ghline" data-go="tools">${ic("compass")}<span>See where the sun will be, plus the moon and depth of field</span></button>`}`;
+  }},
+
+  learn: { title: "Camera basics", render() {
+    const tab = state.lesson;
+    const head = `<div><h2>Camera basics</h2><p class="muted small" style="margin-top:6px">Quick lessons and starting settings. Every scene is different, so treat these as a place to begin.</p></div>` + seg("lesson", tab, [["settings", "Settings"], ["focal", "Focal lengths"], ["basics", "The basics"]]);
+    const kv = (k, v) => `<div class="ghrow"><span class="small muted">${k}</span><b class="kv">${esc(v)}</b></div>`;
+    if (tab === "focal") return head + FOCAL_LESSONS.map(([n, feel, best, face, stand]) => `<section class="card"><h2>${esc(n)}</h2><p>${esc(feel)}</p>
+        <p class="small"><b>Best for:</b> ${esc(best)}</p><p class="small"><b>Faces and background:</b> ${esc(face)}</p><p class="note"><b>Where to stand:</b> ${esc(stand)}</p></section>`).join("")
+      + `<section class="card"><h3>Good to know</h3><ul>${FOCAL_TIPS.map(t => `<li>${esc(t)}</li>`).join("")}</ul></section>`;
+    if (tab === "basics") return head + BASICS.map(([n, what, rule]) => `<section class="card"><h3>${esc(n)}</h3><p>${esc(what)}</p><p class="note"><b>Rule of thumb:</b> ${esc(rule)}</p></section>`).join("")
+      + `<button class="ghline" data-go="tools">${ic("compass")}<span>Try the depth of field calculator</span></button>`;
+    return head + SETTINGS.map(([n, ap, sh, iso, af, tip]) => `<section class="card"><h3>${esc(n)}</h3>
+        <div class="setgrid">${kv("Aperture", ap)}${kv("Shutter", sh)}${kv("ISO", iso)}${kv("Focus", af)}</div><p class="note"><b>Tip:</b> ${esc(tip)}</p></section>`).join("");
+  }},
+
+  tools: { title: "Light tools", render() {
+    const loc = ghLoc(), ymd = state.ghDate || todayIn(loc.tz), tab = state.tool;
+    const head = seg("tool", tab, [["sun", "Sun direction"], ["moon", "Moon"], ["focus", "Depth of field"]]);
+    if (tab === "focus") return head + `<section class="card">${dofForm()}</section><div id="dofOut">${dofPanel()}</div>`;
+    if (tab === "moon") return head + locCard(loc, ymd) + moonPanel(loc, ymd);
+    const d = sunDay(loc, ymd), t0 = d.t0;
+    if (state.sunMin == null) state.sunMin = ymd === todayIn(loc.tz) ? Math.round((Date.now() - t0) / 6e4 / 5) * 5 : d.goldPM ? Math.round((d.goldPM - t0) / 6e4 / 5) * 5 : 720;
+    const jump = (label, t) => t == null ? "" : `<button class="chip" data-sunmin="${Math.round((t - t0) / 6e4)}">${label}</button>`;
+    return head + locCard(loc, ymd) + `<section class="card">
+        <label class="lbl" for="sunMin">Time</label>
+        <input class="range" id="sunMin" type="range" min="0" max="1435" step="5" value="${state.sunMin}">
+        <div class="scroller" role="group">${ymd === todayIn(loc.tz) ? `<button class="chip" data-sunmin="now">Now</button>` : ""}${jump("Sunrise", d.rise)}${jump("Golden hour", d.goldPM)}${jump("Sunset", d.set)}</div>
+        <div id="sunOut">${sunPanel(loc, d)}</div>
+        <div class="row"><button class="btn ghost sm" data-compass>${ic("compass")}Point with my phone</button></div>
+      </section>
+      <section class="card"><h3>Using the sun's direction</h3><ul>
+        <li><b>Backlight and glow:</b> face toward the sun and put your client between you and it.</li>
+        <li><b>Rim light:</b> turn so the sun is off to one side of your client and a little behind them.</li>
+        <li><b>Soft, even light:</b> keep the sun behind you only when it's low, or move into open shade.</li>
+        <li>The dotted line shows where shadows fall. Keep them off faces.</li>
+      </ul></section>`;
   }},
 
   gear: { title: "Camera gear", render() {
@@ -1016,6 +1198,10 @@ app.addEventListener("click", e => {
   if (d.shoot) { const en = state.inbox.find(x => x.id === d.shoot); state.custom = { name: en.name + "'s picks", ids: en.ids }; state.flow = "custom"; state.step = 0; requestWake(); return go("session"); }
   if (d.stepby) { state.step = Math.max(0, state.step + Number(d.stepby)); render(); return window.scrollTo(0, 0); }
   if (d.gear) { state.gear = d.gear; return render(); }
+  if (d.tool) { state.tool = d.tool; return render(); }
+  if (d.lesson) { state.lesson = d.lesson; render(); return window.scrollTo(0, 0); }
+  if (d.sunmin) { state.sunMin = d.sunmin === "now" ? null : Number(d.sunmin); return render(); }
+  if (d.compass !== undefined) return startCompass();
   if (d.area) { state.fixArea = d.area; return render(); }
   if (d.ptype) { state.ptype = d.ptype; return render(); }
   if (d.nextprompt !== undefined) { document.getElementById("promptText").textContent = randomPrompt(); return; }
@@ -1069,6 +1255,8 @@ app.addEventListener("click", e => {
 });
 app.addEventListener("input", e => {
   const el = e.target;
+  if (el.id === "sunMin") { state.sunMin = Number(el.value); const loc = ghLoc(); document.getElementById("sunOut").innerHTML = sunPanel(loc, sunDay(loc, state.ghDate || todayIn(loc.tz))); return; }
+  if (el.dataset.dof) { const o = dofGet(); o[el.dataset.dof] = el.value; store.set("dof", o); document.getElementById("dofOut").innerHTML = dofPanel(); return; }
   if (el.id === "poseSearch") { state.q = el.value; state.limit = 30; const pos = el.selectionStart; render(); const s = document.getElementById("poseSearch"); s.focus(); s.setSelectionRange(pos, pos); return; }
   if (el.dataset.q !== undefined) { const qs = store.get("questions", QUESTIONS); qs[Number(el.dataset.q)] = el.value; store.set("questions", qs); shareSettings(); }
   if (el.dataset.citem) { const cl = store.get("checklist", CHECKLIST); cl[el.dataset.citem][Number(el.dataset.ci)] = el.value; store.set("checklist", cl); }
@@ -1082,7 +1270,7 @@ app.addEventListener("change", e => {
   const el = e.target;
   if (el.dataset.check) { const done = store.get("checked", {}); done[el.dataset.check] = el.checked; store.set("checked", done); }
   if (el.id === "ghCity" && el.value !== "custom") { const c = CITIES[Number(el.value)]; store.set("ghLoc", { name: c[0], lat: c[1], lon: c[2], tz: c[3] }); return render(); }
-  if (el.id === "ghDate") { state.ghDate = el.value; return render(); }
+  if (el.id === "ghDate") { state.ghDate = el.value; state.sunMin = null; return render(); }
   if (el.id === "bLogo" && el.files[0]) {
     // Shrink the logo so it fits in storage.
     const img = new Image(), r = new FileReader();

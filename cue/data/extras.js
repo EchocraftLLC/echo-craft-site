@@ -184,3 +184,46 @@ const SEASONS = [
     ideas: ["A bold coat in emerald or deep red against snow.", "Winter white and silver gray for a soft, snowy look.", "Charcoal with one jewel tone for holiday cards.", "Gloves, beanies and scarves in coordinating colors."],
     tip: "Snow is a giant reflector. Jewel tones pop against it, but all-white outfits disappear. Keep sessions short and warm." }
 ];
+
+// Camera basics: short lessons on focal length and settings.
+const FOCAL_LESSONS = [
+  // [range, feels like, best for, faces & background, where to stand]
+  ["14–24mm (ultra wide)", "Bigger than your eyes see. Lines bend and space feels huge.", "Venues, big landscapes with tiny people, dramatic real estate-style scenes.", "Stretches anything near the edges, faces included. The background looks far away and small.", "Keep people in the middle of the frame and at least 8 ft away."],
+  ["35mm", "A natural, documentary look, a bit wider than your eyes.", "Getting ready, lifestyle, families at home, environmental portraits that show the place.", "Fine for half-body shots. Up close it widens noses and foreheads.", "6 to 10 ft for half body. Don't use it for tight headshots."],
+  ["50mm", "Close to what your eyes see. Honest and simple.", "Couples, families, half-body portraits, everyday shooting.", "Flattering from waist up. A little background blur at f/1.8.", "About 5 to 8 ft for half body, 12 to 15 ft for full length."],
+  ["85mm", "The classic portrait look. Calm, flattering and intimate.", "Headshots, close portraits, plus-size and mature clients, couples close-ups.", "Slims and flattens faces gently. Backgrounds melt into soft blur.", "About 6 ft for a headshot, 15 to 20 ft for full length."],
+  ["105–135mm", "Compressed and polished. Backgrounds look closer and bigger.", "Tight headshots, beauty, candids from a distance, shy clients.", "Very flattering faces and creamy, simple backgrounds.", "8 to 10 ft for a headshot. You'll need room to back up."],
+  ["200mm", "Strong compression. The background stacks right behind your subject.", "Ceremonies, candids, making a moon or skyline loom behind people.", "The most flattering for faces. Background becomes a wash of color.", "25 ft or more for full length. Use a fast shutter, 1/400 or quicker."]
+];
+const FOCAL_TIPS = [
+  "Compression comes from where you stand, not the lens itself. A longer lens just lets you stand farther back, which flattens faces and pulls the background in.",
+  "On an APS-C camera, multiply by 1.5 (1.6 on Canon) to get the full-frame look: a 56mm acts like an 85mm.",
+  "Wide lenses tell the story of the place. Long lenses tell the story of the person.",
+  "When in doubt for faces, go longer and step back."
+];
+const SETTINGS = [
+  // [situation, aperture, shutter, ISO, focus, tip]
+  ["Portrait in open shade", "f/2 – f/2.8", "1/250", "100 – 400", "Single point or eye AF", "Expose for the face. Shade is cool, so warm the white balance a little (shade preset)."],
+  ["Golden hour, backlit", "f/1.8 – f/2.8", "1/320", "100 – 400", "Eye AF", "Shoot a little bright (+⅓ to +1) so faces aren't dark. A lens hood cuts haze unless you want flare."],
+  ["Bright midday sun", "f/4 – f/5.6", "1/1000+", "100", "Eye AF", "Find shade or put the sun behind your client and add a reflector or fill flash."],
+  ["Couple walking or twirling", "f/2.8 – f/4", "1/500", "Auto ISO", "Continuous (AF-C) with tracking", "Burst mode. Ask them to walk slowly; slow walks look better and stay sharp."],
+  ["Kids running and playing", "f/2.8 – f/4", "1/800+", "Auto ISO", "Continuous with tracking", "Get down to their level and pre-focus where they'll run."],
+  ["Small group (3 to 8)", "f/4 – f/5.6", "1/250", "100 – 800", "Single point on the front row", "Keep everyone on the same plane. Two rows? Go to f/5.6 or f/8."],
+  ["Large group (15+)", "f/8", "1/250", "200 – 1600", "Single point, a third of the way in", "Stand on something to see every face. Take at least 5 frames for blinks."],
+  ["Indoor window light", "f/1.8 – f/2.8", "1/160", "400 – 1600", "Eye AF", "Turn off room lights to avoid mixed colors. Turn your client toward the window."],
+  ["Dim reception or event", "f/2 – f/2.8", "1/125 – 1/200", "1600 – 6400", "Continuous, eye AF", "Bounce flash off the ceiling or a wall behind you for soft, even light."],
+  ["Rings and small details", "f/4 – f/8", "1/200", "200 – 800", "Single point, manual focus if needed", "Up close, depth of field is razor thin. Use a macro lens or step back and crop."],
+  ["Newborn at home", "f/2.8 – f/4", "1/200", "400 – 1600", "Single point on the closest eye", "Use window light and a warm room. Never sacrifice safety for a pose."],
+  ["Pets in action", "f/2.8 – f/4", "1/1000+", "Auto ISO", "Continuous with animal eye AF", "Squeak toys get the ear perk. Burst mode and lots of patience."],
+  ["Sunset silhouette", "f/5.6 – f/8", "1/1000", "100", "Single point on the person's edge", "Expose for the bright sky so your client goes black. Clear profiles read best."],
+  ["Blue hour with city lights", "f/2 – f/4", "1/60 – 1/125", "800 – 3200", "Eye AF", "Add a little flash on your client to balance with the glowing background."],
+  ["Night sky and stars", "f/1.4 – f/2.8", "15 – 25 sec", "3200 – 6400", "Manual, focused on a bright star", "Tripod required. Shoot near the new moon, away from city lights."]
+];
+const BASICS = [
+  ["Aperture (f-number)", "Controls background blur and how much is in focus. Smaller numbers (f/1.8) mean more blur and more light. Bigger numbers (f/8) keep more in focus.", "Portraits: f/1.8 to f/2.8. Groups: f/4 to f/8."],
+  ["Shutter speed", "Controls motion. Faster freezes movement; slower lets in more light but shows blur.", "Handheld, use at least 1 over your focal length (1/100 for 85mm). People moving: 1/500 and up."],
+  ["ISO", "Brightens the image in camera. Higher ISO adds grain, but modern cameras look clean to 3200 or more.", "Keep it as low as the light allows, but a sharp grainy photo beats a blurry clean one."],
+  ["White balance", "Sets how warm or cool the colors look.", "Use daylight or shade presets outdoors so a set of photos matches. Shoot RAW to fix it later."],
+  ["Focus modes", "Single (AF-S) locks focus for still subjects. Continuous (AF-C) tracks moving ones.", "Turn on eye AF for people and animal eye AF for pets."],
+  ["Metering and exposure", "Your camera guesses brightness from the whole scene, which fools it with bright skies or white dresses.", "Use exposure compensation: brighter (+) for backlight and snow, darker (−) for dark scenes."]
+];
