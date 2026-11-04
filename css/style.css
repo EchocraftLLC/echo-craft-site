@@ -894,3 +894,9 @@ input, textarea, select { font: inherit; color: inherit; }
 @media (max-width: 720px) {
   .site-nav a.nav-cta { align-self: flex-start; }
 }
+.field[hidden] { display: none; }
+
+/* Keep long dropdown labels from widening the page on phones */
+.book-layout > * { min-width: 0; }
+.field select, .field input, .field textarea { max-width: 100%; min-width: 0; }
+@media (max-width: 820px) { .book-layout { grid-template-columns: minmax(0, 1fr); } }

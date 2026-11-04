@@ -280,3 +280,26 @@ if (heroContent) {
 if (window.CUE_ON === false) {
   document.querySelectorAll('a.nav-cta[href*="cue"]').forEach((a) => a.remove());
 }
+
+
+// Mini sessions page: show the holiday date dropdown when js/site-config.js lists dates.
+(function () {
+  const field = document.getElementById("holiday-field");
+  const cfg = window.ECHOCRAFT;
+  if (!field || !cfg || !Array.isArray(cfg.holidayMinis)) return;
+  const dates = cfg.holidayMinis.map((d) => String(d).trim()).filter(Boolean);
+  if (!dates.length) return;
+  const select = document.getElementById("wl-date");
+  dates.forEach((label) => {
+    const opt = document.createElement("option");
+    opt.value = label;
+    opt.textContent = label;
+    select.appendChild(opt);
+  });
+  select.required = true;
+  field.hidden = false;
+  const status = document.getElementById("mini-status");
+  if (status) status.textContent = "Holiday mini sessions are open. Choose the date that works for you and I will confirm your spot by email.";
+  const submit = document.getElementById("mini-submit");
+  if (submit) submit.textContent = "Request this date";
+})();
