@@ -900,3 +900,10 @@ input, textarea, select { font: inherit; color: inherit; }
 .book-layout > * { min-width: 0; }
 .field select, .field input, .field textarea { max-width: 100%; min-width: 0; }
 @media (max-width: 820px) { .book-layout { grid-template-columns: minmax(0, 1fr); } }
+
+/* Mini sessions: where */
+.mini-locations { margin: 1.25rem 0; }
+.mini-locations h2 { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: 1.5rem; margin-bottom: 0.3rem; }
+.mini-locations p { margin-bottom: 0.5rem; }
+.mini-locations ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+.mini-locations a { text-decoration: underline; text-underline-offset: 3px; }
