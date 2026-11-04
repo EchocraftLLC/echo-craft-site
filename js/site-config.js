@@ -19,8 +19,6 @@ window.ECHOCRAFT = {
     { date: "2026-11-28", label: "Saturday, November 28 \u00b7 4:00 PM to 5:00 PM" },
     { date: "2026-11-29", label: "Sunday, November 29 \u00b7 4:00 PM to 5:00 PM" },
     { date: "2026-12-05", label: "Saturday, December 5 \u00b7 10:00 AM to 2:00 PM" },
-    { date: "2026-12-06", label: "Sunday, December 6 \u00b7 10:00 AM to 2:00 PM" },
-    { date: "2026-12-12", label: "Saturday, December 12 \u00b7 10:00 AM to 2:00 PM" },
     { date: "2026-12-13", label: "Sunday, December 13 \u00b7 10:00 AM to 2:00 PM" }
   ]
 };
