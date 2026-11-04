@@ -48,8 +48,11 @@ the booking page (entries are labeled "Mini-session waitlist"). When you announc
 dates, email the people on that list from your inbox.
 
 Holiday mini session dates go in `js/site-config.js`, in the `holidayMinis` list (one line per
-date). While the list is empty the page says no dates are open; once it has dates, a "Holiday mini
-session date" dropdown appears on the form and the button reads "Request this date".
+date, with the day as YYYY-MM-DD and the words visitors see). A date disappears from the dropdown by
+itself once that day has passed; delete its line to take it away sooner, for example when it fills up.
+While no future dates are left, the dropdown hides and the page says no dates are open. When dates are
+listed, a "Holiday mini session date" dropdown appears on the form and the button reads
+"Request this date".
 
 ## Photo previews
 The gallery script also makes small 800px previews in `images/thumbs/` so grids
