@@ -280,3 +280,31 @@ if (heroContent) {
 if (window.CUE_ON === false) {
   document.querySelectorAll('a.nav-cta[href*="cue"]').forEach((a) => a.remove());
 }
+
+
+// Mini sessions page: show the holiday date dropdown when js/site-config.js lists dates.
+// Past dates drop off by themselves. An entry is either text or { date: "YYYY-MM-DD", label: "..." }.
+(function () {
+  const field = document.getElementById("holiday-field");
+  const cfg = window.ECHOCRAFT;
+  if (!field || !cfg || !Array.isArray(cfg.holidayMinis)) return;
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const dates = cfg.holidayMinis
+    .map((d) => (typeof d === "string" ? { label: d.trim(), date: "" } : { label: String((d && d.label) || "").trim(), date: String((d && d.date) || "") }))
+    .filter((d) => d.label && (!d.date || d.date >= today));
+  if (!dates.length) return;
+  const select = document.getElementById("wl-date");
+  dates.forEach((d) => {
+    const opt = document.createElement("option");
+    opt.value = d.label;
+    opt.textContent = d.label;
+    select.appendChild(opt);
+  });
+  select.required = true;
+  field.hidden = false;
+  const status = document.getElementById("mini-status");
+  if (status) status.textContent = "Holiday mini sessions are open. Choose the date that works for you and I will confirm your exact time by email.";
+  const submit = document.getElementById("mini-submit");
+  if (submit) submit.textContent = "Request this date";
+})();
