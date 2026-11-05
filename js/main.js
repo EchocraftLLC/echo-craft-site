@@ -282,19 +282,41 @@ if (window.CUE_ON === false) {
 }
 
 
-// Mini sessions page: show the holiday date dropdown when js/site-config.js lists dates.
-// Past dates drop off by themselves. An entry is either text or { date: "YYYY-MM-DD", label: "..." }.
+// Mini sessions: copy and the date dropdown follow the dates listed in js/site-config.js.
+// An entry is either text or { date: "YYYY-MM-DD", label: "..." }. Past dates drop off by themselves.
 (function () {
-  const field = document.getElementById("holiday-field");
-  const cfg = window.ECHOCRAFT;
-  if (!field || !cfg || !Array.isArray(cfg.holidayMinis)) return;
+  const cfg = window.ECHOCRAFT || {};
   const now = new Date();
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-  const dates = cfg.holidayMinis
+  const pad = (n) => String(n).padStart(2, "0");
+  const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const list = Array.isArray(cfg.holidayMinis) ? cfg.holidayMinis : [];
+  const dates = list
     .map((d) => (typeof d === "string" ? { label: d.trim(), date: "" } : { label: String((d && d.label) || "").trim(), date: String((d && d.date) || "") }))
     .filter((d) => d.label && (!d.date || d.date >= today));
-  if (!dates.length) return;
+  const open = dates.length > 0;
+  const text = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+
+  // notes that only apply until a certain day
+  document.querySelectorAll("[data-until]").forEach((el) => { if (el.dataset.until < today) el.hidden = true; });
+
+  // "November 18 to December 13", from the dated entries
+  const iso = dates.map((d) => d.date).filter(Boolean).sort();
+  const nice = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d).toLocaleDateString("en-US", { month: "long", day: "numeric" }); };
+  const range = iso.length ? (iso[0] === iso[iso.length - 1] ? nice(iso[0]) : `${nice(iso[0])} to ${nice(iso[iso.length - 1])}`) : "";
+
+  if (!open) return;
+
+  // home page
+  text("hero-mini", "Holiday minis");
+  text("promo-label", "Now booking");
+  text("promo-title", "Holiday mini sessions");
+  text("promo-text", `Short sessions for $75: about 15 minutes, indoors or outdoors depending on the weather, and 5 edited photos.${range ? ` Dates run from ${range}.` : ""} Pick a date and I will confirm your time.`);
+  text("promo-btn", "See dates and reserve");
+
+  // mini sessions page
+  const field = document.getElementById("holiday-field");
   const select = document.getElementById("wl-date");
+  if (!field || !select) return;
   dates.forEach((d) => {
     const opt = document.createElement("option");
     opt.value = d.label;
@@ -303,8 +325,13 @@ if (window.CUE_ON === false) {
   });
   select.required = true;
   field.hidden = false;
-  const status = document.getElementById("mini-status");
-  if (status) status.textContent = "Holiday mini sessions are open. Choose the date that works for you and I will confirm your exact time by email.";
-  const submit = document.getElementById("mini-submit");
-  if (submit) submit.textContent = "Request this date";
+  const interest = document.getElementById("interest-field");
+  const interestSelect = document.getElementById("wl-interest");
+  if (interest) interest.hidden = true;
+  if (interestSelect) interestSelect.disabled = true;   // not sent while dates are open
+  text("mini-title", "Holiday mini sessions");
+  text("mini-status", "Holiday mini sessions are open. Choose the date that works for you and I will confirm your exact time by email.");
+  text("mini-submit", "Request this date");
+  const label = document.getElementById("mini-form-label");
+  if (label) label.value = "Holiday mini session request";
 })();

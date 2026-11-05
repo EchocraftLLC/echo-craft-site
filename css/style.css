@@ -907,3 +907,9 @@ input, textarea, select { font: inherit; color: inherit; }
 .mini-locations p { margin-bottom: 0.5rem; }
 .mini-locations ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
 .mini-locations a { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Home page hero: two buttons side by side */
+.hero-buttons { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.75rem; }
+.hero-buttons .hero-cta { margin-top: 0; }
+.hero-mini { background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+[hidden] { display: none !important; }

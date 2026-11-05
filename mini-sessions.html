@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mini sessions &amp; waitlist — Echocraft Photography</title>
-  <meta name="description" content="Mini photo sessions for $75: about 15 minutes, indoors or outdoors in Easton, 5 edited photos. Join the waitlist to hear when new dates open." />
+  <title>Holiday mini sessions — Echocraft Photography</title>
+  <meta name="description" content="Holiday mini photo sessions for $75: about 15 minutes, indoors or outdoors in Easton, 5 edited photos. See the dates and reserve yours." />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Mini sessions &amp; waitlist — Echocraft Photography" />
-  <meta property="og:description" content="Mini photo sessions for $75: about 15 minutes, indoors or outdoors in Easton, 5 edited photos. Join the waitlist to hear when new dates open." />
+  <meta property="og:title" content="Holiday mini sessions — Echocraft Photography" />
+  <meta property="og:description" content="Holiday mini photo sessions for $75: about 15 minutes, indoors or outdoors in Easton, 5 edited photos. See the dates and reserve yours." />
   <meta property="og:url" content="https://echocraftllc.com/mini-sessions.html" />
   <meta property="og:image" content="https://echocraftllc.com/images/og-image.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Mini sessions &amp; waitlist — Echocraft Photography" />
-  <meta name="twitter:description" content="Mini photo sessions for $75: about 15 minutes, indoors or outdoors in Easton, 5 edited photos. Join the waitlist to hear when new dates open." />
+  <meta name="twitter:title" content="Holiday mini sessions — Echocraft Photography" />
+  <meta name="twitter:description" content="Holiday mini photo sessions for $75: about 15 minutes, indoors or outdoors in Easton, 5 edited photos. See the dates and reserve yours." />
   <meta name="twitter:image" content="https://echocraftllc.com/images/og-image.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -44,7 +44,7 @@
   <section class="section">
     <div class="book-layout">
       <div class="book-intro">
-        <h1>Mini sessions</h1>
+        <h1 id="mini-title">Mini sessions</h1>
         <p>Short, seasonal sessions with a set time slot and a simple theme. They are a great way to get fresh photos without a full session.</p>
         <p class="book-pricing"><strong>$75 per mini session</strong></p>
         <ul class="mini-includes">
@@ -56,20 +56,20 @@
         </ul>
         <div class="mini-locations">
           <h2>Where</h2>
-          <p>Saturday and Sunday sessions are indoors or outdoors, depending on the weather. Wednesday sessions (November 18 and 25) are outdoors only. I will tell you which when I confirm your time.</p>
+          <p>Saturday and Sunday sessions are indoors or outdoors, depending on the weather. <span data-until="2026-11-25">Wednesday sessions (November 18 and 25) are outdoors only. </span>I will tell you which when I confirm your time.</p>
           <ul>
             <li><strong>Indoors (weekends only):</strong> Easton office</li>
             <li><strong>Outdoors:</strong> <a href="https://www.google.com/maps/search/?api=1&amp;query=4500+Freemansburg+Ave+Easton+PA+18045" target="_blank" rel="noopener">4500 Freemansburg Ave, Easton, PA 18045</a></li>
           </ul>
         </div>
-        <p class="book-pricing" id="mini-status">No mini-session dates are open right now. Join the list and I will email you as soon as new dates are announced.</p>
+        <p class="book-pricing" id="mini-status">No mini session dates are open right now. New dates open around the holidays and other times of the year. Leave your email and I will let you know when they are announced.</p>
         <p class="book-direct">Need photos sooner? See <a href="pricing.html">full session pricing</a> or <a href="book.html">send an inquiry</a>.</p>
       </div>
       <div>
         <div data-fs-success class="form-banner form-banner--success"></div>
         <div data-fs-error class="form-banner form-banner--error"></div>
-        <form class="contact-form" id="waitlist-form" action="https://formspree.io/f/xjykbwgo" method="POST">
-          <input type="hidden" name="form" value="Mini-session waitlist" />
+        <form class="contact-form" id="mini-form" action="https://formspree.io/f/xjykbwgo" method="POST">
+          <input type="hidden" id="mini-form-label" name="form" value="Mini-session notify list" />
           <div class="field">
             <label for="wl-name">Name</label>
             <input type="text" id="wl-name" name="name" data-fs-field required />
@@ -80,7 +80,7 @@
             <input type="email" id="wl-email" name="email" data-fs-field required />
             <span data-fs-error="email" class="field-error"></span>
           </div>
-          <div class="field">
+          <div class="field" id="interest-field">
             <label for="wl-interest">Interested in</label>
             <select id="wl-interest" name="interested in" data-fs-field>
               <option>Any mini session</option>
@@ -97,7 +97,7 @@
             </select>
           </div>
           <div class="hp-field" aria-hidden="true"><label for="wl-website">Leave this field empty</label><input type="text" id="wl-website" name="_gotcha" tabindex="-1" autocomplete="off" /></div>
-          <button type="submit" class="btn" id="mini-submit" data-fs-submit-btn>Join the list</button>
+          <button type="submit" class="btn" id="mini-submit" data-fs-submit-btn>Notify me when dates open</button>
         </form>
       </div>
     </div>
@@ -128,7 +128,7 @@
   <script src="js/main.js"></script>
   <script>
     window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
-    formspree('initForm', { formElement: '#waitlist-form', formId: 'xjykbwgo' });
+    formspree('initForm', { formElement: '#mini-form', formId: 'xjykbwgo' });
   </script>
   <script src="https://unpkg.com/@formspree/ajax@1" defer></script>
 </body>
