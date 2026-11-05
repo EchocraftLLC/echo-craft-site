@@ -310,7 +310,7 @@ if (window.CUE_ON === false) {
   text("hero-mini", "Holiday minis");
   text("promo-label", "Now booking");
   text("promo-title", "Holiday mini sessions");
-  text("promo-text", `Short sessions for $75: about 15 minutes, indoors or outdoors depending on the weather, and 5 edited photos.${range ? ` Dates run from ${range}.` : ""} Pick a date and I will confirm your time.`);
+  text("promo-text", `Short sessions for $75: about 15 minutes, outdoors in Easton, and 5 edited photos.${range ? ` Dates run from ${range}.` : ""} Pick a date and I will confirm your time.`);
   text("promo-btn", "See dates and reserve");
 
   // mini sessions page
