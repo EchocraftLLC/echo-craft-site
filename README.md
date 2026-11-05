@@ -42,17 +42,17 @@ link (Stripe, Square, PayPal, Pixieset), paste them between the quotes. The
 "Ready to lock in your date?" box on book.html appears automatically when at
 least one is filled in, and stays hidden otherwise.
 
-## Mini-session waitlist
-mini-sessions.html collects names and emails through the same Formspree form as
-the booking page (entries are labeled "Mini-session waitlist"). When you announce
-dates, email the people on that list from your inbox.
+## Mini sessions
+mini-sessions.html is a holiday booking page. The dates people can choose live in
+`js/site-config.js` (`holidayMinis`, one line per date: the day as YYYY-MM-DD and the words visitors
+see). A date disappears from the page by itself once that day has passed; delete its line to take it
+away sooner, for example when it fills up.
 
-Holiday mini session dates go in `js/site-config.js`, in the `holidayMinis` list (one line per
-date, with the day as YYYY-MM-DD and the words visitors see). A date disappears from the dropdown by
-itself once that day has passed; delete its line to take it away sooner, for example when it fills up.
-While no future dates are left, the dropdown hides and the page says no dates are open. When dates are
-listed, a "Holiday mini session date" dropdown appears on the form and the button reads
-"Request this date".
+While at least one future date is listed, the home page button reads "Holiday minis", the page asks
+visitors to pick a date, and each request arrives by email labeled "Holiday mini session request"
+with the chosen date. When no future dates are left, the home page button reads "Minis" and the page
+offers a "notify me when dates open" form, labeled "Mini-session notify list". When you announce new
+dates, email the people on that list from your inbox.
 
 ## Photo previews
 The gallery script also makes small 800px previews in `images/thumbs/` so grids
