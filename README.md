@@ -58,6 +58,12 @@ dates, email the people on that list from your inbox.
 The gallery script also makes small 800px previews in `images/thumbs/` so grids
 load fast on phones. They are rebuilt automatically; don't edit them by hand.
 
+## Cue: lighting setups
+`cue/lighting.js` is the lighting planner inside Cue. It is one self-contained file, switched on by a
+single line near the end of `cue/index.html`: `<script src="lighting.js"></script>`. It adds the
+"Lighting setups" tile to Cue's home screen and the page behind it. Everything runs on the device.
+If Cue's main page is ever rebuilt from its source, add that one line back and the tool returns.
+
 ## Admin page (admin-ee92c785.html)
 A DIY editor at yoursite.com/admin-ee92c785.html lets you update page text,
 colors, fonts, and photos (including crop/fit) without touching GitHub's
