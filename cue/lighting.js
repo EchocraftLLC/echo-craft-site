@@ -54,18 +54,6 @@ const WALLS = {
   green: { name: "Greenery", rgb: [0.14, 0.26, 0.13] },
   sky:   { name: "Evening sky", rgb: [1, 1, 1], emit: true }
 };
-// How the people are arranged. Positions are in feet, with the camera on the +z side.
-const LAYOUTS = {
-  single: { label: "One person", frameW: 1.9, hw: 1.25, frameY: -0.42, camD: 9, aim: [0, 0, 0],
-    people: [{ x: 0, y: 0, z: 0, yaw: 0, full: true }] },
-  couple: { label: "Couple", frameW: 3.1, hw: 0.95, frameY: -0.58, camD: 10, aim: [0, -0.1, 0],
-    people: [{ x: -0.72, y: 0, z: 0, yaw: 16, full: true }, { x: 0.72, y: 0.05, z: 0.08, yaw: -16, full: true }] },
-  group: { label: "Group", frameW: 5.6, hw: 0.8, frameY: -0.32, camD: 14, aim: [0, -0.3, 0],
-    people: (() => { const l = []; [[-1.45, -0.7, 0.7, 1.45], [-1.9, -0.95, 0, 0.95, 1.9], [-1.45, -0.7, 0.7, 1.45]].forEach((xs, row) => xs.forEach((x, i) => l.push({ x, y: [0, 0.22, 0.44][row] + (i % 2) * 0.06, z: [1.1, 0, -1.1][row], yaw: x * -3, full: false }))); return l; })() },
-  bump:  { label: "Maternity", frameW: 2.0, hw: 1.5, frameY: -0.95, camD: 11, aim: [0, -0.7, 0],
-    people: [{ x: 0, y: 0, z: 0, yaw: 32, full: true, bump: true }] }
-};
-
 /* =====================================================================
    Situations: lights and notes for each kind of shoot
    ===================================================================== */
@@ -147,55 +135,41 @@ const PRESETS = [
 const presetOf = (id) => PRESETS.find((p) => p.id === id) || PRESETS[0];
 
 /* =====================================================================
-   The simulated scene (a tiny ray tracer, so shadows and soft light are real)
+   The simulated scene: real 3D people and a small ray tracer, so shadows and soft light are real.
+   The people (cue/lighting-people.bin) are built from MakeHuman's public-domain body
+   by scripts/build_cue_people.py. The tracer below runs in background threads when it can.
    ===================================================================== */
-function ell(cx, cy, cz, a, b, c, yaw, kind, extra) {
-  return Object.assign({ cx, cy, cz, ia: 1 / a, ib: 1 / b, ic: 1 / c, cs: Math.cos(yaw), sn: Math.sin(yaw), kind }, extra || {});
-}
-// A person is a handful of ellipsoids. The head turns by `yaw` (radians): positive turns the nose toward camera right.
-function makePerson(spec, turn, full) {
-  const yaw = (turn + spec.yaw) * DEG, cs = Math.cos(yaw), sn = Math.sin(yaw);
-  const hx = spec.x, hy = spec.y, hz = spec.z;
-  const at = (lx, ly, lz) => [hx + cs * lx + sn * lz, hy + ly, hz - sn * lx + cs * lz];
-  const by = yaw * 0.4;                                   // the body turns less than the head
-  const prims = [];
-  const head = at(0, 0, 0);
-  prims.push(ell(head[0], head[1], head[2], 0.27, 0.38, 0.33, yaw, "head", { face: true }));
-  if (full) {
-    let p;
-    p = at(0, 0.17, -0.06); prims.push(ell(p[0], p[1], p[2], 0.285, 0.31, 0.35, yaw, "hair", {}));                       // hair volume
-    p = at(0, -0.05, 0.345); prims.push(ell(p[0], p[1], p[2], 0.036, 0.08, 0.085, yaw, "skin", { face: true }));        // nose
-    p = at(0, 0.13, 0.292); prims.push(ell(p[0], p[1], p[2], 0.19, 0.038, 0.065, yaw, "skin", { face: true }));          // brow
-    p = at(-0.14, -0.075, 0.245); prims.push(ell(p[0], p[1], p[2], 0.07, 0.04, 0.05, yaw, "skin", { face: true }));   // cheekbones
-    p = at(0.14, -0.075, 0.245); prims.push(ell(p[0], p[1], p[2], 0.07, 0.04, 0.05, yaw, "skin", { face: true }));
-    p = at(0, -0.175, 0.30); prims.push(ell(p[0], p[1], p[2], 0.07, 0.024, 0.04, yaw, "lips", { face: true }));          // lips
-    p = at(0, -0.30, 0.19); prims.push(ell(p[0], p[1], p[2], 0.095, 0.075, 0.095, yaw, "skin", { face: true }));        // chin
-    p = at(-0.27, 0.0, -0.03); prims.push(ell(p[0], p[1], p[2], 0.03, 0.085, 0.055, yaw, "skin", { face: true }));      // ears
-    p = at(0.27, 0.0, -0.03); prims.push(ell(p[0], p[1], p[2], 0.03, 0.085, 0.055, yaw, "skin", { face: true }));
-    p = at(-0.105, 0.075, 0.285); prims.push(ell(p[0], p[1], p[2], 0.046, 0.046, 0.046, yaw, "eye", { face: true }));  // eyes
-    p = at(0.105, 0.075, 0.285); prims.push(ell(p[0], p[1], p[2], 0.046, 0.046, 0.046, yaw, "eye", { face: true }));
-    prims.push(ell(hx, hy - 0.52, hz - 0.02, 0.125, 0.24, 0.125, by, "skin", {}));                                      // neck
-  }
-  if (spec.bump) {
-    prims.push(ell(hx, hy - 0.88, hz - 0.04, 0.62, 0.3, 0.27, by, "cloth", {}));                                        // shoulders
-    prims.push(ell(hx, hy - 1.55, hz - 0.04, 0.40, 0.95, 0.27, by, "cloth", {}));                                       // torso
-    prims.push(ell(hx + Math.sin(by) * 0.34, hy - 1.95, hz - 0.04 + Math.cos(by) * 0.34, 0.36, 0.40, 0.44, by, "cloth", {}));   // the bump
-    prims.push(ell(hx, hy - 2.6, hz - 0.04, 0.46, 0.55, 0.30, by, "cloth", {}));                                        // hips
-    return { prims, bx: hx, by: hy - 1.4, bz: hz, br: 2.2 };
-  }
-  if (full) {
-    prims.push(ell(hx, hy - 0.92, hz - 0.04, 0.80, 0.32, 0.30, by, "cloth", {}));                                       // shoulders
-    prims.push(ell(hx, hy - 1.55, hz - 0.05, 0.72, 0.62, 0.30, by, "cloth", {}));                                       // chest
-  } else {
-    prims.push(ell(hx, hy - 0.86, hz - 0.04, 0.58, 0.28, 0.26, by, "cloth", {}));
-    prims.push(ell(hx, hy - 1.38, hz - 0.05, 0.52, 0.55, 0.26, by, "cloth", {}));
-  }
-  return { prims, bx: hx, by: hy - 0.85, bz: hz, br: full ? 1.9 : 1.6 };
-}
+// Who stands where. Positions are in feet; the camera is on the +z side, looking at the origin.
+// yaw turns the body (positive turns it toward camera right), head is where the face points.
+const WHO = {
+  woman:     { hair: [0.115, 0.07, 0.042], top: [0.045, 0.055, 0.075], skin: [0.66, 0.45, 0.36] },
+  man:       { hair: [0.05, 0.035, 0.025], top: [0.20, 0.19, 0.17], skin: [0.6, 0.41, 0.31] },
+  expecting: { hair: [0.115, 0.07, 0.042], top: [0.58, 0.52, 0.45], skin: [0.66, 0.45, 0.36] }
+};
+const GROUP_LOOKS = [
+  { who: "woman", hair: [0.24, 0.15, 0.08], top: [0.36, 0.08, 0.07] }, { who: "man", top: [0.05, 0.07, 0.12] },
+  { who: "woman", top: [0.55, 0.53, 0.5], hair: [0.03, 0.022, 0.018] }, { who: "man", top: [0.16, 0.22, 0.14], hair: [0.12, 0.08, 0.05] },
+  { who: "woman", top: [0.08, 0.15, 0.2] }, { who: "man", top: [0.4, 0.38, 0.34], skin: [0.42, 0.27, 0.19] },
+  { who: "woman", top: [0.3, 0.26, 0.18], hair: [0.5, 0.36, 0.2], skin: [0.7, 0.5, 0.42] }
+];
+const LAYOUTS = {
+  single: { label: "One person", frameW: 1.35, hw: 1.25, frameY: -0.32, camD: 9, aim: [0, 0, 0],
+    people: [{ x: 0, y: 0, z: 0, yaw: 22, head: 0, who: "woman" }] },
+  couple: { label: "Couple", frameW: 2.6, hw: 0.95, frameY: -0.45, camD: 10, aim: [0, -0.1, 0],
+    people: [{ x: -0.62, y: 0, z: 0.05, yaw: 28, head: 12, who: "woman" }, { x: 0.66, y: 0.24, z: -0.08, yaw: -24, head: -10, who: "man" }] },
+  group: { label: "Group", frameW: 5.0, hw: 0.62, frameY: -0.42, camD: 14, aim: [0, -0.3, 0],
+    people: (() => { const l = []; let n = 0; [[-1.45, -0.7, 0.7, 1.45], [-1.9, -0.95, 0, 0.95, 1.9], [-1.45, -0.7, 0.7, 1.45]].forEach((xs, row) => xs.forEach((x, i) => { const look = GROUP_LOOKS[(n++ * 3 + row) % GROUP_LOOKS.length]; l.push(Object.assign({ x, y: [0, 0.22, 0.44][row] + (i % 2) * 0.06 + (look.who === "man" ? 0.18 : 0), z: [1.1, 0, -1.1][row], yaw: x * -6, head: x * -4, s: 0.97 + ((n * 7) % 5) * 0.015 }, look)); })); return l; })() },
+  bump:  { label: "Maternity", frameW: 2.1, hw: 1.45, frameY: -1.05, camD: 11, aim: [0, -0.7, 0],
+    people: [{ x: 0, y: 0, z: 0, yaw: -62, head: -18, who: "expecting" }] }
+};
 
 function sceneFrom(S) {
-  const lay = LAYOUTS[S.layout] || LAYOUTS.single;
-  const people = lay.people.map((p) => makePerson(p, num(S.turn, 0), p.full));
+  const lay = LAYOUTS[S.layout] || LAYOUTS.single, turn = num(S.turn, 0);
+  const people = lay.people.map((p) => {
+    const look = WHO[p.who] || WHO.woman, body = p.yaw + turn * 0.4, head = p.head + turn;
+    return { model: p.who, x: p.x, y: p.y, z: p.z, s: p.s || 1, yaw: body, rel: clamp(head - body, -70, 70),
+      hair: p.hair || look.hair, top: p.top || look.top, skin: p.skin || look.skin };
+  });
   const wallD = clamp(num(S.wallD, 5), 1.5, 15);
   const aim = lay.aim;
   const lights = [];
@@ -204,8 +178,7 @@ function sceneFrom(S) {
     const az = num(l.az, 0) * DEG, el = num(l.el, 0) * DEG, tn = tint(num(l.k, 5600));
     const power = 25 * Math.pow(2, num(l.ev, 0));
     if (l.mod === "sun") {
-      const dir = [Math.cos(el) * Math.sin(az), Math.sin(el), Math.cos(el) * Math.cos(az)];
-      lights.push({ sun: true, dir, power: 2.4 * Math.pow(2, num(l.ev, 0)), tn, role: l.role });
+      lights.push({ sun: true, dir: [Math.cos(el) * Math.sin(az), Math.sin(el), Math.cos(el) * Math.cos(az)], power: 2.4 * Math.pow(2, num(l.ev, 0)), tn, role: l.role });
       return;
     }
     let dist = clamp(num(l.dist, 5), 1.5, 12);
@@ -221,237 +194,633 @@ function sceneFrom(S) {
     if (ul < 1e-3) { ux = 1; uz = 0; ul = 1; }
     ux /= ul; uz /= ul;
     const vx = wy * uz, vy = wz * ux - wx * uz, vz = -wy * ux;
-    const n = m.r > 1.2 ? 16 : m.r > 0.4 ? 8 : m.r > 0.2 ? 4 : 1;
-    const oa = new Float32Array(n), ob = new Float32Array(n);
-    for (let i = 0; i < n; i++) {
-      const rr = n === 1 ? 0 : Math.sqrt((i + 0.5) / n) * m.r, ph = i * 2.39996;
-      oa[i] = rr * Math.cos(ph); ob[i] = rr * Math.sin(ph);
-    }
-    lights.push({ oa, ob, n, ux, uz, vx, vy, vz, power, tn, aim: [wx, wy, wz], pos, role: l.role, r: m.r });
+    const shape = l.mod === "window" ? "window" : (l.mod === "small" || l.mod === "large") ? "square" : "disc";
+    lights.push({ pos, aim: [wx, wy, wz], u: [ux, 0, uz], v: [vx, vy, vz], r: m.r, shape, power, tn, role: l.role });
   });
   const wall = WALLS[S.wall] || WALLS.gray;
-  return { lay, people, wallZ: -wallD, wall, lights, amb: num(S.amb, 0.1), ambTop: num(S.ambTop, 0), ambTn: tint(num(S.ambK, 5600)), autoEx: S.autoEx !== false, ex: Math.pow(2, num(S.ex, 0)), expo: 1 };
+  return { layout: S.layout in LAYOUTS ? S.layout : "single", frameW: lay.frameW, hw: lay.hw, frameY: lay.frameY, camD: lay.camD,
+    people, wallZ: -wallD, wall: wall.rgb, sky: !!wall.emit, lights,
+    amb: num(S.amb, 0.1), ambTop: num(S.ambTop, 0), ambTn: tint(num(S.ambK, 5600)), autoEx: S.autoEx !== false, ex: Math.pow(2, num(S.ex, 0)) };
 }
 
-// Intersect a ray with one ellipsoid. Returns the distance, or -1.
-function hitPrim(p, ox, oy, oz, dx, dy, dz) {
-  const rx = ox - p.cx, ry = oy - p.cy, rz = oz - p.cz;
-  const lox = (p.cs * rx - p.sn * rz) * p.ia, loy = ry * p.ib, loz = (p.sn * rx + p.cs * rz) * p.ic;
-  const ldx = (p.cs * dx - p.sn * dz) * p.ia, ldy = dy * p.ib, ldz = (p.sn * dx + p.cs * dz) * p.ic;
-  const a = ldx * ldx + ldy * ldy + ldz * ldz, b = lox * ldx + loy * ldy + loz * ldz, c = lox * lox + loy * loy + loz * loz - 1;
-  const disc = b * b - a * c;
-  if (disc < 0) return -1;
-  const sq = Math.sqrt(disc);
-  let t = (-b - sq) / a;
-  if (t < 1e-4) { t = (-b + sq) / a; if (t < 1e-4) return -1; }
-  return t;
-}
-function hitBound(P, ox, oy, oz, dx, dy, dz) {
-  const rx = P.bx - ox, ry = P.by - oy, rz = P.bz - oz, tca = rx * dx + ry * dy + rz * dz;
-  const d2 = rx * rx + ry * ry + rz * rz - tca * tca;
-  return d2 <= P.br * P.br && (tca > -P.br);
-}
-// Does anything block the segment from o along d for length tmax?
-function blocked(sc, ox, oy, oz, dx, dy, dz, tmax) {
-  const ps = sc.people;
-  for (let i = 0; i < ps.length; i++) {
-    const P = ps[i];
-    if (!hitBound(P, ox, oy, oz, dx, dy, dz)) continue;
-    const pr = P.prims;
-    for (let j = 0; j < pr.length; j++) { const t = hitPrim(pr[j], ox, oy, oz, dx, dy, dz); if (t > 0 && t < tmax) return true; }
+/* The tracer itself. It is written as one self-contained function so the same code can run here
+   and inside worker threads (it is turned into a worker script from its own source text). */
+function TRACER() {
+  "use strict";
+  const M_SKIN = 0, M_EYE = 1, M_LASH = 2, M_HAIR = 3, M_TOP = 4, M_SCALP = 5, M_FUZZ = 6;
+  const MODELS = {}, CACHE = new Map();
+  let META = {};
+  const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+
+  function load(buf) {
+    const dv = new DataView(buf), hl = dv.getUint32(0, true);
+    const head = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 4, hl)));
+    const base = 4 + hl;
+    META = head.meta || {};
+    for (const name in head.people) {
+      const h = head.people[name];
+      const q = new Uint16Array(buf.slice(base + h.pos[0], base + h.pos[0] + h.pos[1] * 2));
+      const P = new Float32Array(h.pos[1]);
+      for (let i = 0; i < P.length; i++) P[i] = h.lo[i % 3] + q[i] * h.sc[i % 3];
+      const tb = buf.slice(base + h.tri[0], base + h.tri[0] + h.tri[1] * (h.wide ? 4 : 2));
+      const T = Uint32Array.from(h.wide ? new Uint32Array(tb) : new Uint16Array(tb));
+      const M = new Uint8Array(buf.slice(base + h.mat[0], base + h.mat[0] + h.mat[1]));
+      const A = new Uint8Array(buf.slice(base + h.att[0], base + h.att[0] + h.att[1]));
+      const tq = new Int8Array(buf.slice(base + h.tan[0], base + h.tan[0] + h.tan[1]));
+      const TAN = new Float32Array(tq.length); for (let i = 0; i < tq.length; i++) TAN[i] = tq[i] / 127;
+      MODELS[name] = { nv: h.nv, nt: h.nt, P, T, M, A, TAN, meta: META[name] || {} };
+    }
+    return Object.keys(MODELS);
   }
-  return false;
-}
-// The nearest thing a ray hits. Fills `h` with the point, normal and material, and returns true.
-function nearest(sc, ox, oy, oz, dx, dy, dz, h) {
-  let best = 1e9, bp = null;
-  const ps = sc.people;
-  for (let i = 0; i < ps.length; i++) {
-    const P = ps[i];
-    if (!hitBound(P, ox, oy, oz, dx, dy, dz)) continue;
-    const pr = P.prims;
-    for (let j = 0; j < pr.length; j++) { const t = hitPrim(pr[j], ox, oy, oz, dx, dy, dz); if (t > 0 && t < best) { best = t; bp = pr[j]; } }
+
+  // A person with the head turned `rel` degrees on the neck, ready to be traced.
+  function build(name, rel) {
+    const key = name + "|" + rel;
+    if (CACHE.has(key)) return CACHE.get(key);
+    const m = MODELS[name]; if (!m) return null;
+    const nv = m.nv, nt = m.nt, P = new Float32Array(nv * 3), TAN = new Float32Array(nv * 3), N = new Float32Array(nv * 3);
+    const PZ = -0.03;                                           // the neck's turning axis
+    for (let i = 0; i < nv; i++) {
+      const a = rel * Math.PI / 180 * (m.A[i * 4] / 255), c = Math.cos(a), s = Math.sin(a);
+      const x = m.P[i * 3], y = m.P[i * 3 + 1], z = m.P[i * 3 + 2] - PZ;
+      P[i * 3] = c * x + s * z; P[i * 3 + 1] = y; P[i * 3 + 2] = -s * x + c * z + PZ;
+      const tx = m.TAN[i * 3], ty = m.TAN[i * 3 + 1], tz = m.TAN[i * 3 + 2];
+      TAN[i * 3] = c * tx + s * tz; TAN[i * 3 + 1] = ty; TAN[i * 3 + 2] = -s * tx + c * tz;
+    }
+    const T = m.T, E = new Float32Array(nt * 9);
+    for (let t = 0; t < nt; t++) {
+      const a = T[t * 3] * 3, b = T[t * 3 + 1] * 3, c = T[t * 3 + 2] * 3;
+      const e1x = P[b] - P[a], e1y = P[b + 1] - P[a + 1], e1z = P[b + 2] - P[a + 2];
+      const e2x = P[c] - P[a], e2y = P[c + 1] - P[a + 1], e2z = P[c + 2] - P[a + 2];
+      const nx = e1y * e2z - e1z * e2y, ny = e1z * e2x - e1x * e2z, nz = e1x * e2y - e1y * e2x;
+      for (const v of [a, b, c]) { N[v] += nx; N[v + 1] += ny; N[v + 2] += nz; }
+      E[t * 9] = P[a]; E[t * 9 + 1] = P[a + 1]; E[t * 9 + 2] = P[a + 2];
+      E[t * 9 + 3] = e1x; E[t * 9 + 4] = e1y; E[t * 9 + 5] = e1z; E[t * 9 + 6] = e2x; E[t * 9 + 7] = e2y; E[t * 9 + 8] = e2z;
+    }
+    for (let i = 0; i < nv; i++) { const l = Math.hypot(N[i * 3], N[i * 3 + 1], N[i * 3 + 2]) || 1; N[i * 3] /= l; N[i * 3 + 1] /= l; N[i * 3 + 2] /= l; }
+    // hair triangles near the tips or the hairline are partly see-through
+    const alphaT = new Uint8Array(nt);
+    for (let t = 0; t < nt; t++) {
+      if (m.M[t] === M_FUZZ) { alphaT[t] = 2; continue; }
+      if (m.M[t] === M_LASH) { alphaT[t] = 3; continue; }
+      if (m.M[t] !== M_HAIR) continue;
+      for (let k = 0; k < 3; k++) { const v = T[t * 3 + k]; if (m.A[v * 4 + 1] > 200 || m.A[v * 4 + 3] < 250) alphaT[t] = 1; }
+    }
+    const bvh = makeBVH(E, nt);
+    let lo = [1e9, 1e9, 1e9], hi = [-1e9, -1e9, -1e9];
+    for (let i = 0; i < nv; i++) for (let k = 0; k < 3; k++) { lo[k] = Math.min(lo[k], P[i * 3 + k]); hi[k] = Math.max(hi[k], P[i * 3 + k]); }
+    const eyes = (m.meta.eyes || []).map((e) => { const a = rel * Math.PI / 180, c = Math.cos(a), s = Math.sin(a), z = e[2] - PZ; return [c * e[0] + s * z, e[1], -s * e[0] + c * z + PZ]; });
+    const g = { m, P, N, TAN, E, alphaT, bvh, lo, hi, eyes, eyeR: m.meta.eyeR || 0.05 };
+    if (CACHE.size > 40) CACHE.delete(CACHE.keys().next().value);
+    CACHE.set(key, g);
+    return g;
   }
-  const tw = dz < -1e-6 ? (sc.wallZ - oz) / dz : -1;
-  if (bp && (tw < 0 || best < tw)) {
-    h.t = best; h.x = ox + dx * best; h.y = oy + dy * best; h.z = oz + dz * best;
-    const rx = h.x - bp.cx, ry = h.y - bp.cy, rz = h.z - bp.cz;
-    const lx = bp.cs * rx - bp.sn * rz, ly = ry, lz = bp.sn * rx + bp.cs * rz;
-    const nlx = lx * bp.ia * bp.ia, nly = ly * bp.ib * bp.ib, nlz = lz * bp.ic * bp.ic;
-    let nx = bp.cs * nlx + bp.sn * nlz, ny = nly, nz = -bp.sn * nlx + bp.cs * nlz;
-    const nl = Math.hypot(nx, ny, nz) || 1;
-    h.nx = nx / nl; h.ny = ny / nl; h.nz = nz / nl;
-    h.kind = bp.kind; h.face = !!bp.face;
-    h.u = lx * bp.ia; h.v = ly * bp.ib; h.w = lz * bp.ic;       // position on the unit ellipsoid
+
+  // A bounding volume hierarchy (binned surface-area split), so each ray tests only a few triangles.
+  function makeBVH(E, nt) {
+    const cx = new Float32Array(nt * 3), bl = new Float32Array(nt * 3), bh = new Float32Array(nt * 3);
+    for (let t = 0; t < nt; t++) for (let k = 0; k < 3; k++) {
+      const a = E[t * 9 + k], b = a + E[t * 9 + 3 + k], c = a + E[t * 9 + 6 + k];
+      bl[t * 3 + k] = Math.min(a, b, c); bh[t * 3 + k] = Math.max(a, b, c); cx[t * 3 + k] = (bl[t * 3 + k] + bh[t * 3 + k]) / 2;
+    }
+    const idx = new Uint32Array(nt); for (let i = 0; i < nt; i++) idx[i] = i;
+    const maxN = nt * 2;
+    const bmin = new Float32Array(maxN * 3), bmax = new Float32Array(maxN * 3), info = new Int32Array(maxN * 2);
+    let count = 1;
+    const B = 12, binN = new Int32Array(B), binLo = new Float32Array(B * 3), binHi = new Float32Array(B * 3);
+    const stack = [[0, 0, nt]];
+    while (stack.length) {
+      const [node, start, end] = stack.pop();
+      let l0 = 1e9, l1 = 1e9, l2 = 1e9, h0 = -1e9, h1 = -1e9, h2 = -1e9, c0 = 1e9, c1 = 1e9, c2 = 1e9, d0 = -1e9, d1 = -1e9, d2 = -1e9;
+      for (let i = start; i < end; i++) {
+        const t = idx[i] * 3;
+        if (bl[t] < l0) l0 = bl[t]; if (bl[t + 1] < l1) l1 = bl[t + 1]; if (bl[t + 2] < l2) l2 = bl[t + 2];
+        if (bh[t] > h0) h0 = bh[t]; if (bh[t + 1] > h1) h1 = bh[t + 1]; if (bh[t + 2] > h2) h2 = bh[t + 2];
+        if (cx[t] < c0) c0 = cx[t]; if (cx[t + 1] < c1) c1 = cx[t + 1]; if (cx[t + 2] < c2) c2 = cx[t + 2];
+        if (cx[t] > d0) d0 = cx[t]; if (cx[t + 1] > d1) d1 = cx[t + 1]; if (cx[t + 2] > d2) d2 = cx[t + 2];
+      }
+      bmin[node * 3] = l0; bmin[node * 3 + 1] = l1; bmin[node * 3 + 2] = l2; bmax[node * 3] = h0; bmax[node * 3 + 1] = h1; bmax[node * 3 + 2] = h2;
+      const n = end - start;
+      if (n <= 4) { info[node * 2] = start; info[node * 2 + 1] = n; continue; }
+      const ext = [d0 - c0, d1 - c1, d2 - c2], cmin = [c0, c1, c2];
+      let bestCost = Infinity, bestAxis = -1, bestSplit = 0;
+      for (let ax = 0; ax < 3; ax++) {
+        if (ext[ax] < 1e-7) continue;
+        binN.fill(0); binLo.fill(1e9); binHi.fill(-1e9);
+        for (let i = start; i < end; i++) {
+          const t = idx[i] * 3; let b = Math.floor((cx[t + ax] - cmin[ax]) / ext[ax] * B); if (b >= B) b = B - 1;
+          binN[b]++;
+          for (let k = 0; k < 3; k++) { if (bl[t + k] < binLo[b * 3 + k]) binLo[b * 3 + k] = bl[t + k]; if (bh[t + k] > binHi[b * 3 + k]) binHi[b * 3 + k] = bh[t + k]; }
+        }
+        for (let s = 1; s < B; s++) {
+          let nl = 0, nr = 0; const lA = [1e9, 1e9, 1e9, -1e9, -1e9, -1e9], rA = [1e9, 1e9, 1e9, -1e9, -1e9, -1e9];
+          for (let b = 0; b < B; b++) {
+            const A = b < s ? lA : rA; if (!binN[b]) continue;
+            if (b < s) nl += binN[b]; else nr += binN[b];
+            for (let k = 0; k < 3; k++) { A[k] = Math.min(A[k], binLo[b * 3 + k]); A[3 + k] = Math.max(A[3 + k], binHi[b * 3 + k]); }
+          }
+          if (!nl || !nr) continue;
+          const area = (A) => { const x = A[3] - A[0], y = A[4] - A[1], z = A[5] - A[2]; return x * y + y * z + z * x; };
+          const cost = nl * area(lA) + nr * area(rA);
+          if (cost < bestCost) { bestCost = cost; bestAxis = ax; bestSplit = s; }
+        }
+      }
+      let mid;
+      if (bestAxis < 0) mid = start + (n >> 1);
+      else {
+        let i = start, j = end - 1;
+        while (i <= j) {
+          const t = idx[i] * 3; let b = Math.floor((cx[t + bestAxis] - cmin[bestAxis]) / ext[bestAxis] * B); if (b >= B) b = B - 1;
+          if (b < bestSplit) i++; else { const tmp = idx[i]; idx[i] = idx[j]; idx[j] = tmp; j--; }
+        }
+        mid = i;
+        if (mid === start || mid === end) mid = start + (n >> 1);
+      }
+      const left = count; count += 2;
+      info[node * 2] = left; info[node * 2 + 1] = 0;
+      stack.push([left, start, mid], [left + 1, mid, end]);
+    }
+    return { bmin, bmax, info, idx };
+  }
+
+  // Hair coverage: wispy ends and a soft hairline.
+  const hash1 = (x) => { let n = Math.imul((x | 0) ^ 0x9e3779b9, 0x85ebca6b); n ^= n >>> 13; n = Math.imul(n, 0xc2b2ae35); n ^= n >>> 16; return (n >>> 0) / 4294967296; };
+  function vnoise(x) { const i = Math.floor(x), f = x - i, a = hash1(i), b = hash1(i + 1), s = f * f * (3 - 2 * f); return a + (b - a) * s; }
+  function hairCover(g, t, u, v) {
+    const T = g.m.T, A = g.m.A, a = T[t * 3] * 4, b = T[t * 3 + 1] * 4, c = T[t * 3 + 2] * 4, w = 1 - u - v;
+    if (g.alphaT[t] === 3) { const P = g.P, lx = P[a / 4 * 3] * w + P[b / 4 * 3] * u + P[c / 4 * 3] * v; return vnoise(lx * 2600) > 0.28; }   // separate lashes
+    const tip = (A[a + 1] * w + A[b + 1] * u + A[c + 1] * v) / 255;
+    const sx = (A[a + 2] * w + A[b + 2] * u + A[c + 2] * v) / 255;
+    const edge = (A[a + 3] * w + A[b + 3] * u + A[c + 3] * v) / 255;
+    const n = vnoise(sx * 900) * 0.6 + vnoise(sx * 260 + 17) * 0.4;
+    if (g.alphaT[t] === 2 && n < 0.62 + 0.25 * vnoise(sx * 61 + 5)) return false;     // loose outer strands: mostly gaps
+    if (tip > 0.82 && n < (tip - 0.82) / 0.18 * 1.05) return false;
+    if (edge < 0.98 && n > edge * 1.6) return false;
     return true;
   }
-  if (tw > 0) { h.t = tw; h.x = ox + dx * tw; h.y = oy + dy * tw; h.z = sc.wallZ; h.nx = 0; h.ny = 0; h.nz = 1; h.kind = "wall"; h.face = false; return true; }
-  return false;
-}
 
-const LIPS = [0.55, 0.30, 0.28], SKIN = [0.70, 0.50, 0.40], HAIR = [0.065, 0.048, 0.04], CLOTH = [0.17, 0.18, 0.21], BUMPCLOTH = [0.42, 0.34, 0.30], IRIS = [0.06, 0.035, 0.025];
-// Six fixed directions around a normal, used to darken tight creases (eye sockets, under the nose).
-const AO_DIRS = [[0.0, 0.0, 1], [0.7, 0, 0.7], [-0.7, 0, 0.7], [0, 0.7, 0.7], [0, -0.7, 0.7], [0.5, 0.5, 0.7]];
-
-// The color of one hit, in linear light (before exposure).
-function shade(sc, h, vx, vy, vz, out, samples) {
-  let alb = SKIN, spec = 0.06, hairMix = 0;
-  if (h.kind === "head") {
-    hairMix = Math.max(clamp((h.v - 0.42) / 0.14, 0, 1), (h.w < -0.25 && h.v > -0.5) ? clamp((-h.w - 0.25) / 0.2, 0, 1) : 0);
-    spec = 0.06 * (1 - hairMix) + 0.03 * hairMix;
-  } else if (h.kind === "hair") { alb = HAIR; spec = 0.03; }
-  else if (h.kind === "lips") { alb = LIPS; spec = 0.08; }
-  else if (h.kind === "eye") { alb = IRIS; spec = 0; }
-  else if (h.kind === "cloth") { alb = sc.lay === LAYOUTS.bump ? BUMPCLOTH : CLOTH; spec = 0.0; }
-  else if (h.kind === "wall") { alb = sc.wall.rgb; spec = 0; }
-  let ar = alb[0], ag = alb[1], ab = alb[2];
-  if (hairMix > 0) { ar = ar * (1 - hairMix) + HAIR[0] * hairMix; ag = ag * (1 - hairMix) + HAIR[1] * hairMix; ab = ab * (1 - hairMix) + HAIR[2] * hairMix; }
-  if (h.kind === "wall" && sc.wall.emit) {            // a glowing evening sky: a warm horizon fading up to blue
-    const f = clamp(0.5 + h.y / 5, 0, 1);
-    out[0] = 1.5 * (0.95 * (1 - f) + 0.4 * f); out[1] = 1.5 * (0.5 * (1 - f) + 0.52 * f); out[2] = 1.5 * (0.25 * (1 - f) + 0.7 * f);
-    return;
-  }
-  const ox = h.x + h.nx * 0.012, oy = h.y + h.ny * 0.012, oz = h.z + h.nz * 0.012;
-  let r = 0, g = 0, b = 0, sr = 0, sg = 0, sb = 0;
-  const lights = sc.lights, eyeSpec = h.kind === "eye", twist = (h.jit || 0) * 6.2832, cph = Math.cos(twist), sph = Math.sin(twist);
-  for (let li = 0; li < lights.length; li++) {
-    const Lg = lights[li];
-    if (Lg.sun) {
-      const c = h.nx * Lg.dir[0] + h.ny * Lg.dir[1] + h.nz * Lg.dir[2];
-      if (c <= 0) continue;
-      if (blocked(sc, ox, oy, oz, Lg.dir[0], Lg.dir[1], Lg.dir[2], 1e5)) continue;
-      const e = Lg.power * c;
-      r += e * Lg.tn[0]; g += e * Lg.tn[1]; b += e * Lg.tn[2];
-      if (spec) { const hx = Lg.dir[0] + vx, hy = Lg.dir[1] + vy, hz = Lg.dir[2] + vz, hl = Math.hypot(hx, hy, hz) || 1, nh = (h.nx * hx + h.ny * hy + h.nz * hz) / hl; if (nh > 0) { const s = Math.pow(nh, 30) * spec * Lg.power * c; sr += s * Lg.tn[0]; sg += s * Lg.tn[1]; sb += s * Lg.tn[2]; } }
-      continue;
-    }
-    const n = h.kind === "wall" ? Math.min(Lg.n, 12) : (samples > 0 ? Math.min(Lg.n, samples) : Lg.n);
-    const step = Lg.n / n;
-    let acc = 0, specAcc = 0;
-    for (let i = 0; i < n; i++) {
-      const k = Math.floor(i * step), a0 = Lg.oa[k], b0 = Lg.ob[k], a = a0 * cph - b0 * sph, b = a0 * sph + b0 * cph;
-      let dx = Lg.pos[0] + a * Lg.ux + b * Lg.vx - ox, dy = Lg.pos[1] + b * Lg.vy - oy, dz = Lg.pos[2] + a * Lg.uz + b * Lg.vz - oz;
-      const d2 = dx * dx + dy * dy + dz * dz, d = Math.sqrt(d2);
-      dx /= d; dy /= d; dz /= d;
-      const c = h.nx * dx + h.ny * dy + h.nz * dz;
-      if (c <= 0) continue;
-      const em = -(dx * Lg.aim[0] + dy * Lg.aim[1] + dz * Lg.aim[2]);       // the light only shines forward
-      if (em <= 0) continue;
-      if (blocked(sc, ox, oy, oz, dx, dy, dz, d - 0.02)) continue;
-      acc += c * em / d2;
-      if (eyeSpec) {
-        // a mirror reflection of the light in the eye: the catchlight
-        const dn = vx * h.nx + vy * h.ny + vz * h.nz;
-        const rx = 2 * dn * h.nx - vx, ry = 2 * dn * h.ny - vy, rz = 2 * dn * h.nz - vz;
-        if (rx * dx + ry * dy + rz * dz > 0.9965) specAcc += 6 * em / d2;
-      } else if (spec) {
-        const hx = dx + vx, hy = dy + vy, hz = dz + vz, hl = Math.hypot(hx, hy, hz) || 1, nh = (h.nx * hx + h.ny * hy + h.nz * hz) / hl;
-        if (nh > 0) specAcc += Math.pow(nh, 30) * c * em / d2;
+  // ---- ray against one person (in that person's own space)
+  const STACK = new Int32Array(96);
+  let TMIN = 1e-5;
+  const HIT = { t: 0, tri: -1, u: 0, v: 0 };
+  function traceLocal(g, ox, oy, oz, dx, dy, dz, tmax, any) {
+    const { bmin, bmax, info, idx } = g.bvh, E = g.E, aT = g.alphaT;
+    const ix = 1 / dx, iy = 1 / dy, iz = 1 / dz;
+    let sp = 0, best = tmax, bt = -1, bu = 0, bv = 0;
+    STACK[sp++] = 0;
+    while (sp) {
+      const nd = STACK[--sp];
+      let t0 = (bmin[nd * 3] - ox) * ix, t1 = (bmax[nd * 3] - ox) * ix; if (t0 > t1) { const q = t0; t0 = t1; t1 = q; }
+      let s0 = (bmin[nd * 3 + 1] - oy) * iy, s1 = (bmax[nd * 3 + 1] - oy) * iy; if (s0 > s1) { const q = s0; s0 = s1; s1 = q; }
+      if (s0 > t0) t0 = s0; if (s1 < t1) t1 = s1;
+      let r0 = (bmin[nd * 3 + 2] - oz) * iz, r1 = (bmax[nd * 3 + 2] - oz) * iz; if (r0 > r1) { const q = r0; r0 = r1; r1 = q; }
+      if (r0 > t0) t0 = r0; if (r1 < t1) t1 = r1;
+      if (t0 > t1 || t1 < 0 || t0 > best) continue;
+      const cnt = info[nd * 2 + 1];
+      if (cnt === 0) { STACK[sp++] = info[nd * 2]; STACK[sp++] = info[nd * 2] + 1; continue; }
+      const st = info[nd * 2];
+      for (let i = st; i < st + cnt; i++) {
+        const t = idx[i], o = t * 9;
+        const e1x = E[o + 3], e1y = E[o + 4], e1z = E[o + 5], e2x = E[o + 6], e2y = E[o + 7], e2z = E[o + 8];
+        const px = dy * e2z - dz * e2y, py = dz * e2x - dx * e2z, pz = dx * e2y - dy * e2x;
+        const det = e1x * px + e1y * py + e1z * pz;
+        if (det > -1e-12 && det < 1e-12) continue;
+        const inv = 1 / det, sx = ox - E[o], sy = oy - E[o + 1], sz = oz - E[o + 2];
+        const u = (sx * px + sy * py + sz * pz) * inv; if (u < 0 || u > 1) continue;
+        const qx = sy * e1z - sz * e1y, qy = sz * e1x - sx * e1z, qz = sx * e1y - sy * e1x;
+        const v = (dx * qx + dy * qy + dz * qz) * inv; if (v < 0 || u + v > 1) continue;
+        const tt = (e2x * qx + e2y * qy + e2z * qz) * inv;
+        if (tt <= TMIN || tt >= best) continue;
+        if (aT[t] && !hairCover(g, t, u, v)) continue;
+        if (any) return tt;
+        best = tt; bt = t; bu = u; bv = v;
       }
     }
-    const e = Lg.power * acc / n;
-    r += e * Lg.tn[0]; g += e * Lg.tn[1]; b += e * Lg.tn[2];
-    if (specAcc) { const s = (eyeSpec ? Lg.power * specAcc / n * 3 : spec * Lg.power * specAcc / n); sr += s * Lg.tn[0]; sg += s * Lg.tn[1]; sb += s * Lg.tn[2]; }
+    if (bt < 0) return -1;
+    HIT.t = best; HIT.tri = bt; HIT.u = bu; HIT.v = bv;
+    return best;
   }
-  // Room light or open sky, stronger from above, and darker in tight creases.
-  let amb = sc.amb * ((1 - sc.ambTop) + sc.ambTop * clamp(0.5 + 0.5 * h.ny, 0, 1) * 1.6);
-  if (h.kind !== "wall" && amb > 0.005) {
-    let open = 0;
-    // build a frame around the normal
-    let tx, ty, tz;
-    if (Math.abs(h.ny) < 0.9) { tx = h.nz; ty = 0; tz = -h.nx; } else { tx = 1; ty = 0; tz = 0; }
-    const tl = Math.hypot(tx, ty, tz) || 1; tx /= tl; ty /= tl; tz /= tl;
-    const bx = h.ny * tz - h.nz * ty, by = h.nz * tx - h.nx * tz, bz = h.nx * ty - h.ny * tx;
-    for (let i = 0; i < AO_DIRS.length; i++) {
-      const a = AO_DIRS[i];
-      const dx = tx * a[0] + bx * a[1] + h.nx * a[2], dy = ty * a[0] + by * a[1] + h.ny * a[2], dz = tz * a[0] + bz * a[1] + h.nz * a[2];
-      if (!blocked(sc, ox, oy, oz, dx, dy, dz, 0.45)) open++;
+
+  // ---- the scene as the tracer sees it
+  function prepare(sc) {
+    const inst = [];
+    for (const p of sc.people) {
+      const g = build(p.model, Math.round(p.rel / 2) * 2); if (!g) continue;
+      const a = p.yaw * Math.PI / 180, c = Math.cos(a), s = Math.sin(a), sc_ = p.s || 1;
+      const cxl = (g.lo[0] + g.hi[0]) / 2, cyl = (g.lo[1] + g.hi[1]) / 2, czl = (g.lo[2] + g.hi[2]) / 2;
+      const r = Math.hypot(g.hi[0] - g.lo[0], g.hi[1] - g.lo[1], g.hi[2] - g.lo[2]) / 2 * sc_;
+      inst.push({ g, p, c, s, k: sc_, x: p.x, y: p.y, z: p.z,
+        bx: p.x + (c * cxl + s * czl) * sc_, by: p.y + cyl * sc_, bz: p.z + (-s * cxl + c * czl) * sc_, br: r });
     }
-    amb *= 0.25 + 0.75 * (open / AO_DIRS.length);
-  } else if (h.kind === "wall") amb *= 0.7;
-  r += amb * sc.ambTn[0]; g += amb * sc.ambTn[1]; b += amb * sc.ambTn[2];
-  out[0] = ar * r + sr; out[1] = ag * g + sg; out[2] = ab * b + sb;
-  if (eyeSpec) { out[0] += sr * 0.5; out[1] += sg * 0.5; out[2] += sb * 0.5; }
-}
-
-function camRay(sc, px, py, ray) {
-  const lay = sc.lay, fw = lay.frameW, fh = fw * lay.hw;
-  const tx = px * fw * 0.5, ty = lay.frameY + py * fh * 0.5, cx = 0, cy = 0, cz = lay.camD;
-  let dx = tx - cx, dy = ty - cy, dz = 0 - cz; const dl = Math.hypot(dx, dy, dz);
-  ray[0] = cx; ray[1] = cy; ray[2] = cz; ray[3] = dx / dl; ray[4] = dy / dl; ray[5] = dz / dl;
-}
-
-const jitter = (x, y) => { let n = (x * 374761393 + y * 668265263) | 0; n = Math.imul(n ^ (n >>> 13), 1274126177); return ((n ^ (n >>> 16)) >>> 0) / 4294967296; };
-// Metering: pick the exposure that puts an average face at a pleasant midtone.
-function meter(sc) {
-  if (!sc.autoEx) { sc.expo = sc.ex; return; }
-  const ray = [0, 0, 0, 0, 0, 0], h = {}, o = [0, 0, 0];
-  let sum = 0, n = 0;
-  for (let j = 0; j < 22; j++) for (let i = 0; i < 18; i++) {
-    camRay(sc, (i + 0.5) / 18 * 2 - 1, 1 - (j + 0.5) / 22 * 2, ray);
-    if (!nearest(sc, ray[0], ray[1], ray[2], ray[3], ray[4], ray[5], h) || !h.face) continue;
-    h.jit = 0; shade(sc, h, -ray[3], -ray[4], -ray[5], o, 3);
-    sum += 0.2126 * o[0] + 0.7152 * o[1] + 0.0722 * o[2]; n++;
+    sc._inst = inst;
+    // samples spread over each glowing surface, the same for every pixel, turned a little per pixel
+    for (const L of sc.lights) {
+      if (L.sun) continue;
+      const n = 64, pts = new Float32Array(n * 2);
+      for (let i = 0; i < n; i++) {
+        let a, b;
+        if (L.shape === "disc") { const rr = Math.sqrt((i + 0.5) / n) * L.r, ph = i * 2.39996; a = rr * Math.cos(ph); b = rr * Math.sin(ph); }
+        else { const fx = ((i * 0.618034) % 1) * 2 - 1, fy = ((i + 0.5) / n) * 2 - 1; a = fx * L.r * 0.886; b = fy * L.r * (L.shape === "window" ? 1.2 : 0.886); }
+        pts[i * 2] = a; pts[i * 2 + 1] = b;
+      }
+      L.pts = pts;
+    }
+    return sc;
   }
-  const mean = n ? sum / n : 0.3;
-  sc.expo = clamp(0.30 / Math.max(mean, 0.002), 0.05, 40) * sc.ex;
+
+  function sceneHit(sc, ox, oy, oz, dx, dy, dz, tmax, any, out) {
+    let best = tmax, bi = null, btri = -1, bu = 0, bv = 0;
+    const I = sc._inst;
+    for (let k = 0; k < I.length; k++) {
+      const it = I[k];
+      const rx = it.bx - ox, ry = it.by - oy, rz = it.bz - oz, tca = rx * dx + ry * dy + rz * dz;
+      if (tca < -it.br) continue;
+      if (rx * rx + ry * ry + rz * rz - tca * tca > it.br * it.br) continue;
+      // into the person's own space
+      const qx = ox - it.x, qy = oy - it.y, qz = oz - it.z, ik = 1 / it.k;
+      const lox = (it.c * qx - it.s * qz) * ik, loy = qy * ik, loz = (it.s * qx + it.c * qz) * ik;
+      const ldx = (it.c * dx - it.s * dz) * ik, ldy = dy * ik, ldz = (it.s * dx + it.c * dz) * ik;
+      const t = traceLocal(it.g, lox, loy, loz, ldx, ldy, ldz, best, any);
+      if (t > 0) { if (any) return t; best = t; bi = it; btri = HIT.tri; bu = HIT.u; bv = HIT.v; }
+    }
+    if (any) return -1;
+    if (bi) { out.inst = bi; out.tri = btri; out.u = bu; out.v = bv; out.t = best; return best; }
+    out.inst = null;
+    return -1;
+  }
+  const blocked = (sc, ox, oy, oz, dx, dy, dz, tmax) => { TMIN = 0.004; const r = sceneHit(sc, ox, oy, oz, dx, dy, dz, tmax, true, null) > 0; TMIN = 1e-5; return r; };
+
+  // ---- materials
+  const HT = { inst: null, tri: -1, u: 0, v: 0, t: 0 };
+  const hash3 = (x, y, z) => hash1(Math.imul(x, 73856093) ^ Math.imul(y, 19349663) ^ Math.imul(z, 83492791));
+  function lightDirSample(L, idx, rot, ox, oy, oz, out) {
+    const a0 = L.pts[idx * 2], b0 = L.pts[idx * 2 + 1], cs = Math.cos(rot), sn = Math.sin(rot);
+    const a = L.shape === "disc" ? a0 * cs - b0 * sn : a0, b = L.shape === "disc" ? a0 * sn + b0 * cs : b0;
+    let dx = L.pos[0] + a * L.u[0] + b * L.v[0] - ox, dy = L.pos[1] + b * L.v[1] - oy, dz = L.pos[2] + a * L.u[2] + b * L.v[2] - oz;
+    const d2 = dx * dx + dy * dy + dz * dz, d = Math.sqrt(d2);
+    out[0] = dx / d; out[1] = dy / d; out[2] = dz / d; out[3] = d; out[4] = d2;
+  }
+  // where a mirror ray from the eye meets a light's glowing surface: the catchlight
+  function mirrorLight(L, ox, oy, oz, rx, ry, rz) {
+    const den = rx * L.aim[0] + ry * L.aim[1] + rz * L.aim[2];
+    if (den > -1e-4) return 0;
+    const t = ((L.pos[0] - ox) * L.aim[0] + (L.pos[1] - oy) * L.aim[1] + (L.pos[2] - oz) * L.aim[2]) / den;
+    if (t <= 0) return 0;
+    const px = ox + rx * t - L.pos[0], py = oy + ry * t - L.pos[1], pz = oz + rz * t - L.pos[2];
+    const a = px * L.u[0] + pz * L.u[2], b = px * L.v[0] + py * L.v[1] + pz * L.v[2];
+    if (L.shape === "disc") return a * a + b * b < L.r * L.r ? 1 : 0;
+    const ha = L.r * 0.886, hb = L.r * (L.shape === "window" ? 1.2 : 0.886);
+    if (Math.abs(a) > ha || Math.abs(b) > hb) return 0;
+    if (L.shape === "window" && (Math.abs(a) < ha * 0.04 || Math.abs(b) < hb * 0.035)) return 0.15;   // the window bars
+    return 1;
+  }
+
+  const LD = new Float64Array(5);
+  // Shade a hit. Writes linear RGB into out, and returns 1 for skin on a face (used for metering).
+  function shade(sc, h, rdx, rdy, rdz, pass, spp, aos, px, py, out) {
+    const it = h.inst, g = it.g, m = g.m, t = h.tri, T = m.T, A = m.A;
+    const ia = T[t * 3], ib = T[t * 3 + 1], ic = T[t * 3 + 2], w = 1 - h.u - h.v;
+    const mat = m.M[t];
+    // local position and normal
+    const lx = g.P[ia * 3] * w + g.P[ib * 3] * h.u + g.P[ic * 3] * h.v;
+    const ly = g.P[ia * 3 + 1] * w + g.P[ib * 3 + 1] * h.u + g.P[ic * 3 + 1] * h.v;
+    const lz = g.P[ia * 3 + 2] * w + g.P[ib * 3 + 2] * h.u + g.P[ic * 3 + 2] * h.v;
+    let nlx = g.N[ia * 3] * w + g.N[ib * 3] * h.u + g.N[ic * 3] * h.v;
+    let nly = g.N[ia * 3 + 1] * w + g.N[ib * 3 + 1] * h.u + g.N[ic * 3 + 1] * h.v;
+    let nlz = g.N[ia * 3 + 2] * w + g.N[ib * 3 + 2] * h.u + g.N[ic * 3 + 2] * h.v;
+    // to world
+    const c = it.c, s = it.s, k = it.k;
+    const x = it.x + (c * lx + s * lz) * k, y = it.y + ly * k, z = it.z + (-s * lx + c * lz) * k;
+    let nx = c * nlx + s * nlz, ny = nly, nz = -s * nlx + c * nlz;
+    let nl = Math.hypot(nx, ny, nz) || 1; nx /= nl; ny /= nl; nz /= nl;
+    const vx = -rdx, vy = -rdy, vz = -rdz;
+    let facing = nx * vx + ny * vy + nz * vz;
+    if (facing < 0 && (mat === M_HAIR || mat === M_FUZZ || mat === M_LASH || mat === M_TOP)) { nx = -nx; ny = -ny; nz = -nz; facing = -facing; }   // thin surfaces: light both sides
+    // the surface color
+    let ar, ag, ab, spec = 0, rough = 30, wrap = null, hair = false, eye = false, face = 0;
+    const pr = it.p;
+    if (mat === M_SKIN) {
+      const lip = (A[ia * 4 + 1] * w + A[ib * 4 + 1] * h.u + A[ic * 4 + 1] * h.v) / 255;
+      const brow = (A[ia * 4 + 2] * w + A[ib * 4 + 2] * h.u + A[ic * 4 + 2] * h.v) / 255;
+      const sc_ = (A[ia * 4 + 3] * w + A[ib * 4 + 3] * h.u + A[ic * 4 + 3] * h.v) / 255;      // under the hair
+      ar = pr.skin[0]; ag = pr.skin[1]; ab = pr.skin[2];
+      // a little warmth in the cheeks, nose and ears
+      const ck = Math.max(0, 1 - Math.hypot(Math.abs(lx) - 0.12, (ly + 0.06) * 1.3, (lz - 0.3) * 1.5) / 0.075) + Math.max(0, 1 - Math.hypot(lx, ly + 0.03, lz - 0.42) / 0.05) * 0.7 + (Math.abs(lx) > 0.24 && ly > -0.12 && ly < 0.2 ? 0.6 : 0);
+      ar *= 1 + 0.06 * ck; ag *= 1 - 0.06 * ck; ab *= 1 - 0.05 * ck;
+      const lw = lip > 0.25 ? Math.min(1, (lip - 0.25) / 0.4) : 0;
+      ar = ar * (1 - lw) + 0.47 * lw; ag = ag * (1 - lw) + 0.2 * lw; ab = ab * (1 - lw) + 0.19 * lw;
+      if (brow > 0.05) {
+        const fine = 0.55 + 0.45 * vnoise(lx * 900 + ly * 260) * vnoise(ly * 700 - lx * 300 + 9);
+        const bw = Math.min(1, brow * 1.6) * fine * 0.85;
+        ar = ar * (1 - bw) + pr.hair[0] * 0.7 * bw; ag = ag * (1 - bw) + pr.hair[1] * 0.7 * bw; ab = ab * (1 - bw) + pr.hair[2] * 0.7 * bw;
+      }
+      if (sc_ > 0) { const q = sc_ * 0.92; ar = ar * (1 - q) + pr.hair[0] * 0.8 * q; ag = ag * (1 - q) + pr.hair[1] * 0.8 * q; ab = ab * (1 - q) + pr.hair[2] * 0.8 * q; }
+      spec = (0.028 + 0.018 * lw + (ly > 0.16 && lz > 0.3 ? 0.008 : 0)) * (1 - sc_); rough = 26 + 30 * lw;
+      wrap = [0.32, 0.14, 0.09];
+      face = ly > -0.33 ? 1 : 0;
+    } else if (mat === M_SCALP) { ar = pr.hair[0] * 0.9; ag = pr.hair[1] * 0.9; ab = pr.hair[2] * 0.9; }
+    else if (mat === M_LASH) { ar = 0.015; ag = 0.011; ab = 0.009; }
+    else if (mat === M_TOP) {
+      ar = pr.top[0]; ag = pr.top[1]; ab = pr.top[2];
+      const kn = 0.94 + 0.06 * vnoise(ly * 220 + lx * 40);
+      ar *= kn; ag *= kn; ab *= kn;
+    } else if (mat === M_HAIR || mat === M_FUZZ) {
+      hair = true;
+      const sx = (A[ia * 4 + 2] * w + A[ib * 4 + 2] * h.u + A[ic * 4 + 2] * h.v) / 255;
+      const v1 = 0.72 + 0.28 * vnoise(sx * 420) + 0.18 * (vnoise(sx * 90 + 3) - 0.5);
+      ar = pr.hair[0] * v1; ag = pr.hair[1] * v1; ab = pr.hair[2] * v1;
+    } else {                                                     // eye
+      eye = true;
+      let best = 0, bd = 1e9;
+      for (let e = 0; e < g.eyes.length; e++) { const E = g.eyes[e], d = (lx - E[0]) ** 2 + (ly - E[1]) ** 2 + (lz - E[2]) ** 2; if (d < bd) { bd = d; best = e; } }
+      const E = g.eyes[best] || [0, 0, 0];
+      // the eyes look at the camera
+      const cl = toLocal(it, 0, 0, sc.camD);
+      let gx = cl[0] - E[0], gy = cl[1] - E[1], gz = cl[2] - E[2]; const gl = Math.hypot(gx, gy, gz); gx /= gl; gy /= gl; gz /= gl;
+      let qx = lx - E[0], qy = ly - E[1], qz = lz - E[2]; const ql = Math.hypot(qx, qy, qz) || 1;
+      const cs = (qx * gx + qy * gy + qz * gz) / ql;
+      if (cs > 0.9935) { ar = 0.008; ag = 0.007; ab = 0.007; }
+      else if (cs > 0.928) {
+        const rr = (1 - cs) / (1 - 0.928), ang = Math.atan2(qy, qx) * 9;
+        const fib = 0.75 + 0.25 * vnoise(ang + rr * 3), dark = rr > 0.82 ? 0.45 : 1;
+        ar = 0.11 * fib * dark; ag = 0.058 * fib * dark; ab = 0.03 * fib * dark;
+      } else { const e2 = clamp((0.928 - cs) * 1.4, 0, 1); ar = 0.72 - 0.1 * e2; ag = 0.66 - 0.1 * e2; ab = 0.62 - 0.1 * e2; }
+    }
+    if (mat === M_SKIN || mat === M_SCALP || mat === M_EYE || mat === M_LASH) face = mat === M_SKIN ? face : 0;
+    // strand direction, for the sheen on hair
+    let tx = 0, ty = 0, tz = 0;
+    if (hair) {
+      const ltx = g.TAN[ia * 3] * w + g.TAN[ib * 3] * h.u + g.TAN[ic * 3] * h.v, lty = g.TAN[ia * 3 + 1] * w + g.TAN[ib * 3 + 1] * h.u + g.TAN[ic * 3 + 1] * h.v, ltz = g.TAN[ia * 3 + 2] * w + g.TAN[ib * 3 + 2] * h.u + g.TAN[ic * 3 + 2] * h.v;
+      tx = c * ltx + s * ltz; ty = lty; tz = -s * ltx + c * ltz;
+      const d = tx * nx + ty * ny + tz * nz; tx -= d * nx; ty -= d * ny; tz -= d * nz;
+      const tl = Math.hypot(tx, ty, tz) || 1; tx /= tl; ty /= tl; tz /= tl;
+    }
+    const off = hair ? 0.012 : 0.007;
+    const ox = x + nx * off, oy = y + ny * off, oz = z + nz * off;
+    const pixRot = hash3(px, py, 7) * 6.2832, pixOff = (hash3(px, py, 3) * 64) | 0;
+    let dr = 0, dg = 0, db = 0, sr = 0, sg = 0, sb = 0;
+    let lr = 0, lg = 0, lb = 0, sacc = 0;
+    function lightTerm(cth, dx, dy, dz, wgt) {
+      if (wrap) {
+        if (cth < -wrap[0]) return;
+        lr += Math.max(0, (cth + wrap[0]) / (1 + wrap[0])) * wgt; lg += Math.max(0, (cth + wrap[1]) / (1 + wrap[1])) * wgt; lb += Math.max(0, (cth + wrap[2]) / (1 + wrap[2])) * wgt;
+      } else if (hair) {
+        const tl = tx * dx + ty * dy + tz * dz, kk = Math.sqrt(Math.max(0, 1 - tl * tl));
+        const dif = (Math.max(0, cth) * 0.6 + kk * 0.4 * Math.max(0, cth + 0.3)) * wgt;
+        lr += dif; lg += dif; lb += dif;
+        // two highlights along the strands: a white one and a softer, colored one
+        let hx = dx + vx, hy = dy + vy, hz = dz + vz; const hl = Math.hypot(hx, hy, hz) || 1; hx /= hl; hy /= hl; hz /= hl;
+        const th = tx * hx + ty * hy + tz * hz;
+        const s1 = Math.pow(Math.max(0, Math.sqrt(Math.max(0, 1 - (th - 0.12) * (th - 0.12)))), 90);
+        const s2 = Math.pow(Math.max(0, Math.sqrt(Math.max(0, 1 - (th + 0.1) * (th + 0.1)))), 22);
+        const vis = Math.max(0, cth + 0.15);
+        sacc += (s1 * 0.12 + s2 * 0.25 * (ar * 4)) * vis * wgt;
+      } else {
+        if (cth <= 0) return;
+        const d = cth * wgt; lr += d; lg += d; lb += d;
+      }
+      if (spec && cth > 0) {
+        let hx = dx + vx, hy = dy + vy, hz = dz + vz; const hl = Math.hypot(hx, hy, hz) || 1;
+        const nh = (nx * hx + ny * hy + nz * hz) / hl;
+        if (nh > 0) { const fr = spec + (1 - spec) * Math.pow(1 - Math.max(0, facing), 5) * 0.25; sacc += (Math.pow(nh, rough) * (rough + 8) / 8 * fr * 0.5 + Math.pow(nh, rough * 4) * fr * 1.5) * cth * wgt; }
+      }
+    }
+    const lights = sc.lights;
+    for (let li = 0; li < lights.length; li++) {
+      const L = lights[li];
+      let n = 1; lr = 0; lg = 0; lb = 0; sacc = 0;
+      if (L.sun) {
+        const dx = L.dir[0], dy = L.dir[1], dz = L.dir[2];
+        const cth = nx * dx + ny * dy + nz * dz;
+        if (cth > 0 && !blocked(sc, ox, oy, oz, dx, dy, dz, 1e5)) {
+          lightTerm(cth, dx, dy, dz, 1);
+        }
+      } else {
+        n = spp;
+        for (let i = 0; i < n; i++) {
+          lightDirSample(L, (pixOff + pass * spp + i) & 63, pixRot, ox, oy, oz, LD);
+          const dx = LD[0], dy = LD[1], dz = LD[2];
+          const cth = nx * dx + ny * dy + nz * dz;
+          if (cth <= 0) continue;
+          const em = -(dx * L.aim[0] + dy * L.aim[1] + dz * L.aim[2]);       // the light only shines forward
+          if (em <= 0) continue;
+          if (blocked(sc, ox, oy, oz, dx, dy, dz, LD[3] - 0.02)) continue;
+          lightTerm(cth, dx, dy, dz, em / LD[4]);
+        }
+      }
+      const e = L.power / n;
+      dr += lr * e * L.tn[0]; dg += lg * e * L.tn[1]; db += lb * e * L.tn[2];
+      if (sacc) { const q = sacc * e; sr += q * L.tn[0]; sg += q * L.tn[1]; sb += q * L.tn[2]; }
+      if (eye) {
+        const dn = vx * nx + vy * ny + vz * nz, rx = 2 * dn * nx - vx, ry = 2 * dn * ny - vy, rz = 2 * dn * nz - vz;
+        if (L.sun) { if (rx * L.dir[0] + ry * L.dir[1] + rz * L.dir[2] > 0.9996) { sr += 1.2 * L.power * L.tn[0]; sg += 1.2 * L.power * L.tn[1]; sb += 1.2 * L.power * L.tn[2]; } }
+        else {
+          const hit = mirrorLight(L, ox, oy, oz, rx, ry, rz);
+          if (hit) { const q = hit * L.power * 0.12 / Math.max(L.r * L.r, 0.01); sr += q * L.tn[0]; sg += q * L.tn[1]; sb += q * L.tn[2]; }
+        }
+      }
+    }
+    // room light or open sky: stronger from above, darker in creases
+    let amb = sc.amb * ((1 - sc.ambTop) + sc.ambTop * clamp(0.5 + 0.5 * ny, 0, 1) * 1.6);
+    if (amb > 0.003) {
+      let tx2, ty2, tz2;
+      if (Math.abs(ny) < 0.9) { tx2 = nz; ty2 = 0; tz2 = -nx; } else { tx2 = 1; ty2 = 0; tz2 = 0; }
+      const tl = Math.hypot(tx2, ty2, tz2) || 1; tx2 /= tl; ty2 /= tl; tz2 /= tl;
+      const bx = ny * tz2 - nz * ty2, by = nz * tx2 - nx * tz2, bz = nx * ty2 - ny * tx2;
+      let open = 0;
+      for (let i = 0; i < aos; i++) {
+        const j = pixOff + pass * aos + i, r1 = ((j * 0.618034) % 1), r2 = (((j * 0.7548777) + hash3(px, py, 11)) % 1);
+        const rr = Math.sqrt(r1), ph = r2 * 6.2832, ax = rr * Math.cos(ph), ay = rr * Math.sin(ph), az = Math.sqrt(Math.max(0, 1 - r1));
+        const dx = tx2 * ax + bx * ay + nx * az, dy = ty2 * ax + by * ay + ny * az, dz = tz2 * ax + bz * ay + nz * az;
+        if (!blocked(sc, ox, oy, oz, dx, dy, dz, 0.6)) open++;
+      }
+      amb *= 0.12 + 0.88 * (open / aos);
+    }
+    let rr_ = ar * (dr + amb * sc.ambTn[0]) + sr, gg_ = ag * (dg + amb * sc.ambTn[1]) + sg, bb_ = ab * (db + amb * sc.ambTn[2]) + sb;
+    if (eye) { const q = amb * 0.05; rr_ += q * sc.ambTn[0]; gg_ += q * sc.ambTn[1]; bb_ += q * sc.ambTn[2]; }
+    out[0] = rr_; out[1] = gg_; out[2] = bb_;
+    return face;
+  }
+  function toLocal(it, x, y, z) {
+    const qx = x - it.x, qy = y - it.y, qz = z - it.z, ik = 1 / it.k;
+    return [(it.c * qx - it.s * qz) * ik, qy * ik, (it.s * qx + it.c * qz) * ik];
+  }
+
+  function shadeWall(sc, x, y, z, pass, spp, px, py, out) {
+    if (sc.sky) {
+      const f = clamp(0.5 + y / 5, 0, 1);
+      out[0] = 1.5 * (0.95 * (1 - f) + 0.4 * f); out[1] = 1.5 * (0.5 * (1 - f) + 0.52 * f); out[2] = 1.5 * (0.25 * (1 - f) + 0.7 * f);
+      return;
+    }
+    const ox = x, oy = y, oz = z + 0.01;
+    const pixRot = hash3(px, py, 7) * 6.2832, pixOff = (hash3(px, py, 3) * 64) | 0;
+    let r = 0, g = 0, b = 0;
+    for (const L of sc.lights) {
+      if (L.sun) { const cth = L.dir[2]; if (cth > 0 && !blocked(sc, ox, oy, oz, L.dir[0], L.dir[1], L.dir[2], 1e5)) { r += L.power * cth * L.tn[0]; g += L.power * cth * L.tn[1]; b += L.power * cth * L.tn[2]; } continue; }
+      let acc = 0;
+      for (let i = 0; i < spp; i++) {
+        lightDirSample(L, (pixOff + pass * spp + i) & 63, pixRot, ox, oy, oz, LD);
+        const cth = LD[2]; if (cth <= 0) continue;
+        const em = -(LD[0] * L.aim[0] + LD[1] * L.aim[1] + LD[2] * L.aim[2]); if (em <= 0) continue;
+        if (blocked(sc, ox, oy, oz, LD[0], LD[1], LD[2], LD[3] - 0.02)) continue;
+        acc += cth * em / LD[4];
+      }
+      const e = L.power * acc / spp; r += e * L.tn[0]; g += e * L.tn[1]; b += e * L.tn[2];
+    }
+    const amb = sc.amb * 0.7;
+    out[0] = sc.wall[0] * (r + amb * sc.ambTn[0]); out[1] = sc.wall[1] * (g + amb * sc.ambTn[1]); out[2] = sc.wall[2] * (b + amb * sc.ambTn[2]);
+  }
+
+  // Render rows y0..y1 of a W x H picture. Returns linear RGB and a face mask.
+  const OUT = new Float64Array(3);
+  function renderRows(sc, W, H, y0, y1, pass, spp, aos, jit) {
+    if (!sc._inst) prepare(sc);
+    const rgb = new Float32Array((y1 - y0) * W * 3), mask = new Uint8Array((y1 - y0) * W);
+    const fw = sc.frameW, fh = fw * sc.hw, cz = sc.camD;
+    for (let y = y0; y < y1; y++) for (let x = 0; x < W; x++) {
+      const jx = jit ? hash3(x, y, pass * 2 + 101) : 0.5, jy = jit ? hash3(x, y, pass * 2 + 202) : 0.5;
+      const tx = ((x + jx) / W * 2 - 1) * fw * 0.5, ty = sc.frameY + (1 - (y + jy) / H * 2) * fh * 0.5;
+      let dx = tx, dy = ty, dz = -cz; const dl = Math.hypot(dx, dy, dz); dx /= dl; dy /= dl; dz /= dl;
+      const k = ((y - y0) * W + x);
+      const th = sceneHit(sc, 0, 0, cz, dx, dy, dz, 1e9, false, HT);
+      const tw = dz < -1e-6 ? (sc.wallZ - cz) / dz : -1;
+      if (th > 0 && (tw < 0 || th < tw)) {
+        mask[k] = shade(sc, HT, dx, dy, dz, pass, spp, aos, x, y, OUT) ? 1 : 0;
+      } else if (tw > 0) {
+        shadeWall(sc, dx * tw, dy * tw, sc.wallZ, pass, spp, x, y, OUT);
+      } else { OUT[0] = OUT[1] = OUT[2] = 0; }
+      rgb[k * 3] = OUT[0]; rgb[k * 3 + 1] = OUT[1]; rgb[k * 3 + 2] = OUT[2];
+    }
+    return { rgb, mask };
+  }
+  return { load, renderRows, prepare, models: () => Object.keys(MODELS), meta: () => META };
 }
 
-// A lookup table for the tone curve: linear light in, display value out.
+/* ---- running the tracer: worker threads when available, otherwise small slices on the page */
 const TONE = (() => { const t = new Uint8ClampedArray(4096); for (let i = 0; i < 4096; i++) { const c = i / 512; t[i] = Math.round(255 * Math.pow(1 - Math.exp(-1.25 * c), 1 / 2.2)); } return t; })();
 const toned = (v) => TONE[Math.min(4095, Math.max(0, (v * 512) | 0))];
+const LOCAL = TRACER();
+let peopleBuf = null, peopleReady = false, peopleErr = false;
+const whenReady = [];
+const peopleURL = (() => { try { return new URL("lighting-people.bin", document.currentScript && document.currentScript.src ? document.currentScript.src : location.href).href; } catch (e) { return "lighting-people.bin"; } })();
+let peopleAsked = false;
+function loadPeople() {
+  if (peopleAsked) return; peopleAsked = true;
+  fetch(peopleURL).then((r) => { if (!r.ok) throw new Error("people " + r.status); return r.arrayBuffer(); }).then((buf) => {
+    peopleBuf = buf; LOCAL.load(buf.slice(0)); peopleReady = true;
+    POOL.init();
+    whenReady.splice(0).forEach((f) => f());
+  }).catch(() => { peopleErr = true; whenReady.splice(0).forEach((f) => f()); });
+}
 
-let camToken = 0;
-// Draw the camera view into a canvas. `final` draws progressively at full detail; otherwise one quick, small pass.
-function drawCam(cv, S, final, done) {
-  const token = ++camToken, sc = sceneFrom(S);
-  meter(sc);
-  const W = final ? cv.width : 60, H = final ? cv.height : Math.round(60 * cv.height / cv.width);
-  let target = cv, ctx = cv.getContext("2d");
-  if (!final) { target = document.createElement("canvas"); target.width = W; target.height = H; ctx = target.getContext("2d"); }
-  const img = ctx.createImageData(W, H), data = img.data;
-  const ray = [0, 0, 0, 0, 0, 0], h = {}, o = [0, 0, 0];
-  let row = 0;
-  function pass(deadline) {
-    while (row < H && performance.now() < deadline) {
-      for (let x = 0; x < W; x++) {
-        camRay(sc, (x + 0.5) / W * 2 - 1, 1 - (row + 0.5) / H * 2, ray);
-        const k = (row * W + x) * 4;
-        if (nearest(sc, ray[0], ray[1], ray[2], ray[3], ray[4], ray[5], h)) {
-          h.jit = jitter(x, row); shade(sc, h, -ray[3], -ray[4], -ray[5], o, final ? 0 : 4);
-          data[k] = toned(o[0] * sc.expo); data[k + 1] = toned(o[1] * sc.expo); data[k + 2] = toned(o[2] * sc.expo);
-        } else { data[k] = data[k + 1] = data[k + 2] = 0; }
-        data[k + 3] = 255;
+const POOL = {
+  workers: [], idle: [], queue: [], job: null,
+  init() {
+    if (typeof Worker === "undefined" || !peopleBuf) return;
+    try {
+      const src = "const T=(" + TRACER.toString() + ")();self.onmessage=(e)=>{const d=e.data;if(d.type==='load'){T.load(d.buf);return;}const r=T.renderRows(d.sc,d.W,d.H,d.y0,d.y1,d.pass,d.spp,d.aos,d.jit);self.postMessage({id:d.id,y0:d.y0,y1:d.y1,rgb:r.rgb,mask:r.mask},[r.rgb.buffer,r.mask.buffer]);};";
+      const url = URL.createObjectURL(new Blob([src], { type: "text/javascript" }));
+      const n = Math.max(1, Math.min(6, (navigator.hardwareConcurrency || 4) - 1));
+      for (let i = 0; i < n; i++) {
+        const w = new Worker(url);
+        w.postMessage({ type: "load", buf: peopleBuf.slice(0) });
+        w.onmessage = (e) => { POOL.idle.push(w); POOL.done(e.data); POOL.pump(); };
+        w.onerror = () => { POOL.broken = true; };
+        this.workers.push(w); this.idle.push(w);
       }
-      row++;
+    } catch (e) { this.workers = []; this.idle = []; }
+  },
+  pump() {
+    while (this.idle.length && this.queue.length) {
+      const t = this.queue.shift(), w = this.idle.pop();
+      w.postMessage(t);
     }
-  }
-  if (!final) {
-    pass(Infinity); ctx.putImageData(img, 0, 0);
-    const c2 = cv.getContext("2d"); c2.imageSmoothingEnabled = true; c2.drawImage(target, 0, 0, cv.width, cv.height);
-    if (done) done();
+  },
+  done(r) { const j = this.job; if (j && r.id === j.id) j.got(r); }
+};
+
+let jobId = 0;
+// Render a picture of scene S into the canvas. Quick draft first, then sharper passes until it settles.
+function drawCam(cv, S, final, done) {
+  if (!peopleReady) {
+    loadPeople();
+    const c = cv.getContext("2d"); c.fillStyle = "#1b1b1d"; c.fillRect(0, 0, cv.width, cv.height);
+    c.fillStyle = "#9a9aa0"; c.font = "13px system-ui, sans-serif"; c.textAlign = "center";
+    c.fillText(peopleErr ? "The 3D model could not load." : "Loading the 3D model…", cv.width / 2, cv.height / 2);
+    if (!peopleErr) whenReady.push(() => drawCam(cv, S, final, done));
     return;
   }
-  (function frame() {
-    if (token !== camToken) return;
-    pass(performance.now() + 14);
-    ctx.putImageData(img, 0, 0);
-    if (row < H) requestAnimationFrame(frame); else if (done) done();
-  })();
+  const id = ++jobId, sc = sceneFrom(S);
+  const W = final ? cv.width : Math.round(cv.width / 3), H = final ? cv.height : Math.round(cv.height / 3);
+  const passes = final ? 20 : 1, spp = final ? 2 : 3, aos = final ? 1 : 3;
+  const acc = new Float32Array(W * H * 3), mask = new Uint8Array(W * H);
+  let pass = 0, rowsDone = 0, expo = 0;
+  const band = Math.max(4, Math.ceil(H / 24));
+  const ctx = cv.getContext("2d"), img = ctx.createImageData(W, H);
+  const small = final ? null : document.createElement("canvas");
+  if (small) { small.width = W; small.height = H; }
+  const show = () => {
+    if (!expo || pass < 3) {
+      // meter: put the average face at a pleasant midtone
+      if (sc.autoEx) {
+        let sum = 0, n = 0;
+        for (let i = 0; i < W * H; i++) if (mask[i]) { sum += 0.2126 * acc[i * 3] + 0.7152 * acc[i * 3 + 1] + 0.0722 * acc[i * 3 + 2]; n++; }
+        const mean = n ? sum / n / Math.max(1, pass) : 0.3;
+        expo = Math.min(40, Math.max(0.05, 0.3 / Math.max(mean, 0.002))) * sc.ex;
+      } else expo = sc.ex;
+    }
+    const f = expo / Math.max(1, pass), d = img.data;
+    for (let i = 0; i < W * H; i++) { d[i * 4] = toned(acc[i * 3] * f); d[i * 4 + 1] = toned(acc[i * 3 + 1] * f); d[i * 4 + 2] = toned(acc[i * 3 + 2] * f); d[i * 4 + 3] = 255; }
+    if (small) { small.getContext("2d").putImageData(img, 0, 0); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high"; ctx.drawImage(small, 0, 0, cv.width, cv.height); }
+    else ctx.putImageData(img, 0, 0);
+  };
+  // the first full-size pass takes extra samples, so the picture is clean from the start
+  const tasks = (p) => { const l = [], f = final && p === 0; for (let y = 0; y < H; y += band) l.push({ id, sc, W, H, y0: y, y1: Math.min(H, y + band), pass: p, spp: f ? 5 : spp, aos: f ? 4 : aos, jit: final }); return l; };
+  const got = (r) => {
+    let k = 0;
+    for (let y = r.y0; y < r.y1; y++) for (let x = 0; x < W; x++, k++) {
+      const i = y * W + x; acc[i * 3] += r.rgb[k * 3]; acc[i * 3 + 1] += r.rgb[k * 3 + 1]; acc[i * 3 + 2] += r.rgb[k * 3 + 2]; if (r.mask[k]) mask[i] = 1;
+    }
+    rowsDone += r.y1 - r.y0;
+    if (rowsDone >= H) {
+      rowsDone = 0; pass++; show();
+      if (pass === 1 && done) done();
+      if (pass < passes && id === jobId) next();
+      else if (pass >= passes && final) { CueLighting.settled = id; if (done) done(); }
+    }
+  };
+  const next = () => {
+    if (POOL.workers.length && !POOL.broken) { POOL.queue = tasks(pass); POOL.pump(); }
+    else {
+      // no threads: render on the page in short slices so it stays responsive
+      const list = tasks(pass);
+      (function slice() {
+        if (id !== jobId) return;
+        const t0 = performance.now();
+        while (list.length && performance.now() - t0 < 12) { const t = list.shift(); const r = LOCAL.renderRows(t.sc, t.W, t.H, t.y0, t.y1, t.pass, t.spp, t.aos, t.jit); got({ id, y0: t.y0, y1: t.y1, rgb: r.rgb, mask: r.mask }); }
+        if (list.length) requestAnimationFrame(slice);
+      })();
+    }
+  };
+  POOL.job = { id, got };
+  POOL.queue = [];
+  next();
 }
 // For tests: render synchronously and return the pixels.
-function renderPixels(S, W) {
-  const sc = sceneFrom(S); meter(sc);
-  const H = Math.round(W * sc.lay.hw), img = new Uint8ClampedArray(W * H * 4), ray = [0, 0, 0, 0, 0, 0], h = {}, o = [0, 0, 0], face = new Uint8Array(W * H);
-  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-    camRay(sc, (x + 0.5) / W * 2 - 1, 1 - (y + 0.5) / H * 2, ray);
-    const k = (y * W + x) * 4;
-    if (nearest(sc, ray[0], ray[1], ray[2], ray[3], ray[4], ray[5], h)) { h.jit = jitter(x, y); shade(sc, h, -ray[3], -ray[4], -ray[5], o, 0); img[k] = toned(o[0] * sc.expo); img[k + 1] = toned(o[1] * sc.expo); img[k + 2] = toned(o[2] * sc.expo); face[y * W + x] = h.face && h.kind !== "eye" ? 1 : 0; }
-    img[k + 3] = 255;
+function renderPixels(S, W, passes) {
+  const sc = sceneFrom(S), H = Math.round(W * sc.hw), n = passes || 8;
+  const acc = new Float32Array(W * H * 3), face = new Uint8Array(W * H), img = new Uint8ClampedArray(W * H * 4);
+  for (let p = 0; p < n; p++) {
+    const r = LOCAL.renderRows(sc, W, H, 0, H, p, 2, 2, true);
+    for (let i = 0; i < W * H; i++) { acc[i * 3] += r.rgb[i * 3]; acc[i * 3 + 1] += r.rgb[i * 3 + 1]; acc[i * 3 + 2] += r.rgb[i * 3 + 2]; if (r.mask[i]) face[i] = 1; }
   }
-  return { img, W, H, face, expo: sc.expo };
+  let expo = sc.ex;
+  if (sc.autoEx) { let s = 0, k = 0; for (let i = 0; i < W * H; i++) if (face[i]) { s += 0.2126 * acc[i * 3] + 0.7152 * acc[i * 3 + 1] + 0.0722 * acc[i * 3 + 2]; k++; } expo = Math.min(40, Math.max(0.05, 0.3 / Math.max(k ? s / k / n : 0.3, 0.002))) * sc.ex; }
+  for (let i = 0; i < W * H; i++) { img[i * 4] = toned(acc[i * 3] * expo / n); img[i * 4 + 1] = toned(acc[i * 3 + 1] * expo / n); img[i * 4 + 2] = toned(acc[i * 3 + 2] * expo / n); img[i * 4 + 3] = 255; }
+  return { img, W, H, face, expo };
 }
-window.CueLighting = { renderPixels, PRESETS, MODS, LAYOUTS, sceneFrom, analyse, probeRatio };
+const ready = () => new Promise((res) => { loadPeople(); if (peopleReady || peopleErr) res(peopleReady); else whenReady.push(() => res(peopleReady)); });
+window.CueLighting = { renderPixels, PRESETS, MODS, LAYOUTS, sceneFrom, analyse, probeRatio, ready };
 
 /* =====================================================================
    Wording for the controls
@@ -468,13 +837,13 @@ const ambText = (a) => (a < 0.08 ? "very dark" : a < 0.25 ? "dim room" : a < 0.5
    ===================================================================== */
 // Measure the light on each cheek of the person nearest the middle, so the ratio matches the picture.
 function probeRatio(S) {
-  const sc = sceneFrom(S), people = sc.lay.people;
+  const sc = sceneFrom(S), people = sc.people;
   let best = people[0], bd = 1e9;
   people.forEach((p) => { const d = p.x * p.x + p.z * p.z; if (d < bd) { bd = d; best = p; } });
-  const yaw = (num(S.turn, 0) + best.yaw) * DEG, cs = Math.cos(yaw), sn = Math.sin(yaw);
+  const yaw = (best.yaw + best.rel) * DEG, cs = Math.cos(yaw), sn = Math.sin(yaw);
   const A = sc.amb * (1 - sc.ambTop + sc.ambTop * 0.8);
   const cheek = (side) => {
-    const lx = side * 0.16, lz = 0.25, px = best.x + cs * lx + sn * lz, py = best.y - 0.06, pz = best.z - sn * lx + cs * lz;
+    const lx = side * 0.12, lz = 0.31, px = best.x + cs * lx + sn * lz, py = best.y - 0.05, pz = best.z - sn * lx + cs * lz;
     const nlx = side * 0.6, nlz = 0.8, nx = cs * nlx + sn * nlz, nz = -sn * nlx + cs * nlz;
     let e = 0;
     for (const Lg of sc.lights) {
@@ -571,6 +940,7 @@ function lightName(i) {
    The top-down picture
    ===================================================================== */
 const CX = 200, CY = 190, SC = 20;
+const CAMW = Math.min(400, Math.max(300, Math.round(Math.min(window.innerWidth, 560) * Math.min(window.devicePixelRatio || 1, 2) * 0.62 / 20) * 20));
 function lightGeom(S, l) {
   const az = num(l.az, 0) * DEG, el = num(l.el, 0) * DEG;
   let x, y;
@@ -608,10 +978,10 @@ function topInner(S, selected, small) {
     else o += `<polygon points="${g.x.toFixed(1)},${g.y.toFixed(1)} ${(g.tx - wd - 4).toFixed(1)},${g.ty.toFixed(1)} ${(g.tx + wd + 4).toFixed(1)},${g.ty.toFixed(1)}" fill="${c}" class="lt-beam"/>`;
   });
   // people, seen from above
-  lay.people.forEach((p) => {
-    const yaw = num(S.turn, 0) + p.yaw, px = CX + p.x * SC, py = CY + p.z * SC;
-    o += `<ellipse cx="${px}" cy="${py - 1}" rx="${p.full ? 15.6 : 10}" ry="${p.full ? 6 : 5}" class="lt-body"/>`;
-    o += `<g transform="translate(${px} ${py}) rotate(${-yaw})"><ellipse rx="5.4" ry="6.6" class="lt-head"/><path d="M-1.6 6.2L0 10.2L1.6 6.2Z" class="lt-nose"/></g>`;
+  sceneFrom(S).people.forEach((p) => {
+    const px = CX + p.x * SC, py = CY + p.z * SC, big = S.layout !== "group";
+    o += `<g transform="translate(${px} ${py}) rotate(${-p.yaw})"><ellipse cy="-1" rx="${big ? 15 : 11}" ry="${big ? (p.model === "expecting" ? 8 : 5.6) : 4.6}" class="lt-body"/></g>`;
+    o += `<g transform="translate(${px} ${py}) rotate(${-(p.yaw + p.rel)})"><ellipse rx="5.2" ry="6.2" class="lt-head"/><path d="M-1.6 5.8L0 9.8L1.6 5.8Z" class="lt-nose"/></g>`;
   });
   S.lights.forEach((l, i) => {
     const g = lightGeom(S, l), c = ROLES[l.role].color, on = i === selected && !small;
@@ -704,7 +1074,7 @@ function viewHtml() {
         <button class="lt-pip lt-pip-cam" data-lt-pip="cam" aria-label="Show the camera view"><canvas id="lt-pip-cam" width="60" height="${Math.round(60 * lay.hw)}"></canvas></button></div>
         <p class="small muted lt-hint">Drag a light to move it. Tap one to change it.</p></figure>
       <figure class="lt-fig lt-camfig"><figcaption class="eyebrow">Camera view · what you would see</figcaption>
-        <div class="lt-box"><canvas id="lt-cam" class="lt-cam" width="240" height="${Math.round(240 * lay.hw)}" role="img" aria-label="Simulated view of how the light falls on your client"></canvas>${miniTop}</div></figure>
+        <div class="lt-box"><canvas id="lt-cam" class="lt-cam" width="${CAMW}" height="${Math.round(CAMW * lay.hw)}" role="img" aria-label="Simulated view of how the light falls on your client"></canvas>${miniTop}</div></figure>
     </div>
     <section class="card" id="lt-read">${readHtml()}</section>
     <section class="card"><div id="lt-picker">${picker()}</div></section>
