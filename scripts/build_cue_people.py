@@ -408,7 +408,7 @@ def make_hair(L, body_polys, style, collide):
     stris = tris_of(shell_polys)
     above = L[:, 1] - yh
     th = style["thick"](L, a)
-    taper = np.where(a < 70, np.clip(above / 0.13, 0.1, 1) ** 1.2, np.clip(above / 0.05, 0.4, 1))
+    taper = np.where(a < 70, smoothstep(-0.02, 0.17, above) * 0.92 + 0.08, np.clip(above / 0.05, 0.4, 1))
     Pshell = L + N * (th * taper)[:, None]
     # which way the strands run on the scalp: away from the part on top, then downward
     part_x = style.get("part", 0.0)
@@ -546,10 +546,10 @@ HAIR_STYLES = {
     # a long bob that falls to the collarbones, with a soft centre part
     "lob": {
         "hairline": [(0, 0.29), (30, 0.285), (50, 0.245), (66, 0.18), (80, 0.13), (100, 0.10), (130, 0.0), (180, -0.06)],
-        "thick": lambda L, a: 0.034 + 0.022 * smoothstep(40, 100, a),
+        "thick": lambda L, a: 0.036 + 0.02 * smoothstep(40, 100, a) + 0.018 * smoothstep(0.26, 0.42, L[:, 1]),
         "shell": [(0, 0.29), (30, 0.285), (50, 0.245), (66, 0.18), (80, 0.16), (100, 0.14), (130, 0.13), (180, 0.12)],
         "curtain": True, "curtain_from": 64, "length": [(60, -0.50), (90, -0.60), (180, -0.66)],
-        "flare": 0.04, "clear": 0.03, "part": 0.03, "pull": 0.12, "fuzz": [0.007, 0.014],
+        "flare": 0.04, "clear": 0.028, "part": 0.085, "pull": 0.17, "fuzz": [0.007, 0.015],
     },
     # short, tapered at the sides and back
     "short": {

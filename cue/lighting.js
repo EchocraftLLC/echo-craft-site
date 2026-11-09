@@ -33,17 +33,33 @@ const MODS = {
   bare:      { name: "Bare flash or small LED", r: 0.12, hint: "Hard light with crisp shadows. Dramatic, but unforgiving on skin." },
   small:     { name: "Small softbox", r: 0.8, hint: "Medium softness. Good modeling and a tidy pool of light." },
   large:     { name: "Large softbox or octabox", r: 1.9, hint: "Soft, wrapping light that flatters most faces." },
+  beautydish:{ name: "Beauty dish", r: 0.9, hint: "Crisp but flattering, with sparkly ring-shaped catchlights. The classic light for beauty and clamshell setups." },
   umbrella:  { name: "Umbrella", r: 1.6, hint: "Soft and wide. Spills light, which helps for groups." },
   window:    { name: "Window", r: 2.3, hint: "Big, soft and free. Its color and strength change with the weather." },
   reflector: { name: "Reflector", r: 1.5, hint: "Bounces light back into the shadows. It can only give back what the key gives it." },
-  sun:       { name: "Direct sun", r: 0, hint: "Hard, strong and far away. Backlight it or soften it with shade." }
+  sun:       { name: "Direct sun", r: 0, hint: "Hard, strong and far away. Backlight it, soften it with a scrim, or find shade." },
+  vwhite:    { name: "White V-flat", r: 2.2, panel: [2, 4], hint: "A tall white board (two 4 x 8 ft panels). It bounces back whatever light reaches it, for big, soft, natural fill." },
+  vblack:    { name: "Black V-flat", r: 2.2, panel: [2, 4], hint: "Negative fill: a black board that soaks up stray light, so the shadow side gets deeper and the face more sculpted." },
+  scrim:     { name: "Scrim (diffusion panel)", r: 2.1, panel: [3, 3], hint: "A big panel of white fabric. Put it between the sun and your client and hard sun turns into soft light." }
 };
+// which shapers make sense for each kind of light
+const MODS_FOR = {
+  key: ["bare", "small", "large", "beautydish", "umbrella", "window", "reflector"],
+  fill: ["reflector", "vwhite", "large", "small", "umbrella", "beautydish", "bare", "window"],
+  rim: ["small", "bare", "large", "umbrella", "reflector"],
+  bg: ["small", "bare", "umbrella", "large"],
+  sun: ["sun"], flag: ["vblack", "vwhite"], scrim: ["scrim"]
+};
+const isPanel = (l) => !!(MODS[l.mod] || {}).panel;
+const madeLight = (l) => !isPanel(l) && l.mod !== "reflector";       // gives its own light, so it has power and color
 const ROLES = {
   key:  { label: "Key",        color: "#e3a24a", letter: "K" },
   fill: { label: "Fill",       color: "#5c8fd6", letter: "F" },
   rim:  { label: "Rim",        color: "#a06fd1", letter: "R" },
   bg:   { label: "Background", color: "#4fae77", letter: "B" },
-  sun:  { label: "Sun",        color: "#f0b429", letter: "S" }
+  sun:  { label: "Sun",        color: "#f0b429", letter: "S" },
+  flag: { label: "V-flat",     color: "#8a8a92", letter: "V" },
+  scrim:{ label: "Scrim",      color: "#9fb3c2", letter: "D" }
 };
 const COLORS = [[5600, "Daylight"], [3500, "Warm"], [3000, "Tungsten"], [7500, "Shade"]];
 const WALLS = {
@@ -65,6 +81,24 @@ const PRESETS = [
     gear: "One large softbox (or a big window), a white or silver reflector, and an optional small light behind for hair separation.",
     start: "Key about 35 degrees to one side, just above eye level, 4 to 5 ft away. Reflector opposite, close to the face. Try f/4 to f/5.6, 1/160 s, ISO 100, with flash around 1/8 power.",
     avoid: "A key that is too high makes dark eye sockets. Keep the reflector close, or the fill never reaches the shadow side." },
+  { id: "studio", name: "Pro studio portrait", sub: "Sculpted headshot with a black V-flat",
+    s: { layout: "single", turn: 10, wall: "gray", wallD: 6, amb: 0.22, ambTop: 0, ambK: 5600, lights: [L("key", "large", -45, 32, 4.5, 0), L("flag", "vblack", 70, -5, 2.6, 0), L("rim", "small", 150, 40, 5, -0.8), L("bg", "small", -60, 10, 4, -1)] },
+    use: "Professional headshots and portraits with shape: actors, executives, authors and personal brands. The black V-flat on the shadow side stops the room from filling in the shadows, so the face looks sculpted rather than flat.",
+    gear: "A large octabox or softbox, a black V-flat (or black foam board) on the shadow side, a small hair light, and a light for the background.",
+    start: "Key at 45 degrees, a little above the eyes, 4 to 5 ft away. Stand the black V-flat 2 to 3 ft from your client on the other side, opened toward them. Hair light high and behind on the far side. Background light low behind your client, aimed at the wall. f/5.6 to f/8, 1/160 s, ISO 100.",
+    avoid: "In a small white room the walls act as fill and flatten the face. The black V-flat fixes that. If the shadow side gets too dark, turn the V-flat around to its white side, or move it back." },
+  { id: "clamshell", name: "Clamshell beauty", sub: "Light above, bounce below: glowing skin",
+    s: { layout: "single", turn: 0, wall: "white", wallD: 5, amb: 0.12, ambTop: 0, ambK: 5600, lights: [L("key", "beautydish", 0, 40, 3.2, 0), L("fill", "reflector", 0, -38, 2.4, -1.2)] },
+    use: "Beauty, makeup and glamour headshots, and anyone who wants smooth, glowing skin. The light above shapes the cheekbones; the bounce below fills the eyes and softens the chin and neck.",
+    gear: "A beauty dish or medium softbox above your client, and a silver or white reflector (or a second, dimmer softbox) below the face.",
+    start: "Beauty dish straight in front, 35 to 45 degrees above, 2.5 to 3.5 ft away. Reflector flat or tilted under the chin, just below the frame. Shoot through the gap between them. f/8, 1/200 s, ISO 100.",
+    avoid: "Too much light from below looks unnatural: keep the bottom 1 to 2 stops darker than the top. Glasses reflect both lights, so tilt them slightly down." },
+  { id: "highkey", name: "High key on white", sub: "Bright and clean, with a pure white background",
+    s: { layout: "single", turn: 8, wall: "white", wallD: 6, amb: 0.18, ambTop: 0, ambK: 5600, lights: [L("key", "umbrella", -25, 28, 5.5, 0), L("fill", "vwhite", 70, -8, 3.5, 0), L("bg", "small", -115, 5, 4, 1), L("bg", "small", 115, 5, 4, 1)] },
+    use: "Website headshots, e-commerce, kids, families and anything that needs a clean white background.",
+    gear: "One big, soft key light, a white V-flat for fill, and two lights for the background.",
+    start: "Light the white wall evenly from both sides, about one stop brighter than the face, so it turns pure white. Keep your client 5 to 6 ft from the wall. Stand the white V-flat opposite the key, close to your client.",
+    avoid: "Too much background light spills onto the edges of the face and washes it out. Too little and the white turns gray." },
   { id: "loop", name: "Flattering portrait", sub: "Soft, safe light for most faces",
     s: { layout: "single", turn: 10, wall: "gray", wallD: 5, amb: 0.08, ambTop: 0, ambK: 5600, lights: [L("key", "large", -30, 28, 5, 0), L("fill", "reflector", 30, -15, 3.5, -2.5)] },
     use: "When you are not sure what to do. A key slightly above and to one side makes a small shadow from the nose that loops toward the cheek, and flatters most faces.",
@@ -95,6 +129,18 @@ const PRESETS = [
     gear: "A gold or white reflector held low in front of your client, and a lens hood.",
     start: "Put your client just inside the shade edge, facing the open sky and away from the dark shade. Angle the reflector up from below to fill under the eyes and chin. f/2.8, ISO 100 to 400.",
     avoid: "Under a dense tree the light turns green and dark. Look for open shade, such as a building's shadow, where the sky still lights the face." },
+  { id: "midday", name: "Harsh midday sun", sub: "What noon sun does to a face",
+    s: { layout: "single", turn: 0, wall: "green", wallD: 14, amb: 0.5, ambTop: 0.85, ambK: 7200, lights: [L("sun", "sun", 25, 68, 9, 2.5, 5600)] },
+    use: "A comparison: overhead sun gives dark eye sockets, a bright forehead and nose, and squinting. See what it does, then try the fixes in the next setup.",
+    gear: "A scrim, a reflector, or simply some shade nearby.",
+    start: "Best: move your client into open shade. Otherwise turn them so the sun is behind them and bounce light into the face, or have a helper hold a scrim between the sun and your client.",
+    avoid: "Don't face your client into the sun: they will squint. Watch for bright hot spots on the forehead and nose." },
+  { id: "scrim", name: "Midday sun with a scrim", sub: "Turn hard sun into soft light",
+    s: { layout: "single", turn: 0, wall: "green", wallD: 14, amb: 0.5, ambTop: 0.85, ambK: 7200, lights: [L("sun", "sun", 25, 68, 9, 2.5, 5600), L("scrim", "scrim", 22, 52, 2.8, 0), L("fill", "reflector", 0, -30, 3, -2.2, 5600)] },
+    use: "Outdoor portraits when there is no shade: weddings, seniors and families at noon.",
+    gear: "A 4 x 4 to 6 x 6 ft scrim (or the diffusion panel of a 5-in-1 reflector) and a helper. A reflector below is a bonus.",
+    start: "Hold the scrim between the sun and your client, as close as you can while keeping it out of the frame. The closer it is, the softer the light. Expose for the face; a brighter background looks airy.",
+    avoid: "If the scrim is too far away the light gets harder again, and parts of the face pop back into the sun. Keep it tilted toward the sun." },
   { id: "golden", name: "Golden hour backlight", sub: "Glowing hair, warm rim, bright eyes",
     s: { layout: "single", turn: 0, wall: "sky", wallD: 14, amb: 0.35, ambTop: 0.6, ambK: 6500, lights: [L("sun", "sun", 140, 20, 9, 3, 3500), L("fill", "reflector", -20, 0, 4, 0.2, 4200)] },
     use: "Couples, seniors and maternity at sunset. The sun behind your client makes a glowing rim and a dreamy background.",
@@ -172,13 +218,13 @@ function sceneFrom(S) {
   });
   const wallD = clamp(num(S.wallD, 5), 1.5, 15);
   const aim = lay.aim;
-  const lights = [];
-  (S.lights || []).forEach((l) => {
+  const lights = [], panels = [], later = [];
+  (S.lights || []).forEach((l, src) => {
     const m = MODS[l.mod] || MODS.small;
     const az = num(l.az, 0) * DEG, el = num(l.el, 0) * DEG, tn = tint(num(l.k, 5600));
     const power = 25 * Math.pow(2, num(l.ev, 0));
     if (l.mod === "sun") {
-      lights.push({ sun: true, dir: [Math.cos(el) * Math.sin(az), Math.sin(el), Math.cos(el) * Math.cos(az)], power: 2.4 * Math.pow(2, num(l.ev, 0)), tn, role: l.role });
+      lights.push({ sun: true, dir: [Math.cos(el) * Math.sin(az), Math.sin(el), Math.cos(el) * Math.cos(az)], power: 2.4 * Math.pow(2, num(l.ev, 0)), tn, role: l.role, src });
       return;
     }
     let dist = clamp(num(l.dist, 5), 1.5, 12);
@@ -194,12 +240,37 @@ function sceneFrom(S) {
     if (ul < 1e-3) { ux = 1; uz = 0; ul = 1; }
     ux /= ul; uz /= ul;
     const vx = wy * uz, vy = wz * ux - wx * uz, vz = -wy * ux;
+    if (m.panel) {
+      // boards and scrims are real objects: they block light, and white ones glow with what reaches them
+      const p = { c: pos, n: [wx, wy, wz], u: [ux, 0, uz], v: [vx, vy, vz], ha: m.panel[0], hb: m.panel[1], kind: l.mod === "vblack" ? "black" : l.mod === "scrim" ? "scrim" : "white", E: [0, 0, 0] };
+      panels.push(p); later.push({ p, l, src });
+      return;
+    }
     const shape = l.mod === "window" ? "window" : (l.mod === "small" || l.mod === "large") ? "square" : "disc";
-    lights.push({ pos, aim: [wx, wy, wz], u: [ux, 0, uz], v: [vx, vy, vz], r: m.r, shape, power, tn, role: l.role });
+    lights.push({ pos, aim: [wx, wy, wz], u: [ux, 0, uz], v: [vx, vy, vz], r: m.r, shape, power, tn, role: l.role, src });
   });
+  // what reaches each board: white boards bounce it, scrims let half of it through
+  const amb0 = num(S.amb, 0.1);
+  for (const it of later) {
+    const p = it.p, E = [amb0 * 0.5, amb0 * 0.5, amb0 * 0.5], back = p.kind === "scrim" ? -1 : 1;
+    for (const L of lights) {
+      let e;
+      if (L.sun) e = L.power * Math.max(0, back * (L.dir[0] * p.n[0] + L.dir[1] * p.n[1] + L.dir[2] * p.n[2]));
+      else {
+        let dx = L.pos[0] - p.c[0], dy = L.pos[1] - p.c[1], dz = L.pos[2] - p.c[2]; const d2 = dx * dx + dy * dy + dz * dz, d = Math.sqrt(d2); dx /= d; dy /= d; dz /= d;
+        e = L.power * Math.max(0, back * (dx * p.n[0] + dy * p.n[1] + dz * p.n[2])) * Math.max(0, -(dx * L.aim[0] + dy * L.aim[1] + dz * L.aim[2])) / d2;
+      }
+      E[0] += e * L.tn[0]; E[1] += e * L.tn[1]; E[2] += e * L.tn[2];
+    }
+    p.E = E;
+    if (p.kind === "black") continue;
+    const k = p.kind === "scrim" ? 0.5 : 0.85, area = 4 * p.ha * p.hb, Eg = (E[0] + E[1] + E[2]) / 3 || 1e-6;
+    lights.push({ pos: p.c, aim: p.n, u: p.u, v: p.v, r: Math.hypot(p.ha, p.hb) * 0.62, ha: p.ha, hb: p.hb, shape: "rect", power: Eg * k * area / Math.PI,
+      tn: [E[0] / Eg, E[1] / Eg, E[2] / Eg], role: it.l.role, src: it.src, panel: true });
+  }
   const wall = WALLS[S.wall] || WALLS.gray;
   return { layout: S.layout in LAYOUTS ? S.layout : "single", frameW: lay.frameW, hw: lay.hw, frameY: lay.frameY, camD: lay.camD,
-    people, wallZ: -wallD, wall: wall.rgb, sky: !!wall.emit, lights,
+    people, wallZ: -wallD, wall: wall.rgb, sky: !!wall.emit, lights, panels,
     amb: num(S.amb, 0.1), ambTop: num(S.ambTop, 0), ambTn: tint(num(S.ambK, 5600)), autoEx: S.autoEx !== false, ex: Math.pow(2, num(S.ex, 0)) };
 }
 
@@ -262,7 +333,6 @@ function TRACER() {
     const alphaT = new Uint8Array(nt);
     for (let t = 0; t < nt; t++) {
       if (m.M[t] === M_FUZZ) { alphaT[t] = 2; continue; }
-      if (m.M[t] === M_LASH) { alphaT[t] = 3; continue; }
       if (m.M[t] !== M_HAIR) continue;
       for (let k = 0; k < 3; k++) { const v = T[t * 3 + k]; if (m.A[v * 4 + 1] > 200 || m.A[v * 4 + 3] < 250) alphaT[t] = 1; }
     }
@@ -429,7 +499,7 @@ function TRACER() {
       for (let i = 0; i < n; i++) {
         let a, b;
         if (L.shape === "disc") { const rr = Math.sqrt((i + 0.5) / n) * L.r, ph = i * 2.39996; a = rr * Math.cos(ph); b = rr * Math.sin(ph); }
-        else { const fx = ((i * 0.618034) % 1) * 2 - 1, fy = ((i + 0.5) / n) * 2 - 1; a = fx * L.r * 0.886; b = fy * L.r * (L.shape === "window" ? 1.2 : 0.886); }
+        else { const fx = ((i * 0.618034) % 1) * 2 - 1, fy = ((i + 0.5) / n) * 2 - 1; a = fx * (L.ha || L.r * 0.886); b = fy * (L.hb || L.r * (L.shape === "window" ? 1.2 : 0.886)); }
         pts[i * 2] = a; pts[i * 2 + 1] = b;
       }
       L.pts = pts;
@@ -457,12 +527,30 @@ function TRACER() {
     out.inst = null;
     return -1;
   }
-  const blocked = (sc, ox, oy, oz, dx, dy, dz, tmax) => { TMIN = 0.004; const r = sceneHit(sc, ox, oy, oz, dx, dy, dz, tmax, true, null) > 0; TMIN = 1e-5; return r; };
+  // the nearest board or scrim along a ray (index), or -1
+  function panelHit(sc, ox, oy, oz, dx, dy, dz, tmax) {
+    const P = sc.panels; let best = tmax, bi = -1;
+    if (!P) return -1;
+    for (let i = 0; i < P.length; i++) {
+      const p = P[i], den = dx * p.n[0] + dy * p.n[1] + dz * p.n[2];
+      if (den > -1e-6 && den < 1e-6) continue;
+      const t = ((p.c[0] - ox) * p.n[0] + (p.c[1] - oy) * p.n[1] + (p.c[2] - oz) * p.n[2]) / den;
+      if (t <= 0.01 || t >= best) continue;
+      const qx = ox + dx * t - p.c[0], qy = oy + dy * t - p.c[1], qz = oz + dz * t - p.c[2];
+      if (Math.abs(qx * p.u[0] + qz * p.u[2]) > p.ha || Math.abs(qx * p.v[0] + qy * p.v[1] + qz * p.v[2]) > p.hb) continue;
+      best = t; bi = i;
+    }
+    return bi;
+  }
+  const blocked = (sc, ox, oy, oz, dx, dy, dz, tmax) => { if (panelHit(sc, ox, oy, oz, dx, dy, dz, tmax) >= 0) return true; TMIN = 0.004; const r = sceneHit(sc, ox, oy, oz, dx, dy, dz, tmax, true, null) > 0; TMIN = 1e-5; return r; };
 
   // ---- materials
   const HT = { inst: null, tri: -1, u: 0, v: 0, t: 0 };
   const hash3 = (x, y, z) => hash1(Math.imul(x, 73856093) ^ Math.imul(y, 19349663) ^ Math.imul(z, 83492791));
+  // visit a light's 64 sample points in bit-reversed order, so any run of them covers the whole light
+  const BR = new Uint8Array(64); for (let i = 0; i < 64; i++) { let r = 0; for (let b = 0; b < 6; b++) r |= ((i >> b) & 1) << (5 - b); BR[i] = r; }
   function lightDirSample(L, idx, rot, ox, oy, oz, out) {
+    idx = BR[idx];
     const a0 = L.pts[idx * 2], b0 = L.pts[idx * 2 + 1], cs = Math.cos(rot), sn = Math.sin(rot);
     const a = L.shape === "disc" ? a0 * cs - b0 * sn : a0, b = L.shape === "disc" ? a0 * sn + b0 * cs : b0;
     let dx = L.pos[0] + a * L.u[0] + b * L.v[0] - ox, dy = L.pos[1] + b * L.v[1] - oy, dz = L.pos[2] + a * L.u[2] + b * L.v[2] - oz;
@@ -478,7 +566,7 @@ function TRACER() {
     const px = ox + rx * t - L.pos[0], py = oy + ry * t - L.pos[1], pz = oz + rz * t - L.pos[2];
     const a = px * L.u[0] + pz * L.u[2], b = px * L.v[0] + py * L.v[1] + pz * L.v[2];
     if (L.shape === "disc") return a * a + b * b < L.r * L.r ? 1 : 0;
-    const ha = L.r * 0.886, hb = L.r * (L.shape === "window" ? 1.2 : 0.886);
+    const ha = L.ha || L.r * 0.886, hb = L.hb || L.r * (L.shape === "window" ? 1.2 : 0.886);
     if (Math.abs(a) > ha || Math.abs(b) > hb) return 0;
     if (L.shape === "window" && (Math.abs(a) < ha * 0.04 || Math.abs(b) < hb * 0.035)) return 0.15;   // the window bars
     return 1;
@@ -556,7 +644,7 @@ function TRACER() {
       wrap = [0.34, 0.15, 0.1];
       face = ly > -0.33 ? 1 : 0;
     } else if (mat === M_SCALP) { ar = pr.hair[0] * 0.9; ag = pr.hair[1] * 0.9; ab = pr.hair[2] * 0.9; }
-    else if (mat === M_LASH) { ar = 0.015; ag = 0.011; ab = 0.009; }
+    else if (mat === M_LASH) { ar = 0.02; ag = 0.014; ab = 0.011; }
     else if (mat === M_TOP) {
       ar = pr.top[0]; ag = pr.top[1]; ab = pr.top[2];
       const kn = 0.94 + 0.06 * vnoise(ly * 220 + lx * 40);
@@ -565,7 +653,10 @@ function TRACER() {
       hair = true;
       const sx = (A[ia * 4 + 2] * w + A[ib * 4 + 2] * h.u + A[ic * 4 + 2] * h.v) / 255;
       const v1 = 0.72 + 0.28 * vnoise(sx * 420) + 0.18 * (vnoise(sx * 90 + 3) - 0.5);
-      ar = pr.hair[0] * v1; ag = pr.hair[1] * v1; ab = pr.hair[2] * v1;
+      // sun-kissed strands: a few lighter ribbons, and ends a touch lighter than the roots
+      const tipv = (A[ia * 4 + 1] * w + A[ib * 4 + 1] * h.u + A[ic * 4 + 1] * h.v) / 255;
+      const ribbon = Math.max(0, vnoise(sx * 55 + 11) - 0.55) * 2.2, lift = 1 + 0.55 * ribbon + 0.25 * tipv;
+      ar = pr.hair[0] * v1 * lift * (1 + 0.12 * ribbon); ag = pr.hair[1] * v1 * lift; ab = pr.hair[2] * v1 * lift * (1 - 0.08 * ribbon);
     } else {                                                     // eye
       eye = true;
       let best = 0, bd = 1e9;
@@ -669,7 +760,7 @@ function TRACER() {
         const j = pixOff + pass * aos + i, r1 = ((j * 0.618034) % 1), r2 = (((j * 0.7548777) + hash3(px, py, 11)) % 1);
         const rr = Math.sqrt(r1), ph = r2 * 6.2832, ax = rr * Math.cos(ph), ay = rr * Math.sin(ph), az = Math.sqrt(Math.max(0, 1 - r1));
         const dx = tx2 * ax + bx * ay + nx * az, dy = ty2 * ax + by * ay + ny * az, dz = tz2 * ax + bz * ay + nz * az;
-        if (!blocked(sc, ox, oy, oz, dx, dy, dz, 0.6)) open++;
+        if (!blocked(sc, ox, oy, oz, dx, dy, dz, 0.6)) { const pi = panelHit(sc, ox, oy, oz, dx, dy, dz, 60); open += pi < 0 ? 1 : sc.panels[pi].kind === "black" ? 0 : sc.panels[pi].kind === "white" ? 0.8 : 0.6; }
       }
       amb *= 0.12 + 0.88 * (open / aos);
     }
@@ -721,7 +812,12 @@ function TRACER() {
       const k = ((y - y0) * W + x);
       const th = sceneHit(sc, 0, 0, cz, dx, dy, dz, 1e9, false, HT);
       const tw = dz < -1e-6 ? (sc.wallZ - cz) / dz : -1;
-      if (th > 0 && (tw < 0 || th < tw)) {
+      const pi = panelHit(sc, 0, 0, cz, dx, dy, dz, Math.min(th > 0 ? th : 1e9, tw > 0 ? tw : 1e9));
+      if (pi >= 0) {
+        // a board or scrim in the picture
+        const p = sc.panels[pi], k = p.kind === "black" ? 0.03 : p.kind === "scrim" ? 0.5 : 0.85;
+        OUT[0] = p.E[0] * k; OUT[1] = p.E[1] * k; OUT[2] = p.E[2] * k;
+      } else if (th > 0 && (tw < 0 || th < tw)) {
         mask[k] = shade(sc, HT, dx, dy, dz, pass, spp, aos, x, y, OUT) ? 1 : 0;
       } else if (tw > 0) {
         shadeWall(sc, dx * tw, dy * tw, sc.wallZ, pass, spp, x, y, OUT);
@@ -798,7 +894,7 @@ function drawCam(cv, S, final, done) {
   }
   const id = ++jobId, sc = sceneFrom(S);
   const W = final ? cv.width : Math.round(cv.width / 3), H = final ? cv.height : Math.round(cv.height / 3);
-  const passes = final ? 20 : 1, spp = final ? 2 : 3, aos = final ? 1 : 3;
+  const passes = final ? 16 : 1, spp = final ? 2 : 3, aos = final ? 1 : 3;
   const acc = new Float32Array(W * H * 3), mask = new Uint8Array(W * H);
   let pass = 0, rowsDone = 0, expo = 0;
   const band = Math.max(4, Math.ceil(H / 24));
@@ -881,6 +977,19 @@ const ambText = (a) => (a < 0.08 ? "very dark" : a < 0.25 ? "dim room" : a < 0.5
 /* =====================================================================
    What the setup will do
    ===================================================================== */
+// Does a ray hit one of the boards or scrims? Returns its kind, or "".
+function rayPanel(sc, o, d, tmax) {
+  let best = tmax, kind = "";
+  for (const p of sc.panels || []) {
+    const den = d[0] * p.n[0] + d[1] * p.n[1] + d[2] * p.n[2]; if (Math.abs(den) < 1e-6) continue;
+    const t = ((p.c[0] - o[0]) * p.n[0] + (p.c[1] - o[1]) * p.n[1] + (p.c[2] - o[2]) * p.n[2]) / den;
+    if (t <= 0.01 || t >= best) continue;
+    const q = [o[0] + d[0] * t - p.c[0], o[1] + d[1] * t - p.c[1], o[2] + d[2] * t - p.c[2]];
+    if (Math.abs(q[0] * p.u[0] + q[2] * p.u[2]) > p.ha || Math.abs(q[0] * p.v[0] + q[1] * p.v[1] + q[2] * p.v[2]) > p.hb) continue;
+    best = t; kind = p.kind;
+  }
+  return kind;
+}
 // Measure the light on each cheek of the person nearest the middle, so the ratio matches the picture.
 function probeRatio(S) {
   const sc = sceneFrom(S), people = sc.people;
@@ -892,21 +1001,41 @@ function probeRatio(S) {
     const lx = side * 0.12, lz = 0.31, px = best.x + cs * lx + sn * lz, py = best.y - 0.05, pz = best.z - sn * lx + cs * lz;
     const nlx = side * 0.6, nlz = 0.8, nx = cs * nlx + sn * nlz, nz = -sn * nlx + cs * nlz;
     let e = 0;
+    const o = [px, py, pz];
     for (const Lg of sc.lights) {
-      if (Lg.sun) { e += Lg.power * Math.max(0, nx * Lg.dir[0] + nz * Lg.dir[2]); continue; }
+      if (Lg.sun) { if (!rayPanel(sc, o, Lg.dir, 1e5)) e += Lg.power * Math.max(0, nx * Lg.dir[0] + nz * Lg.dir[2]); continue; }
       let dx = Lg.pos[0] - px, dy = Lg.pos[1] - py, dz = Lg.pos[2] - pz;
       const d2 = dx * dx + dy * dy + dz * dz, d = Math.sqrt(d2); dx /= d; dy /= d; dz /= d;
+      if (rayPanel(sc, o, [dx, dy, dz], d - 0.05)) continue;
       e += Lg.power * Math.max(0, nx * dx + nz * dz) * Math.max(0, -(dx * Lg.aim[0] + dy * Lg.aim[1] + dz * Lg.aim[2])) / d2;
     }
-    return e + A;
+    // room light, minus what the black boards soak up
+    let open = 0, n = 0;
+    for (let i = 0; i < 24; i++) {
+      const a = i * 2.39996, r = Math.sqrt((i + 0.5) / 24), lx2 = r * Math.cos(a), ly2 = r * Math.sin(a), lz2 = Math.sqrt(1 - r * r);
+      const tx = -nz, tz = nx;                                    // a sideways direction across the cheek
+      const d = [tx * lx2 + nx * lz2, ly2, tz * lx2 + nz * lz2];
+      const k = rayPanel(sc, o, d, 60); open += !k ? 1 : k === "black" ? 0 : k === "white" ? 0.8 : 0.6; n++;
+    }
+    return e + A * (0.12 + 0.88 * open / n);
   };
   const a = cheek(-1), b = cheek(1);
   return Math.max(a, b) / Math.max(Math.min(a, b), 0.0001);
 }
-// How strong a light is at the subject, in the same units the picture uses.
-const strength = (l) => (l.mod === "sun" ? 2.4 * Math.pow(2, num(l.ev, 0)) : 25 * Math.pow(2, num(l.ev, 0)) / Math.pow(clamp(num(l.dist, 5), 1.5, 12), 2));
+// How strong each light is at the subject, in the same units the picture uses (boards included, blocked sun excluded).
+function strengths(S) {
+  const sc = sceneFrom(S), out = (S.lights || []).map(() => 0), aim = (LAYOUTS[S.layout] || LAYOUTS.single).aim;
+  for (const L of sc.lights) {
+    if (L.src == null) continue;
+    if (L.sun) { out[L.src] = rayPanel(sc, aim, L.dir, 1e5) ? 0 : L.power; continue; }
+    const d2 = (L.pos[0] - aim[0]) ** 2 + (L.pos[1] - aim[1]) ** 2 + (L.pos[2] - aim[2]) ** 2;
+    out[L.src] = L.power / Math.max(d2, 0.5);
+  }
+  return out;
+}
 function analyse(S) {
-  const lights = S.lights || [], front = lights.filter((l) => l.role !== "bg" && l.role !== "rim");
+  const lights = S.lights || [], ST = strengths(S), strength = (l) => ST[lights.indexOf(l)] || 0;
+  const front = lights.filter((l) => l.role !== "bg" && l.role !== "rim" && l.role !== "flag");
   const A = num(S.amb, 0) * (1 - num(S.ambTop, 0) + num(S.ambTop, 0) * 0.8);
   let key = front.slice().sort((a, b) => strength(b) - strength(a))[0] || null;
   if (key && A > strength(key)) key = null;           // the sky or room is the main light
@@ -927,7 +1056,7 @@ function analyse(S) {
     if (key.mod === "sun" && aAbs > 110) pat = "Backlight: the sun is behind your client, so the face needs front fill";
     else if (aAbs > 110) pat = "Backlight from behind";
     else if (el < -8) pat = "Uplight, from below: unusual and eerie";
-    else if (el >= 50 && phi < 22) pat = "Butterfly: a small shadow under the nose, glamorous";
+    else if (el >= 35 && phi < 22) pat = "Butterfly: a small shadow under the nose, glamorous";
     else if (phi >= 78) pat = "Split lighting: one half of the face lit, one in shadow";
     else if (phi >= 40 && el >= 32) pat = "Rembrandt: a small triangle of light on the shadow-side cheek";
     else if (phi >= 58) pat = "Strong side light: deep shape and shadow on the far side of the face";
@@ -947,7 +1076,7 @@ function analyse(S) {
     if (aAbs <= 110 && el > -12) {
       const x = Math.sin(az * DEG) * Math.cos(el * DEG), y = Math.sin(el * DEG);
       const clock = Math.round(((Math.atan2(x, y) / (2 * Math.PI)) * 12 + 12) % 12) || 12;
-      const shape = key.mod === "bare" ? "a small bright dot" : key.mod === "umbrella" ? "a round patch" : key.mod === "sun" ? "a tiny point" : key.mod === "window" ? "a window-shaped patch with panes" : "a square or rectangular patch";
+      const shape = key.mod === "bare" ? "a small bright dot" : key.mod === "umbrella" ? "a round patch" : key.mod === "beautydish" ? "a round ring" : key.mod === "sun" ? "a tiny point" : key.mod === "window" ? "a window-shaped patch with panes" : key.mod === "scrim" ? "a big soft square" : key.mod === "vwhite" ? "a tall white panel" : "a square or rectangular patch";
       res.catchlights = `Catchlights in the eyes at about ${clock} o'clock, shaped like ${shape}.`;
     } else res.catchlights = "A light this far behind makes no catchlights in the eyes.";
     res.moodShort = res.ratioText;
@@ -958,6 +1087,8 @@ function analyse(S) {
     if (key.mod !== "sun" && num(key.dist, 5) < 2.6 && m.r < 1) res.warnings.push("A small light this close is uneven: the nose gets far more than the ears. Step it back.");
     if (S.layout === "group" && key.mod !== "sun" && num(key.dist, 5) < 6) res.warnings.push("For a group, move the lights back and up so the front row is not much brighter than the back.");
     if (num(S.wallD, 5) < 2.6 && m.r < 1.2) res.warnings.push("Your client is close to the wall, so the shadow lands on it. Move them forward.");
+    const sunL = lights.find((l) => l.mod === "sun");
+    if (sunL && key === sunL && num(sunL.el, 0) > 50) res.warnings.push("High sun makes dark eye sockets and squinting. Find shade, turn your client so the sun is behind them, or add a scrim.");
   }
   return res;
 }
@@ -965,7 +1096,9 @@ function analyse(S) {
 /* =====================================================================
    State
    ===================================================================== */
-const NEWLIGHT = { key: L("key", "large", -35, 28, 5, 0), fill: L("fill", "reflector", 40, 0, 3.5, -1.5), rim: L("rim", "small", 150, 35, 5, -0.5), bg: L("bg", "small", -70, 12, 4, -1), sun: L("sun", "sun", 140, 20, 9, 0.5, 3500) };
+const NEWLIGHT = { key: L("key", "large", -35, 28, 5, 0), fill: L("fill", "reflector", 40, 0, 3.5, -1.5), rim: L("rim", "small", 150, 35, 5, -0.5), bg: L("bg", "small", -70, 12, 4, -1), sun: L("sun", "sun", 140, 20, 9, 0.5, 3500),
+  vwhite: L("fill", "vwhite", 65, -8, 3.5, 0), vblack: L("flag", "vblack", 65, -8, 3, 0), scrim: L("scrim", "scrim", 25, 55, 2.8, 0) };
+const ADDS = [["key", "Key"], ["fill", "Fill"], ["rim", "Rim"], ["bg", "Background"], ["sun", "Sun (outdoors)"], ["vwhite", "White V-flat"], ["vblack", "Black V-flat"], ["scrim", "Scrim"]];
 let LT = (() => {
   const saved = store.get("lt", null);
   try { if (saved && saved.s && saved.s.lights && saved.s.lights.length && PRESETS.some((p) => p.id === saved.preset)) return saved; } catch (e) { /* use the default */ }
@@ -978,8 +1111,8 @@ const persist = () => { clearTimeout(saveTimer); saveTimer = setTimeout(() => st
 function applyPreset(id) { const m = LT.mode; LT = { preset: id, s: clone(presetOf(id).s), sel: 0, mode: m }; persist(); }
 const edited = () => JSON.stringify(LT.s) !== JSON.stringify(presetOf(LT.preset).s);
 function lightName(i) {
-  const l = LT.s.lights[i], same = LT.s.lights.filter((x) => x.role === l.role);
-  return ROLES[l.role].label + (same.length > 1 ? " " + (same.indexOf(l) + 1) : "");
+  const l = LT.s.lights[i], kind = (x) => (isPanel(x) ? x.mod : x.role), same = LT.s.lights.filter((x) => kind(x) === kind(l));
+  return (isPanel(l) ? MODS[l.mod].name : (ROLES[l.role] || ROLES.fill).label) + (same.length > 1 ? " " + (same.indexOf(l) + 1) : "");
 }
 
 /* =====================================================================
@@ -1004,6 +1137,9 @@ function iconFor(l) {
   if (l.mod === "umbrella") return `<path d="M${-w} 7Q0 -24 ${w} 7Z" class="lt-ic"/><path d="M0 -8V-15" class="lt-icl"/>`;
   if (l.mod === "window") return `<rect x="${-w}" y="-3" width="${2 * w}" height="7" class="lt-ic"/><path d="M0 -3V4M${-w / 2} -3V4M${w / 2} -3V4" class="lt-icl"/>`;
   if (l.mod === "reflector") return `<rect x="${-w}" y="-2" width="${2 * w}" height="4" rx="2" class="lt-ic lt-refl"/>`;
+  if (l.mod === "vwhite" || l.mod === "vblack") return `<path d="M-19 -6L0 7L19 -6" class="lt-vf${l.mod === "vblack" ? " lt-vfb" : ""}"/>`;
+  if (l.mod === "scrim") return `<rect x="-26" y="-2.5" width="52" height="5" rx="1" class="lt-scrim"/>`;
+  if (l.mod === "beautydish") return `<path d="M-13 6Q0 -14 13 6Z" class="lt-ic"/><circle cy="0" r="2.5" class="lt-icl"/>`;
   return `<path d="M${-w * 0.45} -9L${w * 0.45} -9L${w} 7L${-w} 7Z" class="lt-ic"/><path d="M${-w} 7H${w}" class="lt-icl"/>`;
 }
 function topInner(S, selected, small) {
@@ -1053,7 +1189,7 @@ const sliderText = (key) => {
   const S = LT.s, l = S.lights[sel()] || {};
   switch (key) {
     case "az": return azText(num(l.az, 0));
-    case "el": return elText(num(l.el, 0));
+    case "el": return l.mod === "sun" ? `${Math.round(num(l.el, 0))}° up · ${sunTime(num(l.el, 0))}` : elText(num(l.el, 0));
     case "dist": return `${num(l.dist, 5)} ft away`;
     case "ev": return evText(num(l.ev, 0));
     case "turn": return turnText(num(S.turn, 0));
@@ -1063,21 +1199,24 @@ const sliderText = (key) => {
   }
   return "";
 };
+const sunTime = (el) => (el < 0 ? "below the horizon" : el < 8 ? "sunrise or sunset" : el < 20 ? "golden hour" : el < 40 ? "morning or late afternoon" : el < 60 ? "mid-morning or mid-afternoon" : "around midday");
 function lightControls() {
-  const l = LT.s.lights[sel()], sun = l.mod === "sun", cls = ROLES[l.role];
+  const l = LT.s.lights[sel()], sun = l.mod === "sun", cls = ROLES[l.role] || ROLES.fill, opts = MODS_FOR[l.role] || Object.keys(MODS);
+  const note = isPanel(l) ? (l.mod === "vblack" ? "It gives no light of its own: it takes light away from the side it is on." : l.mod === "scrim" ? "Its brightness comes from the sun or light behind it, so aim it between that light and your client." : "Its brightness comes from the lights that reach it, so it is strongest close to your client and facing the key.") : "";
   return `<div class="lt-lh"><h3><i class="dot" style="background:${cls.color}"></i>${esc(lightName(sel()))}</h3>${LT.s.lights.length > 1 ? `<button class="btn ghost sm" data-lt-del>Remove</button>` : ""}</div>
     <p class="small muted">${esc((MODS[l.mod] || MODS.small).hint)}</p>
-    <div class="lbl">Shaper</div>${chips("lt-mod", l.mod, Object.keys(MODS).map((k) => [k, MODS[k].name]))}
-    ${slider("az", "Direction", -180, 180, 1, num(l.az, 0))}
-    ${slider("el", "Height", -25, 85, 1, num(l.el, 0))}
+    ${note ? `<p class="small">${esc(note)}</p>` : ""}
+    ${opts.length > 1 ? `<div class="lbl">${isPanel(l) ? "Kind" : "Shaper"}</div>${chips("lt-mod", l.mod, opts.map((k) => [k, MODS[k].name]))}` : ""}
+    ${slider("az", sun ? "Where the sun is" : "Direction", -180, 180, 1, num(l.az, 0))}
+    ${slider("el", sun ? "How high the sun is" : "Height", sun ? 0 : -45, 85, 1, num(l.el, 0))}
     ${sun ? "" : slider("dist", "Distance", 2, 9, 0.25, num(l.dist, 5))}
-    ${slider("ev", "Power", -3, 3, 0.25, num(l.ev, 0))}
-    <div class="lbl">Color of the light</div>${chips("lt-k", String(num(l.k, 5600)), COLORS.map((c) => [String(c[0]), c[1]]))}`;
+    ${madeLight(l) || l.mod === "reflector" ? slider("ev", sun ? "Strength (clouds to clear sky)" : "Power", -3, 3, 0.25, num(l.ev, 0)) : ""}
+    ${madeLight(l) ? `<div class="lbl">Color of the light</div>${chips("lt-k", String(num(l.k, 5600)), COLORS.map((c) => [String(c[0]), c[1]]))}` : ""}`;
 }
 function picker() {
   const n = LT.s.lights.length;
   return chips("lt-sel", String(sel()), LT.s.lights.map((l, i) => [String(i), lightName(i)]))
-    + (n < 5 ? `<div class="lbl" style="margin-top:6px">Add a light</div><div class="scroller" role="group">${["key", "fill", "rim", "bg", "sun"].map((r) => `<button class="chip" data-lt-add="${r}">+ ${ROLES[r].label}</button>`).join("")}</div>` : "");
+    + (n < 6 ? `<div class="lbl" style="margin-top:6px">Add a light or board</div><div class="scroller" role="group">${ADDS.filter(([k]) => k !== "sun" || !LT.s.lights.some((l) => l.mod === "sun")).map(([k, t]) => `<button class="chip" data-lt-add="${k}">+ ${t}</button>`).join("")}</div>` : "");
 }
 function sceneControls() {
   const S = LT.s;
@@ -1214,7 +1353,7 @@ appEl.addEventListener("click", (e) => {
   if (d.ltMode) { LT.mode = d.ltMode; persist(); return render(); }
   if (d.ltPip) { LT.mode = d.ltPip; persist(); return render(); }
   if (d.ltSel !== undefined) { LT.sel = Number(d.ltSel); controls(); refresh(); return; }
-  if (d.ltMod) { const l = LT.s.lights[sel()]; l.mod = d.ltMod; if (d.ltMod === "sun") { l.k = 3500; if (l.role !== "sun") l.dist = 9; } changed(true); return; }
+  if (d.ltMod) { const l = LT.s.lights[sel()]; l.mod = d.ltMod; if (d.ltMod === "sun") { l.k = 3500; if (l.role !== "sun") l.dist = 9; } if (d.ltMod === "vblack") l.role = "flag"; else if (d.ltMod === "vwhite" && l.role === "flag") l.role = "fill"; changed(true); return; }
   if (d.ltK) { LT.s.lights[sel()].k = Number(d.ltK); changed(true); return; }
   if (d.ltLayout) { LT.s.layout = d.ltLayout; persist(); return render(); }
   if (d.ltWall) { LT.s.wall = d.ltWall; changed(true); return; }
@@ -1225,7 +1364,7 @@ appEl.addEventListener("click", (e) => {
   if (d.ltCopy !== undefined) {
     const S = LT.s, a = analyse(S), p = presetOf(LT.preset);
     const lines = [`Lighting plan: ${p.name}${edited() ? " (adjusted)" : ""}`, `People: ${LAYOUTS[S.layout].label}, ${turnText(S.turn)}`];
-    S.lights.forEach((l, i) => lines.push(`${lightName(i)}: ${MODS[l.mod].name}, ${azText(l.az)}, ${elText(l.el)}${l.mod === "sun" ? "" : `, ${l.dist} ft away`}, ${evText(l.ev)}, ${kName(l.k)} light`));
+    S.lights.forEach((l, i) => lines.push(`${lightName(i)}: ${MODS[l.mod].name}, ${azText(l.az)}, ${l.mod === "sun" ? `${Math.round(l.el)}° up (${sunTime(l.el)})` : elText(l.el)}${l.mod === "sun" ? "" : `, ${l.dist} ft away`}${madeLight(l) ? `, ${evText(l.ev)}, ${kName(l.k)} light` : ""}`));
     lines.push(`Background: ${WALLS[S.wall].name}, ${S.wallD} ft behind. Room light: ${ambText(S.amb)}.`, `Look: ${a.pattern}. Key to fill ${a.ratioText}. ${a.soft}.`, "Planned in Cue by Echocraft Photography");
     const txt = lines.join("\n");
     navigator.clipboard.writeText(txt).then(() => toast("Copied your lighting plan.")).catch(() => toast("Couldn't copy. Try again."));
@@ -1267,6 +1406,10 @@ css.textContent = `
 .lt-sunray { stroke-width: 2; stroke-dasharray: 2 5; opacity: .75; fill: none; pointer-events: none; }
 .lt-ic { fill: var(--c); fill-opacity: .9; stroke: var(--ink); stroke-width: 1.2; stroke-linejoin: round; }
 .lt-refl { fill-opacity: .55; stroke-dasharray: 3 2; }
+.lt-vf { fill: none; stroke: var(--ink); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.lt-vf:not(.lt-vfb) { stroke: #fff; filter: drop-shadow(0 0 1px var(--ink)) drop-shadow(0 0 1px var(--ink)); }
+.lt-vfb { stroke: #1d1d1f; }
+.lt-scrim { fill: #fff; fill-opacity: .75; stroke: var(--ink); stroke-width: 1.2; stroke-dasharray: 4 2; }
 .lt-icl { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-linecap: round; }
 .lt-hit { fill: transparent; cursor: grab; touch-action: none; }
 .lt-hit:active { cursor: grabbing; }
