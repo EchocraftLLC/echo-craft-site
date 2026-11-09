@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the 3D people used by Cue's lighting planner (cue/lighting-people.bin).
+"""Build the 3D people used by Cue's lighting planner (cue/lighting-people.bin.gz).
 
 The bodies come from MakeHuman (https://github.com/makehumancommunity/makehuman), whose
 base mesh, shape targets, skeleton and weights are released as CC0 (public domain).
@@ -13,6 +13,7 @@ Hair and clothing are generated here. Run it with the path to MakeHuman's data f
 It needs numpy (and Pillow for the lip mask). The output is a binary file that cue/lighting.js loads.
 """
 import collections
+import gzip
 import json
 import math
 import os
@@ -22,7 +23,7 @@ import sys
 import numpy as np
 
 DATA = sys.argv[1] if len(sys.argv) > 1 else "makehuman/data"
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "cue", "lighting-people.bin")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "cue", "lighting-people.bin.gz")
 DM_TO_FT = 0.328084                       # MakeHuman works in decimetres; the planner in feet
 EYES_AT = np.array([0.0, 0.075, 0.285])   # where the eyes sit relative to the head origin (feet)
 
@@ -288,6 +289,78 @@ def clip_polys(P, polys, inside, extra=None):
     return np.asarray(P), out, [np.asarray(e) for e in ex]
 
 
+def subdivide(P, all_polys, attrs, region=None):
+    """One level of Catmull-Clark smoothing on the polygons where region is True: they become quads and
+    the surface gets rounder. The other polygons stay as they are, with their shared edges split so
+    there are no cracks. `attrs` are per-vertex arrays, interpolated along."""
+    P = np.asarray(P, float)
+    region = [True] * len(all_polys) if region is None else list(region)
+    polys = [f for f, r in zip(all_polys, region) if r]
+    rest = [f for f, r in zip(all_polys, region) if not r]
+    nv = len(P)
+    edges = {}
+    efaces = collections.defaultdict(list)
+    vfaces = collections.defaultdict(list)
+    vedges = collections.defaultdict(set)
+    fpts = np.array([P[f].mean(0) for f in polys])
+    for fi, f in enumerate(polys):
+        for k in range(len(f)):
+            a, b = f[k], f[(k + 1) % len(f)]
+            e = (min(a, b), max(a, b))
+            if e not in edges:
+                edges[e] = len(edges)
+            efaces[e].append(fi)
+            vfaces[a].append(fi)
+            vedges[a].add(e)
+            vedges[b].add(e)
+    elist = list(edges)
+    epts = np.zeros((len(elist), 3))
+    for i, e in enumerate(elist):
+        mid = (P[e[0]] + P[e[1]]) / 2
+        fl = efaces[e]
+        epts[i] = (mid * 2 + fpts[fl].mean(0) * 2) / 4 if len(fl) == 2 else mid
+    newP = P.copy()
+    for v, fl in vfaces.items():
+        es = vedges[v]
+        if any(len(efaces[e]) == 1 for e in es):
+            continue                                   # edge of the smoothed area: stays put
+        n = len(fl)
+        F = fpts[fl].mean(0)
+        R = np.mean([(P[e[0]] + P[e[1]]) / 2 for e in es], axis=0)
+        newP[v] = (F + 2 * R + (n - 3) * P[v]) / n
+    out = np.vstack([newP, epts, fpts])
+    eoff, foff = nv, nv + len(elist)
+    quads = []
+    for fi, f in enumerate(polys):
+        n = len(f)
+        for k in range(n):
+            a, b, c = f[k - 1], f[k], f[(k + 1) % n]
+            e1 = edges[(min(a, b), max(a, b))]
+            e2 = edges[(min(b, c), max(b, c))]
+            quads.append([b, eoff + e2, foff + fi, eoff + e1])
+    for f in rest:
+        poly = []
+        for k in range(len(f)):
+            a, b = f[k], f[(k + 1) % len(f)]
+            poly.append(a)
+            e = (min(a, b), max(a, b))
+            if e in edges:
+                poly.append(eoff + edges[e])
+        quads.append(poly)
+    new_attrs = []
+    for A in attrs:
+        A = np.asarray(A, float)
+        ea = np.array([(A[e[0]] + A[e[1]]) / 2 for e in elist])
+        fa = np.array([A[f].mean() for f in polys])
+        new_attrs.append(np.r_[A, ea, fa])
+    return out, quads, new_attrs
+
+
+def hair_weight(P, style):
+    """0 on bare skin, 1 where the scalp is under the hair."""
+    return smoothstep(-0.004, 0.022, P[:, 1] - interp(azimuth(P), style["hairline"]))
+
+
 class Part:
     """A batch of triangles with per-vertex attributes, in planner feet."""
     def __init__(self, P, tris, mat, twist=None, a1=None, a2=None, a3=None, tan=None):
@@ -529,7 +602,7 @@ def build_person(base, uvs, faces, spec, lips_mask):
     collide = (L[cm], BN[cm])
 
     parts = []
-    hair, scalp = make_hair(L, body, HAIR_STYLES[spec["hair"]], collide)
+    hair, _ = make_hair(L, body, HAIR_STYLES[spec["hair"]], collide)
 
     # the top
     tights = [f for f in groups["helper-tights"] if all(L[i, 1] > cut for i in f)]
@@ -557,18 +630,26 @@ def build_person(base, uvs, faces, spec, lips_mask):
             if t >= 0:
                 u_, v_ = uvs[t]
                 lip[i] = lips_mask[min(H - 1, int((1 - v_) * H)), min(W - 1, int(u_ * W))]
-    brow = np.zeros(len(L))
+    # a finer, smoother skin surface
+    SP, skin, (stw, slip) = L, skin, (twist, lip)
+    for _ in range(spec.get("subdiv", 1)):
+        hw_ = hair_weight(SP, HAIR_STYLES[spec["hair"]])
+        region = [all(SP[i, 1] > -0.8 for i in f) and min(hw_[i] for i in f) < 0.99 and
+                  not all(SP[i, 2] < -0.12 for i in f) for f in skin]
+        SP, skin, (stw, slip) = subdivide(SP, skin, [stw, slip], region)
+    scalp = hair_weight(SP, HAIR_STYLES[spec["hair"]])
+    brow = np.zeros(len(SP))
     for s in (-1, 1):
-        x = L[:, 0] * s
+        x = SP[:, 0] * s
         # an arch above each eye, thick near the nose and tapering toward the temple
         t = np.clip((x - 0.03) / 0.17, 0, 1)
         yc = 0.128 + 0.024 * np.sin(np.clip(t * 1.25, 0, 1) * math.pi * 0.85) - 0.012 * t
         hw = 0.013 * (1 - 0.5 * t)
-        inside = (x > 0.025) & (x < 0.21) & (L[:, 2] > 0.18)
-        brow = np.maximum(brow, np.where(inside, np.clip(1 - np.abs(L[:, 1] - yc) / hw, 0, 1), 0) * smoothstep(0.02, 0.045, x) * (1 - smoothstep(0.17, 0.21, x)))
+        inside = (x > 0.025) & (x < 0.21) & (SP[:, 2] > 0.18)
+        brow = np.maximum(brow, np.where(inside, np.clip(1 - np.abs(SP[:, 1] - yc) / hw, 0, 1), 0) * smoothstep(0.02, 0.045, x) * (1 - smoothstep(0.17, 0.21, x)))
     smat = np.full(len(tris_of(skin)), M_SKIN, np.uint8)
     st = tris_of(skin)
-    parts.append(Part(L, st, smat, twist, lip, brow, scalp))
+    parts.append(Part(SP, st, smat, stw, slip, brow, scalp))
     parts.append(Part(TP, tris_of(top), M_TOP, np.r_[twist, np.zeros(len(TP) - len(twist))]))
     for g in ("helper-l-eye", "helper-r-eye"):
         parts.append(Part(L, tris_of(groups[g]), M_EYE, np.ones(len(L))))
@@ -592,9 +673,32 @@ def merge(parts):
 
 
 MIX = {"caucasian": 0.7, "asian": 0.15, "african": 0.15}
+# Her face: MakeHuman's shape controls (all CC0) on top of the average face, plus a soft smile.
+WOMAN_FACE = {
+    "head/head-oval": 0.45, "head/head-scale-horiz-decr": 0.12,
+    "chin/chin-width-decr": 0.25, "chin/chin-prominent-incr": 0.15, "chin/chin-height-decr": 0.1,
+    "cheek/l-cheek-bones-incr": 0.35, "cheek/r-cheek-bones-incr": 0.35,
+    "cheek/l-cheek-volume-decr": 0.2, "cheek/r-cheek-volume-decr": 0.2,
+    "nose/nose-scale-horiz-decr": 0.25, "nose/nose-point-width-decr": 0.35, "nose/nose-point-up": 0.2,
+    "nose/nose-width2-decr": 0.2, "nose/nose-hump-decr": 0.3, "nose/nose-scale-vert-decr": 0.1,
+    "mouth/mouth-upperlip-volume-incr": 0.35, "mouth/mouth-lowerlip-volume-incr": 0.3,
+    "mouth/mouth-cupidsbow-incr": 0.45, "mouth/mouth-scale-horiz-incr": 0.08,
+    "eyes/l-eye-scale-incr": 0.15, "eyes/r-eye-scale-incr": 0.15,
+    "eyes/l-eye-corner2-up": 0.2, "eyes/r-eye-corner2-up": 0.2,
+    "eyebrows/eyebrows-trans-up": 0.15,
+    "forehead/forehead-scale-vert-decr": 0.2,
+    # a relaxed, closed-mouth smile
+    "expression/units/caucasian/mouth-corner-puller": 0.42,
+    "expression/units/caucasian/eye-left-slit": 0.12, "expression/units/caucasian/eye-right-slit": 0.12,
+}
+MAN_FACE = {
+    "head/head-square": 0.35, "chin/chin-width-incr": 0.3, "chin/chin-prominent-incr": 0.2,
+    "nose/nose-hump-decr": 0.15, "eyebrows/eyebrows-trans-down": 0.1,
+    "expression/units/caucasian/mouth-corner-puller": 0.3,
+}
 PEOPLE = {
-    "woman": {"targets": macro_weights("female", 34, MIX), "hair": "lob", "neck": "scoop", "cut": -2.9},
-    "man": {"targets": macro_weights("male", 36, MIX), "hair": "short", "neck": "crew", "cut": -2.9},
+    "woman": {"targets": dict(macro_weights("female", 34, MIX), **WOMAN_FACE), "hair": "lob", "neck": "scoop", "cut": -2.9},
+    "man": {"targets": dict(macro_weights("male", 36, MIX), **MAN_FACE), "hair": "short", "neck": "crew", "cut": -2.9},
 }
 PEOPLE["expecting"] = dict(PEOPLE["woman"], cut=-3.3)
 PEOPLE["expecting"]["targets"] = dict(PEOPLE["woman"]["targets"], **{"stomach/stomach-pregnant-incr": 1.0})
@@ -629,11 +733,10 @@ def write(people, meta, path):
         }
     hb = json.dumps(header, separators=(",", ":")).encode()
     hb += b" " * ((-len(hb)) % 4)
+    raw = struct.pack("<I", len(hb)) + hb + b"".join(blobs)
+    # gzip-compressed (the page unpacks it); mtime 0 so rebuilding the same people gives the same file
     with open(path, "wb") as f:
-        f.write(struct.pack("<I", len(hb)))
-        f.write(hb)
-        for b in blobs:
-            f.write(b)
+        f.write(gzip.compress(raw, 9, mtime=0))
     return os.path.getsize(path)
 
 

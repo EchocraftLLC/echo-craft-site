@@ -136,7 +136,7 @@ const presetOf = (id) => PRESETS.find((p) => p.id === id) || PRESETS[0];
 
 /* =====================================================================
    The simulated scene: real 3D people and a small ray tracer, so shadows and soft light are real.
-   The people (cue/lighting-people.bin) are built from MakeHuman's public-domain body
+   The people (cue/lighting-people.bin.gz) are built from MakeHuman's public-domain body
    by scripts/build_cue_people.py. The tracer below runs in background threads when it can.
    ===================================================================== */
 // Who stands where. Positions are in feet; the camera is on the +z side, looking at the origin.
@@ -158,7 +158,7 @@ const LAYOUTS = {
   couple: { label: "Couple", frameW: 2.6, hw: 0.95, frameY: -0.45, camD: 10, aim: [0, -0.1, 0],
     people: [{ x: -0.62, y: 0, z: 0.05, yaw: 28, head: 12, who: "woman" }, { x: 0.66, y: 0.24, z: -0.08, yaw: -24, head: -10, who: "man" }] },
   group: { label: "Group", frameW: 5.0, hw: 0.62, frameY: -0.42, camD: 14, aim: [0, -0.3, 0],
-    people: (() => { const l = []; let n = 0; [[-1.45, -0.7, 0.7, 1.45], [-1.9, -0.95, 0, 0.95, 1.9], [-1.45, -0.7, 0.7, 1.45]].forEach((xs, row) => xs.forEach((x, i) => { const look = GROUP_LOOKS[(n++ * 3 + row) % GROUP_LOOKS.length]; l.push(Object.assign({ x, y: [0, 0.22, 0.44][row] + (i % 2) * 0.06 + (look.who === "man" ? 0.18 : 0), z: [1.1, 0, -1.1][row], yaw: x * -6, head: x * -4, s: 0.97 + ((n * 7) % 5) * 0.015 }, look)); })); return l; })() },
+    people: (() => { const l = []; let n = 0; [[-1.45, -0.7, 0.7, 1.45], [-1.9, -0.95, 0, 0.95, 1.9], [-1.45, -0.7, 0.7, 1.45]].forEach((xs, row) => xs.forEach((x, i) => { const look = GROUP_LOOKS[(n++ * 3 + row) % GROUP_LOOKS.length]; l.push(Object.assign({ x, y: [0, 0.22, 0.44][row] + (i % 2) * 0.06 + (look.who === "man" ? 0.18 : 0), z: [1.1, 0, -1.1][row], yaw: x * -6, head: x * -6, s: 0.97 + ((n * 7) % 5) * 0.015 }, look)); })); return l; })() },
   bump:  { label: "Maternity", frameW: 2.1, hw: 1.45, frameY: -1.05, camD: 11, aim: [0, -0.7, 0],
     people: [{ x: 0, y: 0, z: 0, yaw: -62, head: -18, who: "expecting" }] }
 };
@@ -345,6 +345,15 @@ function TRACER() {
 
   // Hair coverage: wispy ends and a soft hairline.
   const hash1 = (x) => { let n = Math.imul((x | 0) ^ 0x9e3779b9, 0x85ebca6b); n ^= n >>> 13; n = Math.imul(n, 0xc2b2ae35); n ^= n >>> 16; return (n >>> 0) / 4294967296; };
+  function noise3(x, y, z) {
+    const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z), xf = x - xi, yf = y - yi, zf = z - zi;
+    const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf), q = zf * zf * (3 - 2 * zf);
+    const h = (a, b, c) => hash3(xi + a, yi + b, zi + c);
+    const x00 = h(0, 0, 0) + (h(1, 0, 0) - h(0, 0, 0)) * u, x10 = h(0, 1, 0) + (h(1, 1, 0) - h(0, 1, 0)) * u;
+    const x01 = h(0, 0, 1) + (h(1, 0, 1) - h(0, 0, 1)) * u, x11 = h(0, 1, 1) + (h(1, 1, 1) - h(0, 1, 1)) * u;
+    const y0 = x00 + (x10 - x00) * v, y1 = x01 + (x11 - x01) * v;
+    return y0 + (y1 - y0) * q;
+  }
   function vnoise(x) { const i = Math.floor(x), f = x - i, a = hash1(i), b = hash1(i + 1), s = f * f * (3 - 2 * f); return a + (b - a) * s; }
   function hairCover(g, t, u, v) {
     const T = g.m.T, A = g.m.A, a = T[t * 3] * 4, b = T[t * 3 + 1] * 4, c = T[t * 3 + 2] * 4, w = 1 - u - v;
@@ -503,20 +512,48 @@ function TRACER() {
       const lip = (A[ia * 4 + 1] * w + A[ib * 4 + 1] * h.u + A[ic * 4 + 1] * h.v) / 255;
       const brow = (A[ia * 4 + 2] * w + A[ib * 4 + 2] * h.u + A[ic * 4 + 2] * h.v) / 255;
       const sc_ = (A[ia * 4 + 3] * w + A[ib * 4 + 3] * h.u + A[ic * 4 + 3] * h.v) / 255;      // under the hair
+      // texture is painted in the rest pose, so it stays put when the head turns
+      const rx = m.P[ia * 3] * w + m.P[ib * 3] * h.u + m.P[ic * 3] * h.v;
+      const ry = m.P[ia * 3 + 1] * w + m.P[ib * 3 + 1] * h.u + m.P[ic * 3 + 1] * h.v;
+      const rz = m.P[ia * 3 + 2] * w + m.P[ib * 3 + 2] * h.u + m.P[ic * 3 + 2] * h.v;
       ar = pr.skin[0]; ag = pr.skin[1]; ab = pr.skin[2];
-      // a little warmth in the cheeks, nose and ears
-      const ck = Math.max(0, 1 - Math.hypot(Math.abs(lx) - 0.12, (ly + 0.06) * 1.3, (lz - 0.3) * 1.5) / 0.075) + Math.max(0, 1 - Math.hypot(lx, ly + 0.03, lz - 0.42) / 0.05) * 0.7 + (Math.abs(lx) > 0.24 && ly > -0.12 && ly < 0.2 ? 0.6 : 0);
-      ar *= 1 + 0.06 * ck; ag *= 1 - 0.06 * ck; ab *= 1 - 0.05 * ck;
+      // uneven tone: soft blotches and a little redness here and there
+      const m1 = noise3(rx * 42, ry * 42, rz * 42) - 0.5, m2 = noise3(rx * 90 + 7, ry * 90, rz * 90) - 0.5, red = noise3(rx * 24 + 3, ry * 24, rz * 24 + 5) - 0.5;
+      ar *= 1 + 0.07 * m1 + 0.035 * m2 + 0.05 * red; ag *= 1 + 0.06 * m1 + 0.03 * m2 - 0.03 * red; ab *= 1 + 0.05 * m1 + 0.03 * m2 - 0.02 * red;
+      // warmth in the cheeks, nose and ears
+      const ck = Math.max(0, 1 - Math.hypot(Math.abs(rx) - 0.12, (ry + 0.05) * 1.3, (rz - 0.3) * 1.5) / 0.08) + Math.max(0, 1 - Math.hypot(rx, ry + 0.02, rz - 0.42) / 0.055) * 0.7 + (Math.abs(rx) > 0.24 && ry > -0.12 && ry < 0.2 ? 0.6 : 0);
+      ar *= 1 + 0.07 * ck; ag *= 1 - 0.06 * ck; ab *= 1 - 0.05 * ck;
+      // light freckles across the nose and cheeks
+      const fm = rz > 0.24 ? Math.max(0, 1 - Math.hypot(rx / 0.17, (ry + 0.015) / 0.065)) : 0;
+      if (fm > 0) { const f = noise3(rx * 170, ry * 170, rz * 170), sp = clamp((f - 0.7) / 0.08, 0, 1) * fm * 0.2; ar *= 1 - sp * 0.8; ag *= 1 - sp; ab *= 1 - sp * 1.15; }
+      // around the eyes: a soft shadow under each eye, a touch of warm shadow on the lids
+      const EY = m.meta.eyes || [];
+      for (let e = 0; e < EY.length; e++) {
+        const ex = rx - EY[e][0];
+        if (rz < EY[e][2] - 0.03) continue;
+        const under = Math.max(0, 1 - Math.hypot(ex / 0.06, (ry - EY[e][1] + 0.05) / 0.022));
+        const lid = Math.max(0, 1 - Math.hypot((ex - Math.sign(EY[e][0]) * 0.008) / 0.055, (ry - EY[e][1] - 0.03) / 0.022));
+        ar *= 1 - 0.07 * under - 0.12 * lid; ag *= 1 - 0.09 * under - 0.16 * lid; ab *= 1 - 0.04 * under - 0.17 * lid;
+      }
       const lw = lip > 0.25 ? Math.min(1, (lip - 0.25) / 0.4) : 0;
-      ar = ar * (1 - lw) + 0.47 * lw; ag = ag * (1 - lw) + 0.2 * lw; ab = ab * (1 - lw) + 0.19 * lw;
+      const ll = lw > 0 ? 0.9 + 0.1 * vnoise(rx * 700) : 1;                 // fine lines across the lips
+      ar = ar * (1 - lw) + 0.5 * ll * lw; ag = ag * (1 - lw) + 0.2 * ll * lw; ab = ab * (1 - lw) + 0.2 * ll * lw;
       if (brow > 0.05) {
-        const fine = 0.55 + 0.45 * vnoise(lx * 900 + ly * 260) * vnoise(ly * 700 - lx * 300 + 9);
+        const fine = 0.55 + 0.45 * vnoise(rx * 900 + ry * 260) * vnoise(ry * 700 - rx * 300 + 9);
         const bw = Math.min(1, brow * 1.6) * fine * 0.85;
         ar = ar * (1 - bw) + pr.hair[0] * 0.7 * bw; ag = ag * (1 - bw) + pr.hair[1] * 0.7 * bw; ab = ab * (1 - bw) + pr.hair[2] * 0.7 * bw;
       }
       if (sc_ > 0) { const q = sc_ * 0.92; ar = ar * (1 - q) + pr.hair[0] * 0.8 * q; ag = ag * (1 - q) + pr.hair[1] * 0.8 * q; ab = ab * (1 - q) + pr.hair[2] * 0.8 * q; }
-      spec = (0.028 + 0.018 * lw + (ly > 0.16 && lz > 0.3 ? 0.008 : 0)) * (1 - sc_); rough = 26 + 30 * lw;
-      wrap = [0.32, 0.14, 0.09];
+      // pores: tiny bumps that break up the shine
+      const pf = 300, e_ = 1 / (pf * 4), p0 = noise3(rx * pf, ry * pf, rz * pf);
+      const gx = (noise3((rx + e_) * pf, ry * pf, rz * pf) - p0) / e_, gy = (noise3(rx * pf, (ry + e_) * pf, rz * pf) - p0) / e_, gz = (noise3(rx * pf, ry * pf, (rz + e_) * pf) - p0) / e_;
+      const bk = 0.00022 * (1 - lw * 0.7) * (1 - sc_);
+      const bwx = c * gx + s * gz, bwz = -s * gx + c * gz;
+      nx -= bk * bwx; ny -= bk * gy; nz -= bk * bwz; nl = Math.hypot(nx, ny, nz) || 1; nx /= nl; ny /= nl; nz /= nl;
+      facing = nx * vx + ny * vy + nz * vz;
+      const tz = ry > 0.14 && rz > 0.3 ? 0.01 : 0, nose = Math.max(0, 1 - Math.hypot(rx, ry + 0.02, rz - 0.42) / 0.05) * 0.012;
+      spec = (0.026 + 0.022 * lw + tz + nose) * (0.75 + 0.5 * p0) * (1 - sc_); rough = 24 + 34 * lw;
+      wrap = [0.34, 0.15, 0.1];
       face = ly > -0.33 ? 1 : 0;
     } else if (mat === M_SCALP) { ar = pr.hair[0] * 0.9; ag = pr.hair[1] * 0.9; ab = pr.hair[2] * 0.9; }
     else if (mat === M_LASH) { ar = 0.015; ag = 0.011; ab = 0.009; }
@@ -702,11 +739,20 @@ const toned = (v) => TONE[Math.min(4095, Math.max(0, (v * 512) | 0))];
 const LOCAL = TRACER();
 let peopleBuf = null, peopleReady = false, peopleErr = false;
 const whenReady = [];
-const peopleURL = (() => { try { return new URL("lighting-people.bin", document.currentScript && document.currentScript.src ? document.currentScript.src : location.href).href; } catch (e) { return "lighting-people.bin"; } })();
+const peopleURL = (() => { try { return new URL("lighting-people.bin.gz", document.currentScript && document.currentScript.src ? document.currentScript.src : location.href).href; } catch (e) { return "lighting-people.bin.gz"; } })();
 let peopleAsked = false;
 function loadPeople() {
   if (peopleAsked) return; peopleAsked = true;
-  fetch(peopleURL).then((r) => { if (!r.ok) throw new Error("people " + r.status); return r.arrayBuffer(); }).then((buf) => {
+  fetch(peopleURL).then((r) => {
+    if (!r.ok) throw new Error("people " + r.status);
+    // the file is gzip-compressed; unpack it unless the server already did
+    return r.arrayBuffer().then((b) => {
+      const u = new Uint8Array(b, 0, 2);
+      if (u[0] !== 0x1f || u[1] !== 0x8b) return b;
+      if (typeof DecompressionStream === "undefined") throw new Error("no gzip");
+      return new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();
+    });
+  }).then((buf) => {
     peopleBuf = buf; LOCAL.load(buf.slice(0)); peopleReady = true;
     POOL.init();
     whenReady.splice(0).forEach((f) => f());

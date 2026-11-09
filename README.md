@@ -64,7 +64,7 @@ single line near the end of `cue/index.html`: `<script src="lighting.js"></scrip
 "Lighting setups" tile to Cue's home screen and the page behind it. Everything runs on the device.
 If Cue's main page is ever rebuilt from its source, add that one line back and the tool returns.
 
-The people in the camera view are real 3D models stored in `cue/lighting-people.bin` (a woman in her
+The people in the camera view are real 3D models stored in `cue/lighting-people.bin.gz` (a woman in her
 mid-30s, a man for couples and groups, and an expecting mother). They are built from MakeHuman's
 public-domain (CC0) body by `scripts/build_cue_people.py`, which also makes the hair and clothes.
 To rebuild them, see the instructions at the top of that script. The file only downloads when
