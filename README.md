@@ -58,6 +58,22 @@ dates, email the people on that list from your inbox.
 The gallery script also makes small 800px previews in `images/thumbs/` so grids
 load fast on phones. They are rebuilt automatically; don't edit them by hand.
 
+## Cue: lighting setups
+`cue/lighting.js` is the lighting planner inside Cue. It is one self-contained file, switched on by a
+single line near the end of `cue/index.html`: `<script src="lighting.js"></script>`. It adds the
+"Lighting setups" tile to Cue's home screen and the page behind it. Everything runs on the device.
+If Cue's main page is ever rebuilt from its source, add that one line back and the tool returns.
+
+The people in the camera view are real 3D models stored in `cue/lighting-people.bin.gz` (a woman in her
+mid-30s, a man for couples and groups, and an expecting mother). They are built from MakeHuman's
+public-domain (CC0) body by `scripts/build_cue_people.py`, which also makes the hair and clothes.
+To rebuild them, see the instructions at the top of that script. The file only downloads when
+someone opens the lighting planner.
+
+`cue/flash.js` adds a "Flash photography" guide to Cue the same way (one more script line in
+`cue/index.html`): speedlight basics, TTL and manual, bounce, sync speed and HSS, creative
+techniques and troubleshooting, with two small calculators and links into the lighting planner.
+
 ## Admin page (admin-ee92c785.html)
 A DIY editor at yoursite.com/admin-ee92c785.html lets you update page text,
 colors, fonts, and photos (including crop/fit) without touching GitHub's
