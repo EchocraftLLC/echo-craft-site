@@ -70,6 +70,10 @@ public-domain (CC0) body by `scripts/build_cue_people.py`, which also makes the 
 To rebuild them, see the instructions at the top of that script. The file only downloads when
 someone opens the lighting planner.
 
+`cue/flash.js` adds a "Flash photography" guide to Cue the same way (one more script line in
+`cue/index.html`): speedlight basics, TTL and manual, bounce, sync speed and HSS, creative
+techniques and troubleshooting, with two small calculators and links into the lighting planner.
+
 ## Admin page (admin-ee92c785.html)
 A DIY editor at yoursite.com/admin-ee92c785.html lets you update page text,
 colors, fonts, and photos (including crop/fit) without touching GitHub's

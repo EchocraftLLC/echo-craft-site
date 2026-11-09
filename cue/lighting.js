@@ -171,6 +171,18 @@ const PRESETS = [
     gear: "An on-camera flash with a swivel head. A small bounce card is a bonus.",
     start: "Tilt the flash head up to the ceiling, about 70 degrees. Use a white or light ceiling only. Try f/4, 1/125 s, ISO 800. Keep the flash at about half power.",
     avoid: "Colored or very high ceilings tint or eat the light. Bouncing from straight above also darkens the eyes, so keep a little fill from the front." },
+  { id: "sidebounce", name: "Event: side-wall bounce", sub: "Flash turned toward a wall, like window light",
+    s: { layout: "single", turn: -10, wall: "warm", wallD: 9, amb: 0.1, ambTop: 0, ambK: 3200, lights: [L("key", "large", -70, 22, 4.5, 0, 5200), L("fill", "bare", 0, 3, 7, -3.5)] },
+    use: "Receptions, parties and indoor family sessions with a pale wall nearby. Turning the flash toward a side wall makes the whole wall a big, soft light from one side, so faces get shape instead of looking flat.",
+    gear: "An on-camera flash with a head that swivels, and a white or light gray wall within a few feet of your client.",
+    start: "Swivel the flash head toward the wall on your client's front side, tilted up a little. Use TTL with +0.7 to +1 flash compensation, or manual at about 1/4 power. f/4, 1/125 s, ISO 800 to 1600.",
+    avoid: "A colored wall tints the light. Bouncing toward a wall behind your client lights the back of their head, not the face. Turn your client so their face points toward the bright wall." },
+  { id: "fillflash", name: "Fill flash at sunset", sub: "Backlit sun, flash lifts the face",
+    s: { layout: "single", turn: 0, wall: "sky", wallD: 14, amb: 0.3, ambTop: 0.6, ambK: 6500, lights: [L("sun", "sun", 150, 12, 9, 3, 3500), L("fill", "bare", 0, 4, 7, 1.2, 3500)] },
+    use: "Golden hour portraits, couples and seniors with the sun behind them, when you have no reflector or helper. The flash brightens the face so you can keep the glowing sky.",
+    gear: "An on-camera flash, ideally with a warming gel (CTO) so it matches the sunset color, and high-speed sync if you shoot wide open.",
+    start: "Expose for the sky first, then add flash. TTL at -1 to -1.7 flash compensation is a good start. Above about 1/200 s you need high-speed sync. Add a ½ CTO gel so the face is not bluer than the background.",
+    avoid: "Too much flash looks fake and kills the glow: it should be a lift, not a spotlight. Ungelled flash at sunset makes skin look cold next to the warm sky." },
   { id: "direct", name: "On-camera flash, direct", sub: "What to avoid, and when it is okay",
     s: { layout: "single", turn: 15, wall: "white", wallD: 2, amb: 0.05, ambTop: 0, ambK: 5600, lights: [L("key", "bare", 0, 4, 7, 0.5)] },
     use: "A comparison, so you can see what a flash pointed straight at your client does: flat faces, shiny skin and a hard shadow on the wall behind them.",
@@ -1457,5 +1469,7 @@ try {
   else if (typeof view !== "undefined" && view === "home") render();
 } catch (e) { /* the app is not ready, which is fine */ }
 window.CueLighting.state = () => LT;
+// Other pages can open the planner on a given setup.
+window.CueLighting.open = (id) => { if (PRESETS.some((p) => p.id === id)) applyPreset(id); go("lighting"); };
 
 })();
