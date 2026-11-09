@@ -688,6 +688,7 @@ function TRACER() {
     const pixRot = hash3(px, py, 7) * 6.2832, pixOff = (hash3(px, py, 3) * 64) | 0;
     let dr = 0, dg = 0, db = 0, sr = 0, sg = 0, sb = 0;
     let lr = 0, lg = 0, lb = 0, sacc = 0;
+    // light reaching the surface (diffuse); highlights are added once per light by specTerm
     function lightTerm(cth, dx, dy, dz, wgt) {
       if (wrap) {
         if (cth < -wrap[0]) return;
@@ -696,21 +697,28 @@ function TRACER() {
         const tl = tx * dx + ty * dy + tz * dz, kk = Math.sqrt(Math.max(0, 1 - tl * tl));
         const dif = (Math.max(0, cth) * 0.6 + kk * 0.4 * Math.max(0, cth + 0.3)) * wgt;
         lr += dif; lg += dif; lb += dif;
-        // two highlights along the strands: a white one and a softer, colored one
-        let hx = dx + vx, hy = dy + vy, hz = dz + vz; const hl = Math.hypot(hx, hy, hz) || 1; hx /= hl; hy /= hl; hz /= hl;
-        const th = tx * hx + ty * hy + tz * hz;
-        const s1 = Math.pow(Math.max(0, Math.sqrt(Math.max(0, 1 - (th - 0.12) * (th - 0.12)))), 90);
-        const s2 = Math.pow(Math.max(0, Math.sqrt(Math.max(0, 1 - (th + 0.1) * (th + 0.1)))), 22);
-        const vis = Math.max(0, cth + 0.15);
-        sacc += (s1 * 0.12 + s2 * 0.25 * (ar * 4)) * vis * wgt;
       } else {
         if (cth <= 0) return;
         const d = cth * wgt; lr += d; lg += d; lb += d;
       }
-      if (spec && cth > 0) {
-        let hx = dx + vx, hy = dy + vy, hz = dz + vz; const hl = Math.hypot(hx, hy, hz) || 1;
-        const nh = (nx * hx + ny * hy + nz * hz) / hl;
-        if (nh > 0) { const fr = spec + (1 - spec) * Math.pow(1 - Math.max(0, facing), 5) * 0.25; sacc += (Math.pow(nh, rough) * (rough + 8) / 8 * fr * 0.5 + Math.pow(nh, rough * 4) * fr * 1.5) * cth * wgt; }
+    }
+    // Highlights, worked out toward the middle of the light and widened by how big the light looks
+    // (alpha, its angular radius): smooth, and true to the size of the source.
+    const wide = (e, alpha) => 2 / (2 / e + alpha * alpha);
+    function specTerm(cth, dx, dy, dz, wgt, alpha) {
+      let hx = dx + vx, hy = dy + vy, hz = dz + vz; const hl = Math.hypot(hx, hy, hz) || 1; hx /= hl; hy /= hl; hz /= hl;
+      if (hair) {
+        // two highlights along the strands: a white one and a softer, colored one
+        const th = tx * hx + ty * hy + tz * hz, e1 = wide(90, alpha), e2 = wide(22, alpha);
+        const s1 = Math.pow(Math.sqrt(Math.max(0, 1 - (th - 0.12) * (th - 0.12))), e1) * Math.min(1, e1 / 90 * 1.4);
+        const s2 = Math.pow(Math.sqrt(Math.max(0, 1 - (th + 0.1) * (th + 0.1))), e2) * Math.min(1, e2 / 22 * 1.2);
+        sacc += (s1 * 0.12 + s2 * 0.25 * (ar * 4)) * Math.max(0, cth + 0.15) * wgt;
+      } else if (spec && cth > 0) {
+        const nh = nx * hx + ny * hy + nz * hz;
+        if (nh > 0) {
+          const fr = spec + (1 - spec) * Math.pow(1 - Math.max(0, facing), 5) * 0.25, e1 = wide(rough, alpha), e2 = wide(rough * 4, alpha);
+          sacc += (Math.pow(nh, e1) * (e1 + 8) / 8 * fr * 0.5 + Math.pow(nh, e2) * (e2 + 8) / (rough * 4 + 8) * fr * 1.5) * cth * wgt;
+        }
       }
     }
     const lights = sc.lights;
@@ -721,19 +729,27 @@ function TRACER() {
         const dx = L.dir[0], dy = L.dir[1], dz = L.dir[2];
         const cth = nx * dx + ny * dy + nz * dz;
         if (cth > 0 && !blocked(sc, ox, oy, oz, dx, dy, dz, 1e5)) {
-          lightTerm(cth, dx, dy, dz, 1);
+          lightTerm(cth, dx, dy, dz, 1); specTerm(cth, dx, dy, dz, 1, 0.005);
         }
       } else {
-        n = spp;
+        // big, close sources need more samples to look smooth
+        const near = (L.ha ? Math.hypot(L.ha, L.hb) : L.r) / Math.max(0.5, Math.hypot(L.pos[0] - ox, L.pos[1] - oy, L.pos[2] - oz));
+        n = spp * Math.min(4, Math.max(1, Math.round(near * 2.5)));
+        let vis = 0;
         for (let i = 0; i < n; i++) {
-          lightDirSample(L, (pixOff + pass * spp + i) & 63, pixRot, ox, oy, oz, LD);
+          lightDirSample(L, (pixOff + pass * n + i) & 63, pixRot, ox, oy, oz, LD);
           const dx = LD[0], dy = LD[1], dz = LD[2];
           const cth = nx * dx + ny * dy + nz * dz;
           if (cth <= 0) continue;
           const em = -(dx * L.aim[0] + dy * L.aim[1] + dz * L.aim[2]);       // the light only shines forward
           if (em <= 0) continue;
           if (blocked(sc, ox, oy, oz, dx, dy, dz, LD[3] - 0.02)) continue;
-          lightTerm(cth, dx, dy, dz, em / LD[4]);
+          lightTerm(cth, dx, dy, dz, em / LD[4]); vis++;
+        }
+        if (vis && (spec || hair)) {
+          let cx = L.pos[0] - ox, cy = L.pos[1] - oy, cz = L.pos[2] - oz; const d2 = cx * cx + cy * cy + cz * cz, d = Math.sqrt(d2); cx /= d; cy /= d; cz /= d;
+          const em = Math.max(0.05, -(cx * L.aim[0] + cy * L.aim[1] + cz * L.aim[2]));
+          specTerm(Math.max(0.02, nx * cx + ny * cy + nz * cz), cx, cy, cz, vis * em / d2, (L.ha ? Math.hypot(L.ha, L.hb) * 0.75 : L.r) / d);
         }
       }
       const e = L.power / n;
